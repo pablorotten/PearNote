@@ -272,7 +272,7 @@ cp backend/backend-p2p.mjs backend/backend.mjs
 cp app/index-p2p.tsx app/index.tsx
 
 # 4. Rebuild bundle
-npx bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend.mjs
+npx bare-pack --linked -o app/app.bundle.mjs backend/backend.mjs
 ```
 
 ---

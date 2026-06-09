@@ -37,13 +37,13 @@ console.log('  ✅ Copied backend/backend-p2p.mjs → backend/backend.mjs')
 console.log('\n🔨 Step 3: Building Bare bundle...')
 try {
   execSync(
-    'npx bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend.mjs',
+    'npx bare-pack --linked -o app/app.bundle.mjs backend/backend.mjs',
     { stdio: 'inherit' }
   )
   console.log('  ✅ Bundle created successfully!')
 } catch (error) {
   console.error('  ❌ Bundle build failed. You may need to build manually.')
-  console.error('     Run: npx bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend.mjs')
+  console.error('     Run: npx bare-pack --linked -o app/app.bundle.mjs backend/backend.mjs')
   process.exit(1)
 }
 

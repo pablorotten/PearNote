@@ -17,10 +17,10 @@ This will install the new dependencies:
 You need to bundle the new backend for the Bare runtime:
 
 ```bash
-npx bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend-p2p.mjs
+npx bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs
 ```
 
-**What this does:** Packages the Hyperswarm backend into a format that can run in the Bare worklet.
+**What this does:** Packages the backend including all JavaScript code (Hyperswarm, bare-rpc, etc.) and generates Android-compatible `.so` references for native addons. The `--host android` flag ensures the bundle uses the correct native addon file extensions for Android devices.
 
 ## Step 3: Update the App Entry Point
 
@@ -151,8 +151,8 @@ To go back to the original version:
 # Restore original frontend
 cp app/index-original.tsx app/index.tsx
 
-# Rebuild original bundle
-npx bare-pack --defer autopass --defer corestore -o app/app.bundle.mjs backend/backend.mjs
+# Rebuild original bundle (with original backend dependencies)
+npx bare-pack --defer autopass --defer corestore --offload-addons -o app/app.bundle.mjs backend/backend.mjs
 
 # Run
 npm run android

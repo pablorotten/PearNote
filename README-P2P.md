@@ -150,8 +150,10 @@ swarm.on('connection', (conn) => {
 
 ### Build the Bundle
 ```bash
-npx bare-pack --defer autopass --defer corestore -o app/app.bundle.mjs backend/backend-p2p.mjs
+npx bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs
 ```
+
+The `--host android` flag ensures native addons use Android `.so` file references.
 
 ### Debug Mode
 Check terminal logs in the app for connection status:

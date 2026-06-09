@@ -8,7 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "setup-p2p": "node setup-p2p.js",
-    "build-bundle": "bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend-p2p.mjs"
+    "build-bundle": "bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs"
   },
   "repository": {
     "type": "git",

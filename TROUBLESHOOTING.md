@@ -73,7 +73,7 @@ Corporate/School networks may block P2P:
 ```bash
 npm run build-bundle
 # or
-npx bare-pack --defer hyperswarm -o app/app.bundle.mjs backend/backend-p2p.mjs
+npx bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs
 ```
 
 #### ✅ Clear Metro Cache
@@ -93,9 +93,33 @@ npm run android
 
 **Error:** App crashes when starting worklet
 
-**Cause:** Bundle not found or corrupt
+**Common errors in logcat:**
+- `ADDON_NOT_FOUND: Cannot find addon` - Wrong platform addon references (e.g., `.dll` instead of `.so`)
+- `dlopen failed: library "udx-native-1.19.2..."` - Native addon can't be loaded
+- `ModuleError: MODULE_NOT_FOUND: Cannot find module 'hyperswarm'` - Modules deferred incorrectly
+- `SyntaxError: Unexpected token '', "��u�w"...` - Native binaries embedded in JS bundle
+
+**Cause:** Bundle was built without `--host android` flag, so addon references use wrong platform
 
 **Solutions:**
+
+#### ✅ Use Correct Build Command for Android
+**Bundle all JavaScript with Android-compatible native addon references:**
+```bash
+npm run build-bundle
+# This runs:
+# npx bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs
+```
+
+**Why this works:**
+- ✅ **Bundles all JS:** Hyperswarm, bare-rpc, b4a, graceful-goodbye all included
+- ✅ **--host android:** Generates `.so` file references for Android (not `.dll`)
+- ✅ **Correct addons:** `linked:libudx-native.1.19.2.so` instead of `linked:udx-native-1.19.2.dll`
+- ❌ **Without --host android:** Uses wrong platform extensions, dlopen fails
+
+**Check your bundle:**
+- ✅ **Correct size:** ~950 KB (all JS bundled, Android addon references)
+- ✅ **Correct refs:** `grep 'linked:lib.*\.so' app/app.bundle.mjs` should show `.so` files
 
 #### ✅ Verify Bundle Exists
 ```bash
@@ -103,13 +127,9 @@ ls app/app.bundle.mjs
 # Should show the file
 ```
 
-#### ✅ Rebuild with Correct Externals
+#### ✅ Rebuild with Correct Flags
 ```bash
-npx bare-pack \
-  --defer hyperswarm \
-  --defer b4a \
-  -o app/app.bundle.mjs \
-  backend/backend-p2p.mjs
+npx bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs
 ```
 
 #### ✅ Check Logs
