@@ -44,6 +44,13 @@ We start from this tutorial <https://docs.pears.com/guide/making-a-bare-mobile-a
 
 P2P mobile app for shared movie watchlists. Two phones sync items directly — no desktop, no server. Phone A adds a movie, phone B sees it instantly (or when back online).
 
+This initial project works by doing:
+```sh
+npm i b4a bare-fs bare-rpc corestore autopass @react-native-clipboard/clipboard graceful-goodbye
+npm i bare-pack @types/b4a --save-dev
+npm run android
+```
+
 > [!WARNING]
 > VERY IMPORTANT: The starting project connects a phone to a desktop worker (phone is a "client" and desktop is the "server"). For MovieKollections, we want **phone-to-phone P2P** with no desktop. This means both phones must run the same Bare worklet code and pair with each other as equals (multi-writer). The tutorial's single-worker pattern won't work for our use case.
 
