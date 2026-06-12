@@ -11,9 +11,5 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 *.bundle
-*.bundle.js
-*.bundle.mjs
+*.bundle.*
 web-build/
-local.properties
-.DS_Store
-.env.local

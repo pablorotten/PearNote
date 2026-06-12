@@ -6,9 +6,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios",
-    "setup-p2p": "node setup-p2p.js",
-    "build-bundle": "bare-pack --host android -o app/app.bundle.mjs backend/backend-p2p.mjs"
+    "ios": "expo run:ios"
   },
   "repository": {
     "type": "git",
@@ -27,7 +25,6 @@
     "bare-fs": "^4.7.2",
     "bare-rpc": "^1.3.3",
     "corestore": "^7.10.1",
-    "hyperswarm": "^4.17.0",
     "expo": "~55.0.23",
     "expo-build-properties": "~55.0.9",
     "expo-constants": "~55.0.7",
@@ -46,7 +43,7 @@
   "devDependencies": {
     "@types/b4a": "^1.6.5",
     "@types/react": "~19.2.10",
-    "bare-pack": "^2.1.0",
+    "bare-pack": "^2.1.2",
     "prettier": "^3.3.3",
     "prettier-config-holepunch": "^2.0.0",
     "typescript": "^5.3.3"
