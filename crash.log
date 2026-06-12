@@ -1,863 +1,205 @@
 --------- beginning of main
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag expire 16 lines
-I/CNSS    ( 2959): Failed to send nl message
-W/System  ( 1327): A resource failed to call release. 
-I/chatty  ( 1327): uid=1000(system) FinalizerDaemon identical 5 lines
-W/System  ( 1327): A resource failed to call release. 
-W/charge_logger( 1859): type=1400 audit(0.0:149583): avc: denied { remove_name } for name="charge_logger_a.csv" dev="sda15" ino=174 scontext=u:r:charge_logger:s0 tcontext=u:object_r:charge_logger_data_file:s0 tclass=dir permissive=0
 --------- beginning of system
-I/ActivityTaskManager( 1327): START u0 {act=android.intent.action.VIEW dat=to.holepunch.bare.expo://expo-development-client/?url=http://192.168.0.219:8081 flg=0x10000000 cmp=to.holepunch.bare.expo/.MainActivity} from uid 2000
-D/EventSequenceValidator( 1327): Transition from ACTIVITY_FINISHED to INTENT_STARTED
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateINITIALIZING
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateINITIALIZING
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 0
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 0
-E/ANDR-PERF-JNI( 1327): com_qualcomm_qtiperformance_native_perf_io_prefetch_start
-E/ANDR-IOP(  771): io prefetch is disabled
-D/CompatibilityInfo( 1327): mCompatibilityFlags - 0
-D/CompatibilityInfo( 1327): applicationDensity - 320
-D/CompatibilityInfo( 1327): applicationScale - 1.0
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateRESUMED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestatePAUSING
-D/ActivityTrigger( 1327): ActivityTrigger activityPauseTrigger 
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 3
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestatePAUSING
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 3
-I/cmd     ( 1863): oneway function results will be dropped but finished with status OK and parcel size 4
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestatePAUSED
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestatePAUSED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 4
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 4
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateRESUMED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-D/CompatibilityChangeReporter( 1327): Compat change id reported: 135634846; UID 10412; state: DISABLED
-D/CompatibilityChangeReporter( 1327): Compat change id reported: 135754954; UID 10412; state: ENABLED
-D/CompatibilityChangeReporter( 1327): Compat change id reported: 143937733; UID 10412; state: ENABLED
-D/EventSequenceValidator( 1327): Transition from INTENT_STARTED to ACTIVITY_LAUNCHED
-D/Zygote  (  603): Forked child process 1877
-I/ActivityManager( 1327): Start proc 1877:to.holepunch.bare.expo/u0a412 for pre-top-activity {to.holepunch.bare.expo/to.holepunch.bare.expo.MainActivity}
-W/Zygote  ( 1877): Unable to open libbeluga.so: dlopen failed: library "libbeluga.so" not found.
-I/punch.bare.exp( 1877): Late-enabling -Xcheck:jni
-I/punch.bare.exp( 1877): Unquickening 18 vdex files!
-I/adbd    (  956): jdwp connection from 1877
-D/CompatibilityInfo( 1327): mCompatibilityFlags - 0
-D/CompatibilityInfo( 1327): applicationDensity - 320
-D/CompatibilityInfo( 1327): applicationScale - 1.0
-D/CompatibilityInfo( 1327): mCompatibilityFlags - 0
-D/CompatibilityInfo( 1327): applicationDensity - 320
-D/CompatibilityInfo( 1327): applicationScale - 1.0
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateRESUMED
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateRESUMED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 1 line
-E/qdmetadata(  728): paramType 2048 not supported
-I/bynm    ( 3914): onPause
-W/dolk    ( 3914): measuring already stopped.
-I/fpod    ( 2191): updateFingerprintListeningState
-I/fpod    ( 2191): mFingerprintRunningState = 0
-D/KeyguardFace( 2191): shouldListenForFace ( return false, Face is not default condition)
-D/KeyguardUpdateMonitor( 2191): updateFaceListeningState shouldListenForFace==false  mFaceRunningState==0
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 13 lines
-E/qdmetadata(  728): paramType 2048 not supported
-D/BatteryService( 1327): /data/anr/adb_enable file.exists() =  false  mPlugType==2
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 8 lines
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 13 lines
-E/qdmetadata(  728): paramType 2048 not supported
-I/Perf    ( 1877): Connecting to perf service.
-E/qdmetadata(  728): paramType 2048 not supported
-D/NetworkSecurityConfig( 1877): No Network Security Config specified, using platform default
-D/NetworkSecurityConfig( 1877): No Network Security Config specified, using platform default
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-W/SoLoader( 1877): Initializing SoLoader: 0
-W/SoLoader( 1877): Recording new base apk path: /data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk
-W/SoLoader( 1877): Previously recorded 0 base apk paths.
-I/SoLoader( 1877): Preparing SO source: DirectorySoSource[root = /vendor/lib64 flags = 2]
-I/SoLoader( 1877): Preparing SO source: DirectorySoSource[root = /system/lib64 flags = 2]
-I/SoLoader( 1877): Preparing SO source: DirectApkSoSource[root = [/data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk!/lib/arm64-v8a]]
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 2 lines
-E/qdmetadata(  728): paramType 2048 not supported
-I/SoLoader( 1877): Preparing SO source: ApplicationSoSource[DirectorySoSource[root = /data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/lib/arm64 flags = 0]]
-I/SoLoader( 1877): init finish: 4 SO sources prepared
-W/SoLoader( 1877): SoLoader initialized: 8
-E/qdmetadata(  728): paramType 2048 not supported
-W/linker  ( 1877): Warning: "/data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk!/lib/arm64-v8a/libc++_shared.so" unused DT entry: unknown processor-specific (type 0x70000001 arg 0x0) (ignoring)
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-D/jni_lib_merge( 1877): Entering merged library JNI_OnLoad.
-D/jni_lib_merge( 1877): Preparing 12 pre-merged libs (including stub)
-D/jni_lib_merge( 1877): Preparing to register libfabricjni_so.  onload_func: 0x7a2fb23a5c
-D/jni_lib_merge( 1877): Preparing to register libreact_devsupportjni_so.  onload_func: 0x7a2fd40720
-D/jni_lib_merge( 1877): Preparing to register libreact_featureflagsjni_so.  onload_func: 0x7a2fd52f88
-D/jni_lib_merge( 1877): Preparing to register libreact_newarchdefaults_so.  onload_func: 0x7a2fdf8320
-D/jni_lib_merge( 1877): Preparing to register libreactnativeblob_so.  onload_func: 0x7a3000a4c4
-D/jni_lib_merge( 1877): Preparing to register libreactnativejni_so.  onload_func: 0x7a3004d438
-D/jni_lib_merge( 1877): Preparing to register libreactnativejni_common_so.  onload_func: 0x7a3005de2c
-D/jni_lib_merge( 1877): Preparing to register librninstance_so.  onload_func: 0x7a300a7c58
-D/jni_lib_merge( 1877): Preparing to register libturbomodulejsijni_so.  onload_func: 0x7a30204d60
-D/jni_lib_merge( 1877): Preparing to register libuimanagerjni_so.  onload_func: 0x7a3021db00
-D/jni_lib_merge( 1877): Preparing to register libyoga_so.  onload_func: 0x7a3022d584
-D/jni_lib_merge( 1877): About to register 11 actual methods.
-E/qdmetadata(  728): paramType 2048 not supported
-D/jni_lib_merge( 1877): Entering merged library JNI_OnLoad.
-D/jni_lib_merge( 1877): Preparing 12 pre-merged libs (including stub)
-D/jni_lib_merge( 1877): Preparing to register libfabricjni_so.  onload_func: 0x7a2fb23a5c
-D/jni_lib_merge( 1877): Preparing to register libreact_devsupportjni_so.  onload_func: 0x7a2fd40720
-D/jni_lib_merge( 1877): Preparing to register libreact_featureflagsjni_so.  onload_func: 0x7a2fd52f88
-D/jni_lib_merge( 1877): Preparing to register libreact_newarchdefaults_so.  onload_func: 0x7a2fdf8320
-D/jni_lib_merge( 1877): Preparing to register libreactnativeblob_so.  onload_func: 0x7a3000a4c4
-D/jni_lib_merge( 1877): Preparing to register libreactnativejni_so.  onload_func: 0x7a3004d438
-D/jni_lib_merge( 1877): Preparing to register libreactnativejni_common_so.  onload_func: 0x7a3005de2c
-D/jni_lib_merge( 1877): Preparing to register librninstance_so.  onload_func: 0x7a300a7c58
-D/jni_lib_merge( 1877): Preparing to register libturbomodulejsijni_so.  onload_func: 0x7a30204d60
-D/jni_lib_merge( 1877): Preparing to register libuimanagerjni_so.  onload_func: 0x7a3021db00
-D/jni_lib_merge( 1877): Preparing to register libyoga_so.  onload_func: 0x7a3022d584
-D/jni_lib_merge( 1877): About to register 11 actual methods.
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 11 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/DisplayIdentification(  845): Invalid EDID: falling back to serial number due to missing display name.
-W/DisplayIdentification(  845): Invalid EDID: falling back to ASCII text due to missing serial number.
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 3 lines
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 7 lines
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-D/AppCompatDelegate( 1877): Checking for metadata for AppLocalesMetadataHolderService : Service not found
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 6 lines
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 1 line
-E/qdmetadata(  728): paramType 2048 not supported
-I/sensors-hal(  752): batch:243, android.sensor.accelerometer/11, period=66667000, max_latency=0
-I/sensors-hal(  752): set_config:63, sample_period_ns is adjusted to 66667000 based on min/max delay_ns
-I/sensors-hal(  752): batch:252, android.sensor.accelerometer/11, period=66667000, max_latency=0 request completed
-I/sensors-hal(  752): flush:272, android.sensor.accelerometer/11
-I/sensors-hal(  752): flush:284, android.sensor.accelerometer/11 completed
-I/sensors-hal(  752): ssc_conn_resp_cb:651, resp_value = 0
-I/sensors-hal(  752): ssc_conn_resp_cb:651, resp_value = 0
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 3 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/unknown:BridgelessReact( 1877): ReactHost{0}.startSurface(surfaceId = 0): Schedule
-W/unknown:BridgelessReact( 1877): ReactHost{0}.attachSurface(surfaceId = 0)
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask()
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): Start
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getJSBundleLoader()
-W/unknown:BridgelessReact( 1877): ReactHost{0}.isMetroRunning()
-E/qdmetadata(  728): paramType 2048 not supported
-W/unknown:BridgelessReact( 1877): ReactHost{0}.isMetroRunning(): Async result = true
-W/unknown:BridgelessReact( 1877): ReactHost{0}.loadJSBundleFromMetro()
-E/qdmetadata(  728): paramType 2048 not supported
-W/punch.bare.exp( 1877): Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (greylist, reflection, allowed)
-E/qdmetadata(  728): paramType 2048 not supported
-W/unknown:BridgelessReact( 1877): ReactHost{0}.onHostResume(activity)
-W/unknown:ReactNative( 1877): Packager connection already open, nooping.
-E/qdmetadata(  728): paramType 2048 not supported
-I/Choreographer( 1877): Skipped 47 frames!  The application may be doing too much work on its main thread.
-E/qdmetadata(  728): paramType 2048 not supported
-I/AdrenoGLES-0( 1877): QUALCOMM build                   : d4cfdf3, Ic907de5ed0
-I/AdrenoGLES-0( 1877): Build Date                       : 09/25/20
-I/AdrenoGLES-0( 1877): OpenGL ES Shader Compiler Version: EV031.32.02.01
-I/AdrenoGLES-0( 1877): Local Branch                     : mybrancheaff3d46-e51f-f136-8926-1458d0b52af0
-I/AdrenoGLES-0( 1877): Remote Branch                    : quic/gfx-adreno.lnx.1.0.r116-rel
-I/AdrenoGLES-0( 1877): Remote Branch                    : NONE
-I/AdrenoGLES-0( 1877): Reconstruct Branch               : NOTHING
-I/AdrenoGLES-0( 1877): Build Config                     : S P 10.0.7 AArch64
-I/AdrenoGLES-0( 1877): Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
-E/qdmetadata(  728): paramType 2048 not supported
-I/AdrenoGLES-0( 1877): PFP: 0x016ee190, ME: 0x00000000
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-I/OpenGLRenderer( 1877): Davey! duration=852ms; Flags=1, IntendedVsync=7935092355775, Vsync=7935875689077, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=7935889941711, AnimationStart=7935889950721, PerformTraversalsStart=7935890227857, DrawStart=7935934610148, SyncQueued=7935936248534, SyncStart=7935936628013, IssueDrawCommandsStart=7935936698377, SwapBuffers=7935943495513, FrameCompleted=7935944964888, DequeueBufferDuration=148229, QueueBufferDuration=483073, GpuCompleted=0, 
-D/ArtManagerInternalImpl( 1327): /data/misc/iorapd/to.holepunch.bare.expo/1/to.holepunch.bare.expo.MainActivity/compiled_traces/compiled_trace.pb doesn't exist
-D/EventSequenceValidator( 1327): Transition from ACTIVITY_LAUNCHED to ACTIVITY_FINISHED
-I/ActivityTaskManager( 1327): Displayed to.holepunch.bare.expo/.MainActivity: +1s602ms
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 3 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/unknown:BridgelessReact( 1877): ReactHost{0}.raiseSoftException(onWindowFocusChange(hasFocus = "true")): Tried to access onWindowFocusChange while context is not ready
-E/unknown:ReactHost( 1877): Unhandled SoftException
-E/unknown:ReactHost( 1877): com.facebook.react.bridge.ReactNoCrashSoftException: raiseSoftException(onWindowFocusChange(hasFocus = "true")): Tried to access onWindowFocusChange while context is not ready
-E/unknown:ReactHost( 1877): 	at com.facebook.react.runtime.ReactHostImpl.raiseSoftException(ReactHostImpl.kt:905)
-E/unknown:ReactHost( 1877): 	at com.facebook.react.runtime.ReactHostImpl.raiseSoftException$default(ReactHostImpl.kt:896)
-E/unknown:ReactHost( 1877): 	at com.facebook.react.runtime.ReactHostImpl.onWindowFocusChange(ReactHostImpl.kt:668)
-E/unknown:ReactHost( 1877): 	at com.facebook.react.ReactDelegate.onWindowFocusChanged(ReactDelegate.kt:232)
-E/unknown:ReactHost( 1877): 	at com.facebook.react.ReactActivityDelegate.onWindowFocusChanged(ReactActivityDelegate.java:237)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invokeSuspend(ReactActivityDelegateWrapper.kt:320)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invoke(Unknown Source:8)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invoke(Unknown Source:4)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper$launchLifecycleScopeWithLock$1.invokeSuspend(ReactActivityDelegateWrapper.kt:452)
-E/unknown:ReactHost( 1877): 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:375)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:26)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:358)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:134)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:53)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.BuildersKt.launch(Unknown Source:1)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:44)
-E/unknown:ReactHost( 1877): 	at kotlinx.coroutines.BuildersKt.launch$default(Unknown Source:1)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper.launchLifecycleScopeWithLock(ReactActivityDelegateWrapper.kt:450)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper.launchLifecycleScopeWithLock$default(ReactActivityDelegateWrapper.kt:446)
-E/unknown:ReactHost( 1877): 	at expo.modules.ReactActivityDelegateWrapper.onWindowFocusChanged(ReactActivityDelegateWrapper.kt:318)
-E/unknown:ReactHost( 1877): 	at com.facebook.react.ReactActivity.onWindowFocusChanged(ReactActivity.java:158)
-E/unknown:ReactHost( 1877): 	at androidx.appcompat.view.WindowCallbackWrapper.onWindowFocusChanged(WindowCallbackWrapper.java:124)
-E/unknown:ReactHost( 1877): 	at com.android.internal.policy.DecorView.onWindowFocusChanged(DecorView.java:1691)
-E/unknown:ReactHost( 1877): 	at android.view.View.dispatchWindowFocusChanged(View.java:14583)
-E/unknown:ReactHost( 1877): 	at android.view.ViewGroup.dispatchWindowFocusChanged(ViewGroup.java:1502)
-E/unknown:ReactHost( 1877): 	at android.view.ViewRootImpl.handleWindowFocusChanged(ViewRootImpl.java:3259)
-E/unknown:ReactHost( 1877): 	at android.view.ViewRootImpl.access$1100(ViewRootImpl.java:192)
-E/unknown:ReactHost( 1877): 	at android.view.ViewRootImpl$ViewRootHandler.handleMessage(ViewRootImpl.java:5049)
-E/unknown:ReactHost( 1877): 	at android.os.Handler.dispatchMessage(Handler.java:106)
-E/unknown:ReactHost( 1877): 	at android.os.Looper.loop(Looper.java:223)
-E/unknown:ReactHost( 1877): 	at android.app.ActivityThread.main(ActivityThread.java:7698)
-E/unknown:ReactHost( 1877): 	at java.lang.reflect.Method.invoke(Native Method)
-E/unknown:ReactHost( 1877): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
-E/unknown:ReactHost( 1877): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:952)
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-I/GoogleInputMethodService( 2901): GoogleInputMethodService.onFinishInput():2259 
-I/Module  ( 2901): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():127 repeatCheckTimes = 0, locked = false
-E/qdmetadata(  728): paramType 2048 not supported
-I/GoogleInputMethodService( 2901): GoogleInputMethodService.onStartInput():1446 onStartInput(EditorInfo{EditorInfo{packageName=to.holepunch.bare.expo, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
-W/AndroidIME( 2901): LatinIMEBase.updateInputViewCoverNavigation():326 Null input view, cannot update padding!
-I/Module  ( 2901): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():127 repeatCheckTimes = 1, locked = false
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 2 lines
-E/qdmetadata(  728): paramType 2048 not supported
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateSTOPPING
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 5
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateSTOPPING
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 5
-E/qdmetadata(  728): paramType 2048 not supported
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): unbindService is called for service : com.google.android.googlequicksearchbox/com.google.android.apps.gsa.nowoverlayservice.DrawerOverlayService and for client com.android.launcher3
-I/ActivityManager( 1327): Killing 27614:android.process.acore/u0a20 (adj 999): empty #31
-I/bynm    ( 3914): onStop
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 1 line
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateSTOPPED
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateSTOPPED
-E/qdmetadata(  728): paramType 2048 not supported
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 6
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 6
-E/qdmetadata(  728): paramType 2048 not supported
-D/CountryDetector( 1327): No listener is left
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): killProcess is called for pid : 27614
-I/Zygote  (  603): Process 27614 exited due to signal 9 (Killed)
-I/libprocessgroup( 1327): Successfully killed process cgroup uid 10020 pid 27614 in 37ms
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 2 lines
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 1 line
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 3 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/unknown:BridgelessReact( 1877): ReactHost{0}.loadJSBundleFromMetro(): Creating BundleLoader
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): Creating BridgelessReactContext
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): Creating ReactInstance
-E/qdmetadata(  728): paramType 2048 not supported
-D/jni_lib_merge( 1877): Entering merged library JNI_OnLoad.
-D/jni_lib_merge( 1877): Preparing 4 pre-merged libs (including stub)
-D/jni_lib_merge( 1877): Preparing to register libhermes_executor_so.  onload_func: 0x7a1ebf3fa4
-D/jni_lib_merge( 1877): Preparing to register libhermesinstancejni_so.  onload_func: 0x7a1ec2d8b4
-D/jni_lib_merge( 1877): Preparing to register libjsijniprofiler_so.  onload_func: 0x7a1ec2f8f8
-D/jni_lib_merge( 1877): About to register 3 actual methods.
-E/qdmetadata(  728): paramType 2048 not supported
-I/FontLog ( 3054): (REDACTED) Received query %s, URI %s
-I/FontLog ( 3054): (REDACTED) Query [%s] resolved to %s
-I/FontLog ( 3054): (REDACTED) Fetch %s end status %s
-I/FontLog ( 3054): (REDACTED) Pulling font file for id = %d, cache size = %d
-I/FontLog ( 3054): (REDACTED) Pulling font file for id = %d, cache size = %d
-I/CNSS    ( 2959): Failed to send nl message
-I/ExpoModulesCore( 1877): ✅ AppContext was initialized
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): Loading JS Bundle
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): DevSupportManager.onNewReactContextCreated()
-W/unknown:ReactNative( 1877): Packager connection already open, nooping.
-W/unknown:BridgelessReact( 1877): ReactHost{0}.startSurface(surfaceId = 0): Execute
-W/unknown:BridgelessReact( 1877): ReactHost{0}.ReactContext.onHostResume()
-W/unknown:BridgelessReact( 1877): ReactHost{0}.getOrCreateReactInstanceTask(): Executing ReactInstanceEventListeners
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 16 lines
-I/CNSS    ( 2959): Failed to send nl message
-I/WebViewFactory( 1877): Loading com.google.android.webview version 149.0.7827.91 (code 782709103)
-D/ApplicationLoaders( 1877): Returning zygote-cached class loader: /system/framework/android.test.base.jar
-W/linker  ( 1877): Warning: "/data/app/~~_i_6DsbgeJsl00Gb9Unyew==/com.google.android.webview-cNeDUfuIjN_zYknOfeS49Q==/base.apk!/lib/arm64-v8a/libwebviewchromium.so" unused DT entry: unknown processor-specific (type 0x70000001 arg 0x0) (ignoring)
-I/cr_WVCFactoryProvider( 1877): version=149.0.7827.91 (782709103) minSdkVersion=29 multiprocess=true packageId=127 splits=<none>
-I/chromium( 1877): [0612/200818.908132:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
-I/chromium( 1877): [0612/200818.908691:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
-I/cr_LibraryLoader( 1877): Successfully loaded native library
-I/cr_CachingUmaRecorder( 1877): Flushed 35 samples from 13 histograms, 0 samples were dropped.
-W/BridgelessReactContext( 1877): [WARNING] Bridgeless doesn't support CatalystInstance. Accessing an API that's not part of the new architecture is not encouraged usage.
-I/ExpoModulesCore( 1877): ✅ JSI interop was installed
-I/ExpoModulesCore( 1877): ✅ Constants were exported
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.th3rdwave.safeareacontext.SafeAreaProviderManager
-I/CNSS    ( 2959): Failed to send nl message
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.uimanager.LayoutShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.SearchBarManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenFooterManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.gamma.tabs.TabScreenViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class expo.modules.kotlin.views.GroupViewManagerWrapper
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenContainerViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.gamma.tabs.TabsHostViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ModalScreenViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenStackHeaderConfigViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenContentWrapperManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.th3rdwave.safeareacontext.SafeAreaViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.th3rdwave.safeareacontext.SafeAreaViewShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.safearea.SafeAreaViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.safearea.paper.SafeAreaViewShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.host.StackHostViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenStackHeaderSubviewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.screen.StackScreenViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.swmansion.rnscreens.ScreenStackViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.debuggingoverlay.DebuggingOverlayManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.safeareaview.ReactSafeAreaViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.modal.ReactModalHostManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.text.frescosupport.FrescoBasedReactTextInlineImageViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.text.frescosupport.FrescoBasedReactTextInlineImageShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.progressbar.ReactProgressBarViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.progressbar.ProgressBarShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.scroll.ReactHorizontalScrollViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.image.ReactImageManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.text.ReactTextViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.text.ReactTextShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.unimplementedview.ReactUnimplementedViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.scroll.ReactScrollViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.view.ReactViewManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.drawer.ReactDrawerLayoutManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.switchview.ReactSwitchManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.switchview.ReactSwitchShadowNode
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.swiperefresh.SwipeRefreshLayoutManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.textinput.ReactTextInputManager
-W/unknown:ViewManagerPropertyUpdater( 1877): Could not find generated setter for class com.facebook.react.views.textinput.ReactTextInputShadowNode
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 6 lines
-I/CNSS    ( 2959): Failed to send nl message
-I/ReactNativeJS( 1877): Running "main" with {"rootTag":1,"initialProps":{},"fabric":true}
-I/CNSS    ( 2959): Failed to send nl message
-W/charge_logger( 2013): type=1400 audit(0.0:149584): avc: denied { remove_name } for name="charge_logger_a.csv" dev="sda15" ino=174 scontext=u:r:charge_logger:s0 tcontext=u:object_r:charge_logger_data_file:s0 tclass=dir permissive=0
-V/DisplayPowerController( 1327): Brightness [0.5670238] reason changing to: 'manual', previous reason: 'manual [ dim ]'.
-W/LightsService( 1327): brightnessFloat: 0.057432134
-W/LightsService( 1327): brightnessIntNew: 16
-D/HBMFeatureControl( 1327): brightness=16
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=68
-D/qdlights(  732): write_int 68 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 68 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.06920388
-W/LightsService( 1327): brightnessIntNew: 19
-D/HBMFeatureControl( 1327): brightness=19
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=80
-D/qdlights(  732): write_int 80 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 80 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.08097563
-W/LightsService( 1327): brightnessIntNew: 22
-D/HBMFeatureControl( 1327): brightness=22
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=92
-D/qdlights(  732): write_int 92 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 92 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.093944505
-W/LightsService( 1327): brightnessIntNew: 25
-D/HBMFeatureControl( 1327): brightness=25
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=104
-D/qdlights(  732): write_int 104 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 104 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.10572163
-W/LightsService( 1327): brightnessIntNew: 28
-D/HBMFeatureControl( 1327): brightness=28
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=116
-D/qdlights(  732): write_int 116 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 116 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.11493015
-W/LightsService( 1327): brightnessIntNew: 30
-D/HBMFeatureControl( 1327): brightness=30
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=124
-D/qdlights(  732): write_int 124 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 124 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.1266957
-W/LightsService( 1327): brightnessIntNew: 33
-D/HBMFeatureControl( 1327): brightness=33
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=136
-D/qdlights(  732): write_int 136 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 136 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.13846126
-W/LightsService( 1327): brightnessIntNew: 36
-D/HBMFeatureControl( 1327): brightness=36
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=148
-D/qdlights(  732): write_int 148 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 148 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.15022682
-W/LightsService( 1327): brightnessIntNew: 39
-D/HBMFeatureControl( 1327): brightness=39
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=160
-D/qdlights(  732): write_int 160 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 160 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.16197252
-W/LightsService( 1327): brightnessIntNew: 42
-D/HBMFeatureControl( 1327): brightness=42
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdlights(  732): brightness=172
-D/qdlights(  732): write_int 172 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 172 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.17373799
-W/LightsService( 1327): brightnessIntNew: 45
-D/HBMFeatureControl( 1327): brightness=45
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=184
-D/qdlights(  732): write_int 184 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 184 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.18550345
-W/LightsService( 1327): brightnessIntNew: 48
-D/HBMFeatureControl( 1327): brightness=48
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=196
-D/qdlights(  732): write_int 196 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 196 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.19724682
-W/LightsService( 1327): brightnessIntNew: 51
-D/HBMFeatureControl( 1327): brightness=51
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=208
-D/qdlights(  732): write_int 208 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 208 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.20901217
-W/LightsService( 1327): brightnessIntNew: 54
-D/HBMFeatureControl( 1327): brightness=54
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=220
-D/qdlights(  732): write_int 220 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 220 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.22077751
-W/LightsService( 1327): brightnessIntNew: 57
-D/HBMFeatureControl( 1327): brightness=57
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=232
-D/qdlights(  732): write_int 232 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 232 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.23254286
-W/LightsService( 1327): brightnessIntNew: 60
-D/HBMFeatureControl( 1327): brightness=60
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=244
-D/qdlights(  732): write_int 244 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 244 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.24435526
-W/LightsService( 1327): brightnessIntNew: 63
-D/HBMFeatureControl( 1327): brightness=63
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=256
-D/qdlights(  732): write_int 256 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 256 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.2561208
-W/LightsService( 1327): brightnessIntNew: 66
-D/HBMFeatureControl( 1327): brightness=66
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=268
-D/qdlights(  732): write_int 268 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 268 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.26788634
-W/LightsService( 1327): brightnessIntNew: 69
-D/HBMFeatureControl( 1327): brightness=69
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=280
-D/qdlights(  732): write_int 280 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 280 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.27965188
-W/LightsService( 1327): brightnessIntNew: 72
-D/HBMFeatureControl( 1327): brightness=72
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=292
-D/qdlights(  732): write_int 292 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 292 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.29141742
-W/LightsService( 1327): brightnessIntNew: 75
-D/HBMFeatureControl( 1327): brightness=75
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=304
-D/qdlights(  732): write_int 304 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 304 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.30318296
-W/LightsService( 1327): brightnessIntNew: 78
-D/HBMFeatureControl( 1327): brightness=78
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=316
-D/qdlights(  732): write_int 316 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 316 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.3149485
-W/LightsService( 1327): brightnessIntNew: 81
-D/HBMFeatureControl( 1327): brightness=81
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=328
-D/qdlights(  732): write_int 328 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 328 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.32671404
-W/LightsService( 1327): brightnessIntNew: 84
-D/HBMFeatureControl( 1327): brightness=84
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=340
-D/qdlights(  732): write_int 340 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 340 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.33847958
-W/LightsService( 1327): brightnessIntNew: 87
-D/HBMFeatureControl( 1327): brightness=87
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=352
-D/qdlights(  732): write_int 352 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 352 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.35024512
-W/LightsService( 1327): brightnessIntNew: 90
-D/HBMFeatureControl( 1327): brightness=90
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=364
-D/qdlights(  732): write_int 364 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 364 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.36201066
-W/LightsService( 1327): brightnessIntNew: 93
-D/HBMFeatureControl( 1327): brightness=93
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=376
-D/qdlights(  732): write_int 376 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 376 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.3737762
-W/LightsService( 1327): brightnessIntNew: 96
-D/HBMFeatureControl( 1327): brightness=96
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=388
-D/qdlights(  732): write_int 388 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 388 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.38554174
-W/LightsService( 1327): brightnessIntNew: 99
-D/HBMFeatureControl( 1327): brightness=99
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=400
-D/qdlights(  732): write_int 400 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 400 ==> /sys/class/backlight/panel0-backlight/brightness
-I/punch.bare.exp( 1877): NativeAlloc concurrent copying GC freed 56548(4141KB) AllocSpace objects, 6(120KB) LOS objects, 49% free, 6656KB/13MB, paused 87us total 106.053ms
-W/LightsService( 1327): brightnessFloat: 0.39730728
-W/LightsService( 1327): brightnessIntNew: 102
-D/HBMFeatureControl( 1327): brightness=102
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=412
-D/qdlights(  732): write_int 412 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 412 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.40907282
-W/LightsService( 1327): brightnessIntNew: 105
-D/HBMFeatureControl( 1327): brightness=105
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=424
-D/qdlights(  732): write_int 424 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 424 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.42083836
-W/LightsService( 1327): brightnessIntNew: 108
-D/HBMFeatureControl( 1327): brightness=108
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=436
-D/qdlights(  732): write_int 436 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 436 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.4326039
-W/LightsService( 1327): brightnessIntNew: 111
-D/HBMFeatureControl( 1327): brightness=111
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=448
-D/qdlights(  732): write_int 448 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 448 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.44436944
-W/LightsService( 1327): brightnessIntNew: 114
-D/HBMFeatureControl( 1327): brightness=114
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdlights(  732): brightness=460
-D/qdlights(  732): write_int 460 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 460 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.45613497
-W/LightsService( 1327): brightnessIntNew: 117
-D/HBMFeatureControl( 1327): brightness=117
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdlights(  732): brightness=472
-D/qdlights(  732): write_int 472 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 472 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.4679005
-W/LightsService( 1327): brightnessIntNew: 120
-D/HBMFeatureControl( 1327): brightness=120
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=484
-D/qdlights(  732): write_int 484 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 484 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.47962183
-W/LightsService( 1327): brightnessIntNew: 123
-D/HBMFeatureControl( 1327): brightness=123
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=496
-D/qdlights(  732): write_int 496 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 496 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.4914039
-W/LightsService( 1327): brightnessIntNew: 126
-D/HBMFeatureControl( 1327): brightness=126
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=508
-D/qdlights(  732): write_int 508 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 508 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.5031693
-W/LightsService( 1327): brightnessIntNew: 129
-D/HBMFeatureControl( 1327): brightness=129
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=520
-D/qdlights(  732): write_int 520 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 520 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.5149347
-W/LightsService( 1327): brightnessIntNew: 132
-D/HBMFeatureControl( 1327): brightness=132
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=532
-D/qdlights(  732): write_int 532 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 532 ==> /sys/class/backlight/panel0-backlight/brightness
-E/qdmetadata(  728): paramType 2048 not supported
-W/LightsService( 1327): brightnessFloat: 0.52670014
-W/LightsService( 1327): brightnessIntNew: 135
-D/HBMFeatureControl( 1327): brightness=135
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=544
-D/qdlights(  732): write_int 544 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 544 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.53849256
-W/LightsService( 1327): brightnessIntNew: 138
-D/HBMFeatureControl( 1327): brightness=138
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=556
-D/qdlights(  732): write_int 556 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 556 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.55025804
-W/LightsService( 1327): brightnessIntNew: 141
-D/HBMFeatureControl( 1327): brightness=141
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=568
-D/qdlights(  732): write_int 568 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 568 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.5620235
-W/LightsService( 1327): brightnessIntNew: 144
-D/HBMFeatureControl( 1327): brightness=144
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=580
-D/qdlights(  732): write_int 580 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 580 ==> /sys/class/backlight/panel0-backlight/brightness
-W/LightsService( 1327): brightnessFloat: 0.5670238
-W/LightsService( 1327): brightnessIntNew: 145
-D/HBMFeatureControl( 1327): brightness=145
-D/HBMFeatureControl( 1327): checkHBMStatus,mMode=0, mOldMode = 0
-E/qdlights(  732): brightness=584
-D/qdlights(  732): write_int 584 ==> /sys/class/backlight/panel0-backlight/brightness_clone
-D/qdlights(  732): write_int 584 ==> /sys/class/backlight/panel0-backlight/brightness
-I/CNSS    ( 2959): Failed to send nl message
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2082): 1 [CONTEXT service_id=168 ]
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2083): 1 [CONTEXT service_id=168 ]
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): bindService is called for service : com.google.android.gms/.chimera.PersistentDirectBootAwareApiService and for client com.google.android.gms.persistent
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for service : com.google.android.gms/.chimera.PersistentDirectBootAwareApiServiceare :12
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for client : com.google.android.gms.persistentare :5
-W/ANDR-PERF-LM(  772): FeatureState: readState() 149: warning: appName is NULL, returning default State
-W/ANDR-PERF-LM(  772): FeatureState: readState() 149: warning: appName is NULL, returning default State
-W/ANDR-PERF-LM(  772): MetaMeter: handleSecondaryAsync() 149: PreKill MetaMeterThread start(). No MeterMgr Available to handle this Secondary/Data Async. !!!! 
-D/ProfileInstaller( 1877): Installing profile for to.holepunch.bare.expo
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) composer@2.4-se identical 3 lines
-E/qdmetadata(  728): paramType 2048 not supported
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 7 lines
-E/qdmetadata(  728): paramType 2048 not supported
-D/BatteryService( 1327): /data/anr/adb_enable file.exists() =  false  mPlugType==2
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 1 line
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 7 lines
-I/CNSS    ( 2959): Failed to send nl message
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2084): 1 [CONTEXT service_id=168 ]
-I/CNSS    ( 2959): Failed to send nl message
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2085): 1 [CONTEXT service_id=168 ]
-E/qdmetadata(  728): paramType 2048 not supported
-I/CNSS    ( 2959): Failed to send nl message
-I/CNSS    ( 2959): Failed to send nl message
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 2 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/punch.bare.exp( 1877): Accessing hidden field Landroid/widget/ScrollView;->mScroller:Landroid/widget/OverScroller; (greylist, reflection, allowed)
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 10 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/ThreadPoolForeg( 3660): type=1400 audit(0.0:149585): avc: denied { write } for name="traced_producer" dev="tmpfs" ino=30090 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0 app=com.google.android.gms
-E/punch.bare.exp( 1877): Uncaught TypeError: db.core.registerExtension is not a function
-E/punch.bare.exp( 1877):     at HyperbeeExtension.register (file:///app.bundle/node_modules/hyperbee/lib/extension.js:144:26)
-E/punch.bare.exp( 1877):     at getExtension (file:///app.bundle/node_modules/hyperbee/index.js:1876:20)
-E/punch.bare.exp( 1877):     at new Hyperbee (file:///app.bundle/node_modules/hyperbee/index.js:413:49)
-E/punch.bare.exp( 1877):     at file:///app.bundle/backend/backend.mjs:38:13
-E/punch.bare.exp( 1877):     at Module._run (bare:/worklet.bundle/node_modules/bare-module/index.js:225:29)
-E/punch.bare.exp( 1877):     at Module._evaluate (bare:/worklet.bundle/node_modules/bare-module/index.js:212:12)
-E/punch.bare.exp( 1877):     at Module._transform (bare:/worklet.bundle/node_modules/bare-module/index.js:122:12)
-E/punch.bare.exp( 1877):     at Module.load (bare:/worklet.bundle/node_modules/bare-module/index.js:467:21)
-E/punch.bare.exp( 1877):     at Module._extensions..bundle (bare:/worklet.bundle/node_modules/bare-module/index.js:931:28)
-E/punch.bare.exp( 1877):     at Module.load (bare:/worklet.bundle/node_modules/bare-module/index.js:463:38)
---------- beginning of crash
-F/libc    ( 1877): Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 2026 (mqt_v_js), pid 1877 (punch.bare.expo)
-I/crash_dump64( 2067): obtaining output fd from tombstoned, type: kDebuggerdTombstone
-I/tombstoned(  593): received crash request for pid 2026
-I/crash_dump64( 2067): performing dump of process 1877 (target tid = 2026)
-F/DEBUG   ( 2067): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
-F/DEBUG   ( 2067): Build fingerprint: 'Xiaomi/laurel_sprout_eea/laurel_sprout:11/RKQ1.200903.002/V12.0.23.0.RFQEUXM:user/release-keys'
-F/DEBUG   ( 2067): Revision: '0'
-F/DEBUG   ( 2067): ABI: 'arm64'
-F/DEBUG   ( 2067): Timestamp: 2026-06-12 20:08:23+0200
-F/DEBUG   ( 2067): pid: 1877, tid: 2026, name: mqt_v_js  >>> to.holepunch.bare.expo <<<
-F/DEBUG   ( 2067): uid: 10412
-F/DEBUG   ( 2067): signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
-F/DEBUG   ( 2067):     x0  0000000000000000  x1  00000000000007ea  x2  0000000000000006  x3  0000007a8c1c2e20
-F/DEBUG   ( 2067):     x4  000000348f64fff9  x5  000000348f64fff9  x6  000000348f64fff9  x7  0000000000000f00
-F/DEBUG   ( 2067):     x8  00000000000000f0  x9  51b97386a8aa5f18  x10 0000000000000000  x11 ffffffc0fffffbdf
-F/DEBUG   ( 2067):     x12 0000000000000001  x13 0000007a88c2de39  x14 0000007d8d1cdd22  x15 0000000000000000
-F/DEBUG   ( 2067):     x16 0000007d8d1cac80  x17 0000007d8d1acb70  x18 0000007a8b13e000  x19 0000000000000755
-F/DEBUG   ( 2067):     x20 00000000000007ea  x21 00000000ffffffff  x22 0000000000000001  x23 000000000000000d
-F/DEBUG   ( 2067):     x24 0000000000000000  x25 000000348f648f21  x26 b400007caaea8100  x27 0000007a88c04e99
-F/DEBUG   ( 2067):     x28 0000000000000000  x29 0000007a8c1c2ea0
-F/DEBUG   ( 2067):     lr  0000007d8d1603e0  sp  0000007a8c1c2e00  pc  0000007d8d16040c  pst 0000000000000000
-F/DEBUG   ( 2067): backtrace:
-F/DEBUG   ( 2067):       #00 pc 000000000004e40c  /apex/com.android.runtime/lib64/bionic/libc.so (abort+164) (BuildId: 8d77279a411c99f8bc6edb79c76340fb)
-F/DEBUG   ( 2067):       #01 pc 0000000002065810  /data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk!libbare-kit.so (offset 0x1ea0000) (BuildId: 766b86aaddcaa19987ede8d02da8ca4805b0c4b7)
-F/DEBUG   ( 2067):       #02 pc 000000000207e008  /data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk!libbare-kit.so (offset 0x1ea0000) (js_callback_s::on_call(v8::FunctionCallbackInfo<v8::Value> const&)+52) (BuildId: 766b86aaddcaa19987ede8d02da8ca4805b0c4b7)
-F/DEBUG   ( 2067):       #03 pc 000000000370c178  /data/app/~~wC7Wq8PVpncFljrPnEKHgg==/to.holepunch.bare.expo-k1CLgf4ISOW-tvJpSlCWfA==/base.apk!libbare-kit.so (offset 0x1ea0000) (BuildId: 766b86aaddcaa19987ede8d02da8ca4805b0c4b7)
-D/BatteryService( 1327): /data/anr/adb_enable file.exists() =  false  mPlugType==2
-D/KeyguardUpdateMonitor( 2191): received broadcast android.intent.action.BATTERY_CHANGED
-D/QtiCarrierConfigHelper( 2451): WARNING, no carrier configs on phone Id: 0
-D/BatteryController( 2191): onReceive ACTION_BATTERY_CHANGED eLevel = 100; eScale = 100; mLevel = 100; mPluggedIn = true; mCharged = true; mCharging = true
-D/BatteryMeterView( 2191): onBatteryLevelChanged level = 100; pluggedIn = true; charging = true; mLevel = 100
-I/chatty  ( 2191): uid=1000(system) com.android.systemui identical 1 line
-D/BatteryMeterView( 2191): onBatteryLevelChanged level = 100; pluggedIn = true; charging = true; mLevel = 100
-D/KeyguardUpdateMonitor( 2191): handleBatteryUpdate
-D/DeviceStatisticsService( 2490): chargerType=2 batteryLevel=100 totalBatteryCapacity=3418200
-D/DeviceInfoHidlClient( 2490): isPowerInfoNeverSent()=true
-E/qdmetadata(  728): paramType 2048 not supported
-W/adbd    (  956): timeout expired while flushing socket, closing
-E/qdmetadata(  728): paramType 2048 not supported
-I/DropBoxManagerService( 1327): add tag=data_app_native_crash isTagEnabled=true flags=0x2
-W/ActivityTaskManager( 1327):   Force finishing activity to.holepunch.bare.expo/.MainActivity
-E/tombstoned(  593): Tombstone written to: /data/tombstones/tombstone_10
-I/BootReceiver( 1327): Copying /data/tombstones/tombstone_10 to DropBox (SYSTEM_TOMBSTONE)
-I/DropBoxManagerService( 1327): add tag=SYSTEM_TOMBSTONE isTagEnabled=true flags=0x2
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestatePAUSING
-D/ActivityTrigger( 1327): ActivityTrigger activityPauseTrigger 
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 3
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestatePAUSING
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 3
-W/BroadcastQueue( 1327): Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.stats.service.DropBoxEntryAddedReceiver
-W/BroadcastQueue( 1327): Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.stats.service.DropBoxEntryAddedReceiver
-D/CompatibilityInfo( 1327): mCompatibilityFlags - 0
-D/CompatibilityInfo( 1327): applicationDensity - 320
-D/CompatibilityInfo( 1327): applicationScale - 1.0
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): startService() is called for servicecom.google.android.gms/.chimera.PersistentIntentOperationService
-D/CompatibilityInfo( 1327): mCompatibilityFlags - 0
-D/CompatibilityInfo( 1327): applicationDensity - 320
-D/CompatibilityInfo( 1327): applicationScale - 1.0
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): startService() is called for servicecom.google.android.gms/.stats.service.DropBoxEntryAddedService
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): destroyService is called for service : com.google.android.gms/.stats.service.DropBoxEntryAddedService
-I/ActivityManager( 1327): Process to.holepunch.bare.expo (pid 1877) has died: prcp TOP 
-I/sensors-hal(  752): batch:243, android.sensor.accelerometer/11, period=200000000, max_latency=0
-I/sensors-hal(  752): set_config:63, sample_period_ns is adjusted to 200000000 based on min/max delay_ns
-I/WindowManager( 1327): WIN DEATH: Window{1fed5 u0 to.holepunch.bare.expo/to.holepunch.bare.expo.MainActivity}
-W/InputDispatcher( 1327): Attempted to unregister already unregistered input channel '1fed5 to.holepunch.bare.expo/to.holepunch.bare.expo.MainActivity (server)'
-I/sensors-hal(  752): batch:252, android.sensor.accelerometer/11, period=200000000, max_latency=0 request completed
-I/sensors-hal(  752): ssc_conn_resp_cb:651, resp_value = 0
-I/Zygote  (  603): Process 1877 exited due to signal 6 (Aborted)
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): killProcess is called for pid : 1877
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateDESTROYED
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateDESTROYED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 9
-I/chatty  (  779): uid=1000(system) HwBinder:779_4 identical 1 line
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateDESTROYED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 9
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag truestateRESUMED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-V/ActivityTaskManager( 1327): Calling mServicetracker.OnActivityStateChange with flag falsestateRESUMED
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): Activity state is changed to : 2
-I/libprocessgroup( 1327): Successfully killed process cgroup uid 10412 pid 1877 in 42ms
-I/Finsky  ( 4255): [2] Memory trim requested to level 80
-W/ActivityManager( 1327): setHasOverlayUi called on unknown pid: 1877
-I/Finsky:background(32655): [2] Memory trim requested to level 60
-I/ForwardSyncCache(27501): reclaimMemory: Clearing caches
-I/AppBase ( 2901): AppBase.onTrimMemory():284 onTrimMemory(): 5
-I/KeyboardDefCache( 2901): MemoryFileCache$1.onTrimMemory():124 clearMemory() for trim memory: 5
-I/KeyboardDefCache( 2901): MemoryFileCache.clearMemory():408 evictAll()
-I/GoogleInputMethodService( 2901): GoogleInputMethodService.onTrimMemory():3002 onTrimMemory(): 5
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): bindService is called for service : com.google.android.googlequicksearchbox/com.google.android.apps.gsa.nowoverlayservice.DrawerOverlayService and for client com.android.launcher3
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for service : com.google.android.googlequicksearchbox/com.google.android.apps.gsa.nowoverlayservice.DrawerOverlayServiceare :1
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for client : com.android.launcher3are :1
-I/BugleSpam(27501): HadesBitmapStore: Purged 0 images during memory reclamation
-I/BugleRestore(27501): reclaimMemory: Clearing persistent caches
-W/Bugle   (27501): TextClassifierLibManagerImpl: Reclaiming memory at level: 80
-I/Finsky  ( 4255): [2] Flushing in-memory image cache
-I/bynm    ( 3914): onStart
-I/bwgw    ( 3914): (REDACTED) [%s] onStart()
-I/bwjj    ( 3914): Reloading theme data
-E/NetworkErrorMessage( 3914): (REDACTED) Invalid connectivity state: %s
-I/bynm    ( 3914): onResume
-W/dolk    ( 3914): missing event name
-D/PredictionService( 4027): onRequestPredictionUpdate
-D/PredictionService( 4027): update predictions
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 1 line
-E/qdmetadata(  728): paramType 2048 not supported
-I/GoogleInputMethodService( 2901): GoogleInputMethodService.onFinishInput():2259 
-I/Module  ( 2901): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():127 repeatCheckTimes = 0, locked = false
-I/GoogleInputMethodService( 2901): GoogleInputMethodService.onStartInput():1446 onStartInput(EditorInfo{EditorInfo{packageName=com.android.launcher3, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
-W/AndroidIME( 2901): LatinIMEBase.updateInputViewCoverNavigation():326 Null input view, cannot update padding!
-I/Module  ( 2901): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():127 repeatCheckTimes = 1, locked = false
-E/qdmetadata(  728): paramType 2048 not supported
-I/chatty  (  728): uid=1000(system) HwBinder:728_1 identical 16 lines
-E/qdmetadata(  728): paramType 2048 not supported
-W/charge_logger( 2082): type=1400 audit(0.0:149586): avc: denied { remove_name } for name="charge_logger_a.csv" dev="sda15" ino=174 scontext=u:r:charge_logger:s0 tcontext=u:object_r:charge_logger_data_file:s0 tclass=dir permissive=0
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): bindService is called for service : com.google.android.gms/.chimera.PersistentDirectBootAwareApiService and for client com.google.android.apps.messaging
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for service : com.google.android.gms/.chimera.PersistentDirectBootAwareApiServiceare :12
-I/vendor.qti.hardware.servicetracker@1.2-service(  779): total connections for client : com.google.android.apps.messagingare :1
-I/CNSS    ( 2959): Failed to send nl message
-I/chatty  ( 2959): uid=1000(system) /system/vendor/bin/cnss_diag identical 8 lines
-I/CNSS    ( 2959): Failed to send nl message
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2086): 1 [CONTEXT service_id=168 ]
-W/AOSP-MdnsDiscoveryManag( 3054): Error while decoding multicast packet (2087): 1 [CONTEXT service_id=168 ]
-I/CNSS    ( 2959): Failed to send nl message
+06-12 20:18:10.646  1327  2119 E ANDR-PERF-JNI: com_qualcomm_qtiperformance_native_perf_io_prefetch_start
+06-12 20:18:10.653   771   789 E ANDR-IOP: io prefetch is disabled
+06-12 20:18:10.727   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:10.730   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:10.742   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:10.761   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:10.777   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.343   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.359   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.376   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.393   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.409   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.426   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.459   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.476   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.493   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.509   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.526   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.726   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.743   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.809   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.826   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:11.993   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.009   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.076   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.093   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.109   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.126   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.143   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.161   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.179   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.196   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.211   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.229   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.278   728   838 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.295   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: Unhandled SoftException
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: com.facebook.react.bridge.ReactNoCrashSoftException: raiseSoftException(onWindowFocusChange(hasFocus = "true")): Tried to access onWindowFocusChange while context is not ready
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.runtime.ReactHostImpl.raiseSoftException(ReactHostImpl.kt:905)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.runtime.ReactHostImpl.raiseSoftException$default(ReactHostImpl.kt:896)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.runtime.ReactHostImpl.onWindowFocusChange(ReactHostImpl.kt:668)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.ReactDelegate.onWindowFocusChanged(ReactDelegate.kt:232)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.ReactActivityDelegate.onWindowFocusChanged(ReactActivityDelegate.java:237)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invokeSuspend(ReactActivityDelegateWrapper.kt:320)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invoke(Unknown Source:8)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper$onWindowFocusChanged$1.invoke(Unknown Source:4)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper$launchLifecycleScopeWithLock$1.invokeSuspend(ReactActivityDelegateWrapper.kt:452)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:375)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:26)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:358)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:134)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:53)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.BuildersKt.launch(Unknown Source:1)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:44)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at kotlinx.coroutines.BuildersKt.launch$default(Unknown Source:1)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper.launchLifecycleScopeWithLock(ReactActivityDelegateWrapper.kt:450)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper.launchLifecycleScopeWithLock$default(ReactActivityDelegateWrapper.kt:446)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at expo.modules.ReactActivityDelegateWrapper.onWindowFocusChanged(ReactActivityDelegateWrapper.kt:318)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.facebook.react.ReactActivity.onWindowFocusChanged(ReactActivity.java:158)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at androidx.appcompat.view.WindowCallbackWrapper.onWindowFocusChanged(WindowCallbackWrapper.java:124)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.android.internal.policy.DecorView.onWindowFocusChanged(DecorView.java:1691)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.view.View.dispatchWindowFocusChanged(View.java:14583)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.view.ViewGroup.dispatchWindowFocusChanged(ViewGroup.java:1502)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.view.ViewRootImpl.handleWindowFocusChanged(ViewRootImpl.java:3259)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.view.ViewRootImpl.access$1100(ViewRootImpl.java:192)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.view.ViewRootImpl$ViewRootHandler.handleMessage(ViewRootImpl.java:5049)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.os.Looper.loop(Looper.java:223)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at android.app.ActivityThread.main(ActivityThread.java:7698)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at java.lang.reflect.Method.invoke(Native Method)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+06-12 20:18:12.306  3651  3651 E unknown:ReactHost: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:952)
+06-12 20:18:12.313   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.317   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.329   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.329   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.334   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.346   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.493   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.510   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.527   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.544   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.561   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.577   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.644   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.662   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.678   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.760   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:12.853   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:15.576   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:15.664   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.113   732   732 E qdlights: brightness=68
+06-12 20:18:16.128   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.133   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.135   732   732 E qdlights: brightness=80
+06-12 20:18:16.145   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.148   732   732 E qdlights: brightness=92
+06-12 20:18:16.162   732   732 E qdlights: brightness=104
+06-12 20:18:16.179   732   732 E qdlights: brightness=116
+06-12 20:18:16.195   732   732 E qdlights: brightness=128
+06-12 20:18:16.212   732   732 E qdlights: brightness=140
+06-12 20:18:16.230   732   732 E qdlights: brightness=152
+06-12 20:18:16.232   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.244   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.248   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.251   732   732 E qdlights: brightness=164
+06-12 20:18:16.263   732   732 E qdlights: brightness=176
+06-12 20:18:16.279   732   732 E qdlights: brightness=188
+06-12 20:18:16.296   732   732 E qdlights: brightness=200
+06-12 20:18:16.313   732   732 E qdlights: brightness=212
+06-12 20:18:16.331   732   732 E qdlights: brightness=224
+06-12 20:18:16.331   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.346   732   732 E qdlights: brightness=236
+06-12 20:18:16.362   732   732 E qdlights: brightness=248
+06-12 20:18:16.379   732   732 E qdlights: brightness=260
+06-12 20:18:16.396   732   732 E qdlights: brightness=272
+06-12 20:18:16.413   732   732 E qdlights: brightness=284
+06-12 20:18:16.429   732   732 E qdlights: brightness=296
+06-12 20:18:16.446   732   732 E qdlights: brightness=308
+06-12 20:18:16.462   732   732 E qdlights: brightness=320
+06-12 20:18:16.479   732   732 E qdlights: brightness=328
+06-12 20:18:16.495   732   732 E qdlights: brightness=340
+06-12 20:18:16.512   732   732 E qdlights: brightness=352
+06-12 20:18:16.531   732   732 E qdlights: brightness=364
+06-12 20:18:16.546   732   732 E qdlights: brightness=376
+06-12 20:18:16.562   732   732 E qdlights: brightness=388
+06-12 20:18:16.579   732   732 E qdlights: brightness=400
+06-12 20:18:16.596   732   732 E qdlights: brightness=412
+06-12 20:18:16.612   732   732 E qdlights: brightness=424
+06-12 20:18:16.628   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.630   732   732 E qdlights: brightness=436
+06-12 20:18:16.645   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.649   732   732 E qdlights: brightness=448
+06-12 20:18:16.662   732   732 E qdlights: brightness=460
+06-12 20:18:16.680   732   732 E qdlights: brightness=472
+06-12 20:18:16.698   732   732 E qdlights: brightness=484
+06-12 20:18:16.713   732   732 E qdlights: brightness=496
+06-12 20:18:16.730   732   732 E qdlights: brightness=508
+06-12 20:18:16.750   732   732 E qdlights: brightness=520
+06-12 20:18:16.750   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:16.762   732   732 E qdlights: brightness=532
+06-12 20:18:16.780   732   732 E qdlights: brightness=544
+06-12 20:18:16.798   732   732 E qdlights: brightness=556
+06-12 20:18:16.812   732   732 E qdlights: brightness=568
+06-12 20:18:16.830   732   732 E qdlights: brightness=580
+06-12 20:18:16.848   732   732 E qdlights: brightness=584
+06-12 20:18:17.997   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.162   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.177   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.194   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.210   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.244   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.260   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.347   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.494   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.511   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:18.598   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.101   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.122   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.148   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.168   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.179   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.184   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.206   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.234   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.273   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.303   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.363   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:19.455   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.078   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.111   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.128   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.244   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.261   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.328   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.345   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.416   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.480  1327  2659 E ClipboardService: Denying clipboard access to com.appmind.radios.es, application is not in focus nor is it a system service for user 0
+06-12 20:18:20.481  1327  2659 E ClipboardService: Denying clipboard access to com.wiseplay, application is not in focus nor is it a system service for user 0
+06-12 20:18:20.545   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.585   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.598   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.614   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.634   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.639   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.665   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.699   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.717   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.723   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.748   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:20.853   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.627   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.710   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.727   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.744   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.761   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.777   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.794   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.813   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.829   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.844   728   728 E qdmetadata: paramType 2048 not supported
+06-12 20:18:21.956   728   728 E qdmetadata: paramType 2048 not supported
