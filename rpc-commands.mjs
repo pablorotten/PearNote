@@ -1,2 +1,7 @@
-export const RPC_RESET = 0
-export const RPC_MESSAGE = 1
+export const RPC_ADD = 0
+export const RPC_REMOVE = 1
+export const RPC_RESET = 2
+export const RPC_MY_INVITE = 3
+export const RPC_PEER_JOINED = 4
+export const RPC_PEER_LEFT = 5
+export const RPC_DIAG = 6

@@ -1,28 +1,27 @@
 {
   "expo": {
-    "name": "Bare",
-    "slug": "bare-expo",
+    "name": "MovieKollections",
+    "slug": "moviekollections",
     "version": "1.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
-    "scheme": "to.holepunch.bare.expo",
-    "icon": "./assets/images/icon.png",
-    "userInterfaceStyle": "automatic",
+    "scheme": "moviekollections",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#011501"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "to.holepunch.bare.expo"
+      "bundleIdentifier": "com.moviekollections.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#011501"
       },
-      "package": "to.holepunch.bare.expo"
+      "package": "com.moviekollections.app"
     },
     "plugins": [
       ["expo-router"],
