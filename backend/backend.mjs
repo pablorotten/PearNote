@@ -1,5 +1,8 @@
 /* global Bare, BareKit */
 
+import process from 'bare-process'
+globalThis.process = process
+
 import RPC from 'bare-rpc'
 import b4a from 'b4a'
 import Hyperswarm from 'hyperswarm'
@@ -57,9 +60,49 @@ await bee.ready()
 
 const swarm = new Hyperswarm()
 diag('Swarm created')
-swarm.on('connection', (conn) => diag('SWARM connection event FIRED'))
-swarm.on('update', () => diag('Swarm update'))
-swarm.on('peer', (peer) => diag('Swarm peer: ' + b4a.toString(peer.publicKey, 'hex')))
+const peers = new Set()
+
+swarm.on('connection', (conn) => {
+  try {
+    peers.add(conn)
+    diag('Connection established, peer count: ' + peers.size)
+
+    const req = rpc.request(RPC_PEER_JOINED)
+    req.send('connected')
+
+    sendFullList(conn)
+
+    conn.on('data', (data) => {
+      diag('Received data: ' + b4a.toString(data).substring(0, 80))
+      try {
+        const msg = JSON.parse(b4a.toString(data))
+        if (msg.type === 'sync') { diag('Handling sync with ' + msg.movies.length + ' movies'); handleSync(msg.movies) }
+        else if (msg.type === 'add') handleRemoteAdd(msg.key, msg.value)
+        else if (msg.type === 'remove') handleRemoteRemove(msg.key)
+      } catch (err) {
+        diag('Error processing peer data: ' + err.message)
+      }
+    })
+
+    conn.on('close', () => {
+      diag('Connection closed')
+      peers.delete(conn)
+      const req = rpc.request(RPC_PEER_LEFT)
+      req.send('disconnected')
+    })
+
+    conn.on('error', (err) => {
+      diag('Connection error: ' + err.message)
+      peers.delete(conn)
+    })
+  } catch (err) {
+    diag('Error in connection handler: ' + err.message)
+  }
+})
+
+swarm.on('error', (err) => {
+  diag('Swarm error: ' + err.message)
+})
 
 goodbye(() => {
   diag('Swarm destroying')
@@ -90,42 +133,6 @@ diag('Joining swarm with discovery key: ' + b4a.toString(discoveryKey, 'hex'))
 const discovery = swarm.join(discoveryKey, { client: true, server: true })
 await discovery.flushed()
 diag('Swarm join flushed')
-
-const peers = new Set()
-
-swarm.on('connection', (conn) => {
-  diag('Connection established, peer count: ' + swarm.peers.length)
-  peers.add(conn)
-
-  const req = rpc.request(RPC_PEER_JOINED)
-  req.send('connected')
-
-  sendFullList(conn)
-
-  conn.on('data', (data) => {
-    diag('Received data: ' + b4a.toString(data).substring(0, 80))
-    try {
-      const msg = JSON.parse(b4a.toString(data))
-      if (msg.type === 'sync') { diag('Handling sync with ' + msg.movies.length + ' movies'); handleSync(msg.movies) }
-      else if (msg.type === 'add') handleRemoteAdd(msg.key, msg.value)
-      else if (msg.type === 'remove') handleRemoteRemove(msg.key)
-    } catch (err) {
-      diag('Error processing peer data: ' + err.message)
-    }
-  })
-
-  conn.on('close', () => {
-    diag('Connection closed')
-    peers.delete(conn)
-    const req = rpc.request(RPC_PEER_LEFT)
-    req.send('disconnected')
-  })
-
-  conn.on('error', (err) => {
-    diag('Connection error: ' + err.message)
-    peers.delete(conn)
-  })
-})
 
 async function sendFullList(conn) {
   const movies = []

@@ -169,3 +169,101 @@ Sync messages over Hyperswarm are newline-delimited JSON:
 | Pairing | Simple numeric key (e.g. `"1234"`) for v1 | Easy to type/test; upgrade to secure random keys later |
 | Sync | Full list on connect, diffs on change | Always consistent |
 | UI framework | Existing React Native / Expo | No rewrite needed |
+
+---
+
+## Technical Changelog
+
+### 1. Hyperbee constructor crash — `store.get()` required
+
+**Problem**: `new Hyperbee(store, { ... })` crashed because Hyperbee expects a Hypercore instance, not a Corestore.
+
+**Fix**: Call `store.get({ name: 'movielist' })` first to obtain a Hypercore, then pass that to `new Hyperbee(core, { ... })`.
+
+**Commit**: `8b9eb92`
+
+---
+
+### 2. `swarm.peers.length` — Map has no `.length`
+
+**Problem**: `swarm.peers` is a `Map`, not an array. Accessing `.length` returned `undefined` and in some cases caused the connection handler to throw silently, preventing `peers.add(conn)` from executing.
+
+**Fix**: Replaced `swarm.peers.length` with `peers.size` (using our own `Set` to track connections). Also wrapped the entire connection handler in `try/catch` and moved `peers.add(conn)` to the first line of the handler so the peer is always tracked even if later code fails.
+
+---
+
+### 3. `process is not defined` — Bare runtime crash
+
+**Problem**: After rebuilding the bundle with `bare-pack`, the backend worklet crashed on startup with `Uncaught ReferenceError: process is not defined`. The Bare V8 runtime does not provide a `process` global like Node.js does. A transitive dependency (in the Hyperbee/Corestore chain) references `process` at the top level without a `typeof` guard.
+
+**Symptoms**: Both phones showed the same error in `adb logcat`. The app had worked previously because the old cached `app.bundle.mjs` was from a build that predated the problematic dependency version.
+
+**Fix**: Added `import process from 'bare-process'` and `globalThis.process = process` at the top of `backend/backend.mjs`, before all other imports. The `bare-process` package (already a transitive dependency) provides a Node.js-compatible `process` object for Bare.
+
+```js
+import process from 'bare-process'
+globalThis.process = process
+```
+
+---
+
+### 4. Guest misses connection event — handler registered too late
+
+**Problem**: The guest phone showed "SWARM connection event FIRED" but never "Connection established". The guest's `peers` Set stayed empty, so `broadcast()` sent to 0 peers. One-way sync: host saw the guest, but guest didn't see the host.
+
+**Root cause**: The main `swarm.on('connection')` handler was registered **after** `await discovery.flushed()`. On the guest, Hyperswarm discovers the host during the DHT lookup and initiates a TCP connection. The `connection` event can fire **before** `flushed()` resolves — at which point the handler isn't registered yet. The host wasn't affected because its connection event arrives later (it's the server side accepting the inbound connection).
+
+**Timeline from guest logs**:
+```
+22:33:24.347  SWARM connection event FIRED    ← event fires (only early handler catches it)
+22:33:25.342  Swarm join flushed              ← flushed() resolves
+             (main handler registered here)   ← too late, event already gone
+```
+
+**Fix**: Moved `const peers = new Set()` and the entire `swarm.on('connection', ...)` handler to **before** `swarm.join()`, so the handler is always registered before any connection can possibly arrive.
+
+```
+Before:  swarm.join() → await flushed() → register handler  (guest misses event)
+After:   register handler → swarm.join() → await flushed()   (always catches event)
+```
+
+---
+
+### 5. Android bottom nav bar overlap
+
+**Problem**: The FAB (floating action button) and movie list items were hidden behind the Android system navigation bar.
+
+**Fix**: Added `paddingBottom: 60` to the main container on Android, and positioned the FAB at `bottom: 70`.
+
+---
+
+### 6. Stale experiment files cleanup
+
+**Problem**: Old experiment files (`app/index-p2p.tsx`, `backend/backend-p2p.mjs`) and leftover files from the password manager tutorial were cluttering the repo.
+
+**Fix**: Removed all stale experiment files, untracked `crash.log` from git.
+
+---
+
+### 7. Misc build and tooling issues
+
+| Issue | Fix |
+|---|---|
+| `bare-pack --target` flag removed | Use `--host` instead (renamed in bare-pack v2) |
+| `documentDirectory` import moved in Expo SDK 55 | Import from `'expo-file-system/legacy'` |
+| `android/local.properties` missing | Must be created manually with `sdk.dir=...` |
+| ADB version conflicts (MEmu emulator) | Copy SDK `adb.exe` over MEmu's; reboot if zombie process |
+| Autopass version mismatch | Both sides must use same major version; project uses `^3.4.1` |
+
+---
+
+### Build workflow
+
+Every time `backend/backend.mjs` changes:
+
+```sh
+npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
+npm run android
+```
+
+`bare-pack` bundles the backend JS + all dependencies into a single file. `npm run android` builds the APK (which includes the bundle as an asset) and installs it on the connected device.
