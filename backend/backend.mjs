@@ -35,7 +35,8 @@ const storagePath = join(URL.fileURLToPath(Bare.argv[0]), 'moviekollections')
 const roomCode = Bare.argv[1] || null
 
 const store = new Corestore(storagePath)
-const bee = new Hyperbee(store, {
+const core = store.get({ name: 'movielist' })
+const bee = new Hyperbee(core, {
   keyEncoding: 'utf-8',
   valueEncoding: 'json'
 })
