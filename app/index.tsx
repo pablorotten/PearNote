@@ -7,7 +7,9 @@ import {
   FlatList,
   Alert,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  Platform,
+  StatusBar
 } from 'react-native'
 import { documentDirectory } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -40,7 +42,6 @@ export default function App() {
   const [director, setDirector] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
-
   function startWorklet(mode: 'create' | 'join') {
     const worklet = new Worklet()
     const args = mode === 'create'
@@ -238,14 +239,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#011501',
-    padding: 20
+    padding: 20,
+    paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight : 0) + 20,
+    paddingBottom: Platform.OS === 'android' ? 60 : 20
   },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#b0d943',
     textAlign: 'center',
-    marginTop: 40
+    marginTop: 10
   },
   subtitle: {
     fontSize: 14,
@@ -450,7 +453,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 30,
+    bottom: Platform.OS === 'android' ? 70 : 30,
     right: 30,
     width: 56,
     height: 56,
@@ -465,5 +468,5 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     lineHeight: 30
-  }
+  },
 })

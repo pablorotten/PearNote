@@ -4,3 +4,4 @@ export const RPC_RESET = 2
 export const RPC_MY_INVITE = 3
 export const RPC_PEER_JOINED = 4
 export const RPC_PEER_LEFT = 5
+export const RPC_DIAG = 6
