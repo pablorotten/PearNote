@@ -24,8 +24,10 @@ adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk;
 adb -s e017a252 reverse tcp:8081 tcp:8081; 
 # Start the app
 adb -s e017a252 shell am start -n to.holepunch.bare.expo/.MainActivity 
-# Single command
+# Single command on e017a252
 adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s e017a252 reverse tcp:8081 tcp:8081; adb -s e017a252 shell am start -n to.holepunch.bare.expo/.MainActivity 
+
+# On 6ae4c054c2b8 device
 adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081; adb -s 6ae4c054c2b8 shell am start -n to.holepunch.bare.expo/.MainActivity 
 ```
 
@@ -38,8 +40,7 @@ adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk
 > If there's a change on `backend/`, you need to run `npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs` and then manually reload the app.
 
 
-Generate, install and launch non-debug APK:
-```sh
+**📦 Genereate release apk**: generate, install and launch non-debug metro-independent APK
 npx expo run:android --variant release
 adb -s e017a252 install -r android/app/build/outputs/apk/release/app-release.apk
 adb -s e017a252 shell am start -n to.holepunch.bare.expo/.MainActivity

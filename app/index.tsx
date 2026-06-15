@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  StatusBar
+  StatusBar,
+  KeyboardAvoidingView
 } from 'react-native'
 import { documentDirectory } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -28,7 +29,7 @@ import {
 
 type Movie = {
   key: string
-  value: [string, string, string, string]
+  value: [string, string]
 }
 
 export default function App() {
@@ -38,12 +39,27 @@ export default function App() {
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
-  const [year, setYear] = useState('')
-  const [director, setDirector] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
+  const workletRef = useRef<any>(null)
+
+  function handleLeave() {
+    if (workletRef.current) {
+      workletRef.current.terminate?.()
+    }
+    setPhase('menu')
+    setMovies([])
+    setMyCode('')
+    setConnected(false)
+    setTitle('')
+    setShowAdd(false)
+    setRpc(null)
+    setRoomCode('')
+  }
+
   function startWorklet(mode: 'create' | 'join') {
     const worklet = new Worklet()
+    workletRef.current = worklet
     const args = mode === 'create'
       ? [String(documentDirectory)]
       : [String(documentDirectory), roomCode]
@@ -55,9 +71,11 @@ export default function App() {
       if (req.command === RPC_MY_INVITE) {
         const code = b4a.toString(req.data)
         setMyCode(code)
-        Alert.alert('Room Created!', `Share this code: ${code}`, [
-          { text: 'Copy', onPress: () => Clipboard.setString(code) }
-        ])
+        if (mode === 'create') {
+          Alert.alert('Room Created!', `Share this code: ${code}`, [
+            { text: 'Copy', onPress: () => Clipboard.setString(code) }
+          ])
+        }
       }
 
       if (req.command === RPC_RESET) {
@@ -74,20 +92,21 @@ export default function App() {
       }
     })
 
+    if (mode === 'join') {
+      setMyCode(roomCode)
+    }
     setRpc(rpcInstance)
     setPhase('list')
   }
 
   function handleAddMovie() {
     if (!title.trim()) return
-    const movie: [string, string, string, string] = ['movie', title.trim(), year.trim(), director.trim()]
+    const movie: [string, string] = ['movie', title.trim()]
     if (rpc) {
       const req = rpc.request(RPC_ADD)
       req.send(JSON.stringify(movie))
     }
     setTitle('')
-    setYear('')
-    setDirector('')
     setShowAdd(false)
   }
 
@@ -145,8 +164,15 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior='padding'
+      keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
+    >
       <View style={styles.header}>
+        <TouchableOpacity onPress={handleLeave} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹</Text>
+        </TouchableOpacity>
         <Text style={styles.heading}>MovieKollections</Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
@@ -171,11 +197,6 @@ export default function App() {
           <View style={styles.movieItem}>
             <View style={styles.movieInfo}>
               <Text style={styles.movieTitle}>{item.value[1]}</Text>
-              {(item.value[2] || item.value[3]) ? (
-                <Text style={styles.movieMeta}>
-                  {item.value[2]}{item.value[2] && item.value[3] ? ' · ' : ''}{item.value[3]}
-                </Text>
-              ) : null}
             </View>
             <TouchableOpacity
               style={styles.deleteBtn}
@@ -196,23 +217,6 @@ export default function App() {
             value={title}
             onChangeText={setTitle}
           />
-          <View style={styles.formRow}>
-            <TextInput
-              style={[styles.formInput, styles.formInputSmall]}
-              placeholder='Year'
-              placeholderTextColor='#666'
-              value={year}
-              onChangeText={setYear}
-              keyboardType='number-pad'
-            />
-            <TextInput
-              style={[styles.formInput, styles.formInputSmall]}
-              placeholder='Director'
-              placeholderTextColor='#666'
-              value={director}
-              onChangeText={setDirector}
-            />
-          </View>
           <View style={styles.formActions}>
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
               <Text style={styles.cancelBtnText}>Cancel</Text>
@@ -231,7 +235,7 @@ export default function App() {
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -333,6 +337,26 @@ const styles = StyleSheet.create({
     color: '#7a9e2d',
     fontSize: 14
   },
+  backBtn: {
+    position: 'absolute',
+    left: 0,
+    top: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1a3d0a',
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10
+  },
+  backBtnText: {
+    color: '#b0d943',
+    fontSize: 22,
+    lineHeight: 24,
+    fontWeight: 'bold'
+  },
   codeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -382,11 +406,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#b0d943'
   },
-  movieMeta: {
-    fontSize: 13,
-    color: '#7a9e2d',
-    marginTop: 3
-  },
+
   deleteBtn: {
     width: 32,
     height: 32,
@@ -418,13 +438,7 @@ const styles = StyleSheet.create({
     color: '#b0d943',
     backgroundColor: '#0f2a05'
   },
-  formRow: {
-    flexDirection: 'row',
-    gap: 10
-  },
-  formInputSmall: {
-    flex: 1
-  },
+
   formActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

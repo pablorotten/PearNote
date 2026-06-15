@@ -127,6 +127,8 @@ if (!roomCode) {
 } else {
   diag('Joining room with code: ' + roomCode)
   discoveryKey = topicFromCode(roomCode)
+  const req = rpc.request(RPC_MY_INVITE)
+  req.send(roomCode)
 }
 
 diag('Joining swarm with discovery key: ' + b4a.toString(discoveryKey, 'hex'))
@@ -165,10 +167,11 @@ async function notifyUI() {
 
 async function addMovie(movie) {
   const key = 'movie:' + Date.now()
-  diag('Adding movie: ' + movie[1])
-  await bee.put(key, movie)
+  const title = movie[1]
+  diag('Adding movie: ' + title)
+  await bee.put(key, ['movie', title])
   await notifyUI()
-  broadcast({ type: 'add', key, value: movie })
+  broadcast({ type: 'add', key, value: ['movie', title] })
 }
 
 async function removeMovie(key) {
