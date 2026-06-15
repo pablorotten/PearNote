@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -10,9 +10,10 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ScrollView
 } from 'react-native'
-import { documentDirectory } from 'expo-file-system/legacy'
+import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Worklet } from 'react-native-bare-kit'
 import bundle from './app.bundle.mjs'
@@ -41,7 +42,29 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
+  const [roomHistory, setRoomHistory] = useState<string[]>([])
   const workletRef = useRef<any>(null)
+  const savedCodes = useRef<Set<string>>(new Set())
+  const historyPath = documentDirectory + '/room-history.json'
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const data = await readAsStringAsync(historyPath)
+        const codes: string[] = JSON.parse(data)
+        codes.forEach(c => savedCodes.current.add(c))
+        setRoomHistory(codes)
+      } catch (_) {}
+    })()
+  }, [])
+
+  async function saveToHistory(code: string) {
+    if (savedCodes.current.has(code)) return
+    savedCodes.current.add(code)
+    const updated = [code, ...roomHistory]
+    setRoomHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
 
   function handleLeave() {
     if (workletRef.current) {
@@ -57,12 +80,13 @@ export default function App() {
     setRoomCode('')
   }
 
-  function startWorklet(mode: 'create' | 'join') {
+  function startWorklet(mode: 'create' | 'join', code?: string) {
+    const joinCode = code || (mode === 'join' ? roomCode : '')
     const worklet = new Worklet()
     workletRef.current = worklet
     const args = mode === 'create'
       ? [String(documentDirectory)]
-      : [String(documentDirectory), roomCode]
+      : [String(documentDirectory), joinCode]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -71,6 +95,7 @@ export default function App() {
       if (req.command === RPC_MY_INVITE) {
         const code = b4a.toString(req.data)
         setMyCode(code)
+        saveToHistory(code)
         if (mode === 'create') {
           Alert.alert('Room Created!', `Share this code: ${code}`, [
             { text: 'Copy', onPress: () => Clipboard.setString(code) }
@@ -93,7 +118,8 @@ export default function App() {
     })
 
     if (mode === 'join') {
-      setMyCode(roomCode)
+      setMyCode(joinCode)
+      saveToHistory(joinCode)
     }
     setRpc(rpcInstance)
     setPhase('list')
@@ -130,7 +156,7 @@ export default function App() {
         <Text style={styles.heading}>MovieKollections</Text>
         <Text style={styles.subtitle}>P2P Movie List Sharing</Text>
 
-        <View style={styles.menuContent}>
+        <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
           <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
             <Text style={styles.bigButtonText}>Create Room</Text>
             <Text style={styles.bigButtonSub}>Generate a new room code</Text>
@@ -158,7 +184,24 @@ export default function App() {
             <Text style={styles.bigButtonText}>Join Room</Text>
             <Text style={styles.bigButtonSub}>Connect to an existing room</Text>
           </TouchableOpacity>
-        </View>
+
+          {roomHistory.length > 0 && (
+            <View style={styles.historySection}>
+              <Text style={styles.historyTitle}>Recent Rooms</Text>
+              <View style={styles.historyList}>
+                {roomHistory.map(code => (
+                  <TouchableOpacity
+                    key={code}
+                    style={styles.historyItem}
+                    onPress={() => startWorklet('join', code)}
+                  >
+                    <Text style={styles.historyItemText}>Room {code}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </ScrollView>
       </View>
     )
   }
@@ -262,9 +305,34 @@ const styles = StyleSheet.create({
     marginBottom: 40
   },
   menuContent: {
-    flex: 1,
+    flex: 1
+  },
+  menuContentInner: {
     justifyContent: 'center',
     gap: 15
+  },
+  historySection: {
+    marginTop: 20
+  },
+  historyTitle: {
+    color: '#7a9e2d',
+    fontSize: 14,
+    marginBottom: 8
+  },
+  historyList: {
+    gap: 6
+  },
+  historyItem: {
+    backgroundColor: '#1a3d0a',
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2a5a0a'
+  },
+  historyItemText: {
+    color: '#b0d943',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
   bigButton: {
     backgroundColor: '#1a3d0a',
