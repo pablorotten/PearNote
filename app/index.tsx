@@ -12,7 +12,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   ScrollView,
-  ActivityIndicator
+  Animated
 } from 'react-native'
 import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -32,6 +32,31 @@ import {
 type Movie = {
   key: string
   value: [string, string]
+}
+
+function LoadingSpinner() {
+  const spin = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true
+      })
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [])
+  const rotate = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  })
+  return (
+    <View style={styles.loadingContainer}>
+      <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
+      <Text style={styles.loadingText}>Loading room...</Text>
+    </View>
+  )
 }
 
 export default function App() {
@@ -237,10 +262,7 @@ export default function App() {
       </View>
 
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size='large' color='#b0d943' />
-          <Text style={styles.loadingText}>Loading room...</Text>
-        </View>
+        <LoadingSpinner />
       ) : (
         <>
           <FlatList
@@ -470,7 +492,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12
+    gap: 16
+  },
+  spinner: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderColor: '#1a3d0a',
+    borderTopColor: '#b0d943'
   },
   loadingText: {
     color: '#7a9e2d',
