@@ -19,7 +19,8 @@ import {
   RPC_MY_INVITE,
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
-  RPC_DIAG
+  RPC_DIAG,
+  RPC_CLEAR
 } from '../rpc-commands.mjs'
 
 const { IPC } = BareKit
@@ -32,6 +33,9 @@ const rpc = new RPC(IPC, (req, error) => {
   if (req.command === RPC_REMOVE) {
     const key = b4a.toString(req.data)
     removeMovie(key)
+  }
+  if (req.command === RPC_CLEAR) {
+    clearAll()
   }
 })
 
@@ -195,5 +199,17 @@ async function handleRemoteAdd(key, value) {
 
 async function handleRemoteRemove(key) {
   await bee.del(key)
+  await notifyUI()
+}
+
+async function clearAll() {
+  diag('Clearing all movies')
+  const keys = []
+  for await (const { key } of bee.createReadStream()) {
+    keys.push(key)
+  }
+  for (const key of keys) {
+    await bee.del(key)
+  }
   await notifyUI()
 }

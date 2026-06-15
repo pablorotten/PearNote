@@ -27,7 +27,8 @@ import {
   RPC_RESET,
   RPC_MY_INVITE,
   RPC_PEER_JOINED,
-  RPC_PEER_LEFT
+  RPC_PEER_LEFT,
+  RPC_CLEAR
 } from '../rpc-commands.mjs'
 
 type Movie = {
@@ -90,6 +91,13 @@ export default function App() {
     if (savedCodes.current.has(code)) return
     savedCodes.current.add(code)
     const updated = [code, ...roomHistory]
+    setRoomHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
+
+  async function removeFromHistory(code: string) {
+    savedCodes.current.delete(code)
+    const updated = roomHistory.filter(c => c !== code)
     setRoomHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
@@ -183,6 +191,28 @@ export default function App() {
     }
   }
 
+  function handleDeleteList() {
+    if (!myCode) return
+    Alert.alert(
+      'Delete List',
+      `Are you sure you want to leave the list ${myCode}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            if (rpc) {
+              const req = rpc.request(RPC_CLEAR)
+              req.send('')
+            }
+            handleLeave()
+          }
+        }
+      ]
+    )
+  }
+
   function copyCode() {
     if (myCode) {
       Clipboard.setString(myCode)
@@ -236,6 +266,21 @@ export default function App() {
                     onPress={() => startWorklet('join', code)}
                   >
                     <Text style={styles.historyItemText}>Room {code}</Text>
+                    <TouchableOpacity
+                      style={styles.historyDeleteBtn}
+                      onPress={() => {
+                        Alert.alert(
+                          `Leave ${code}`,
+                          `Are you sure you want to leave ${code}?`,
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Leave', style: 'destructive', onPress: () => removeFromHistory(code) }
+                          ]
+                        )
+                      }}
+                    >
+                      <Text style={styles.historyDeleteBtnText}>✕</Text>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -267,6 +312,9 @@ export default function App() {
             <Text style={styles.codeValue}>{myCode}</Text>
           </TouchableOpacity>
         ) : null}
+        <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
+          <Text style={styles.deleteListBtnText}>✕</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -370,16 +418,35 @@ const styles = StyleSheet.create({
     gap: 6
   },
   historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#1a3d0a',
-    padding: 14,
+    paddingLeft: 14,
+    paddingRight: 4,
+    paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#2a5a0a'
   },
   historyItemText: {
+    flex: 1,
     color: '#b0d943',
     fontSize: 16,
     fontWeight: 'bold'
+  },
+  historyDeleteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#3a0a0a',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  historyDeleteBtnText: {
+    color: '#d94b4b',
+    fontSize: 14,
+    fontWeight: 'bold',
+    lineHeight: 16
   },
   bigButton: {
     backgroundColor: '#1a3d0a',
@@ -451,6 +518,26 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#7a9e2d',
     fontSize: 14
+  },
+  deleteListBtn: {
+    position: 'absolute',
+    right: 0,
+    top: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#3a0a0a',
+    borderWidth: 1,
+    borderColor: '#d94b4b',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10
+  },
+  deleteListBtnText: {
+    color: '#d94b4b',
+    fontSize: 14,
+    fontWeight: 'bold',
+    lineHeight: 16
   },
   backBtn: {
     position: 'absolute',
