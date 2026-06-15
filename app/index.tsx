@@ -295,6 +295,7 @@ export default function App() {
                 placeholderTextColor='#666'
                 value={title}
                 onChangeText={setTitle}
+                autoFocus
               />
               <View style={styles.formActions}>
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
