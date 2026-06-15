@@ -9,7 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  StatusBar
+  StatusBar,
+  KeyboardAvoidingView
 } from 'react-native'
 import { documentDirectory } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -141,7 +142,11 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior='padding'
+      keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
+    >
       <View style={styles.header}>
         <Text style={styles.heading}>MovieKollections</Text>
         <View style={styles.statusRow}>
@@ -205,7 +210,7 @@ export default function App() {
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
