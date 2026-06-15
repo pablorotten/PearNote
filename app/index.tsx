@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   View,
   Text,
@@ -41,8 +41,25 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
+  const workletRef = useRef<any>(null)
+
+  function handleLeave() {
+    if (workletRef.current) {
+      workletRef.current.terminate?.()
+    }
+    setPhase('menu')
+    setMovies([])
+    setMyCode('')
+    setConnected(false)
+    setTitle('')
+    setShowAdd(false)
+    setRpc(null)
+    setRoomCode('')
+  }
+
   function startWorklet(mode: 'create' | 'join') {
     const worklet = new Worklet()
+    workletRef.current = worklet
     const args = mode === 'create'
       ? [String(documentDirectory)]
       : [String(documentDirectory), roomCode]
@@ -153,6 +170,9 @@ export default function App() {
       keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
     >
       <View style={styles.header}>
+        <TouchableOpacity onPress={handleLeave} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹</Text>
+        </TouchableOpacity>
         <Text style={styles.heading}>MovieKollections</Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
@@ -316,6 +336,26 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#7a9e2d',
     fontSize: 14
+  },
+  backBtn: {
+    position: 'absolute',
+    left: 0,
+    top: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1a3d0a',
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10
+  },
+  backBtnText: {
+    color: '#b0d943',
+    fontSize: 22,
+    lineHeight: 24,
+    fontWeight: 'bold'
   },
   codeBadge: {
     flexDirection: 'row',
