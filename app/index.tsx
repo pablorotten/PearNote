@@ -28,7 +28,7 @@ import {
 
 type Movie = {
   key: string
-  value: [string, string, string, string]
+  value: [string, string]
 }
 
 export default function App() {
@@ -38,8 +38,6 @@ export default function App() {
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
-  const [year, setYear] = useState('')
-  const [director, setDirector] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
   function startWorklet(mode: 'create' | 'join') {
@@ -80,14 +78,12 @@ export default function App() {
 
   function handleAddMovie() {
     if (!title.trim()) return
-    const movie: [string, string, string, string] = ['movie', title.trim(), year.trim(), director.trim()]
+    const movie: [string, string] = ['movie', title.trim()]
     if (rpc) {
       const req = rpc.request(RPC_ADD)
       req.send(JSON.stringify(movie))
     }
     setTitle('')
-    setYear('')
-    setDirector('')
     setShowAdd(false)
   }
 
@@ -171,11 +167,6 @@ export default function App() {
           <View style={styles.movieItem}>
             <View style={styles.movieInfo}>
               <Text style={styles.movieTitle}>{item.value[1]}</Text>
-              {(item.value[2] || item.value[3]) ? (
-                <Text style={styles.movieMeta}>
-                  {item.value[2]}{item.value[2] && item.value[3] ? ' · ' : ''}{item.value[3]}
-                </Text>
-              ) : null}
             </View>
             <TouchableOpacity
               style={styles.deleteBtn}
@@ -196,23 +187,6 @@ export default function App() {
             value={title}
             onChangeText={setTitle}
           />
-          <View style={styles.formRow}>
-            <TextInput
-              style={[styles.formInput, styles.formInputSmall]}
-              placeholder='Year'
-              placeholderTextColor='#666'
-              value={year}
-              onChangeText={setYear}
-              keyboardType='number-pad'
-            />
-            <TextInput
-              style={[styles.formInput, styles.formInputSmall]}
-              placeholder='Director'
-              placeholderTextColor='#666'
-              value={director}
-              onChangeText={setDirector}
-            />
-          </View>
           <View style={styles.formActions}>
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
               <Text style={styles.cancelBtnText}>Cancel</Text>
@@ -382,11 +356,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#b0d943'
   },
-  movieMeta: {
-    fontSize: 13,
-    color: '#7a9e2d',
-    marginTop: 3
-  },
+
   deleteBtn: {
     width: 32,
     height: 32,
@@ -418,13 +388,7 @@ const styles = StyleSheet.create({
     color: '#b0d943',
     backgroundColor: '#0f2a05'
   },
-  formRow: {
-    flexDirection: 'row',
-    gap: 10
-  },
-  formInputSmall: {
-    flex: 1
-  },
+
   formActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
