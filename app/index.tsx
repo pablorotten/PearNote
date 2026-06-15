@@ -11,7 +11,8 @@ import {
   Platform,
   StatusBar,
   KeyboardAvoidingView,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native'
 import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -42,6 +43,7 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
   const [roomHistory, setRoomHistory] = useState<string[]>([])
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
@@ -67,6 +69,7 @@ export default function App() {
   }
 
   function handleLeave() {
+    if (loading) return
     if (workletRef.current) {
       workletRef.current.terminate?.()
     }
@@ -78,6 +81,7 @@ export default function App() {
     setShowAdd(false)
     setRpc(null)
     setRoomCode('')
+    setLoading(false)
   }
 
   function startWorklet(mode: 'create' | 'join', code?: string) {
@@ -90,6 +94,8 @@ export default function App() {
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
+
+    setLoading(true)
 
     const rpcInstance = new RPC(IPC, (req) => {
       if (req.command === RPC_MY_INVITE) {
@@ -106,6 +112,7 @@ export default function App() {
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
         setMovies(data)
+        setLoading(false)
       }
 
       if (req.command === RPC_PEER_JOINED) {
@@ -213,7 +220,7 @@ export default function App() {
       keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleLeave} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.heading}>MovieKollections</Text>
@@ -229,54 +236,63 @@ export default function App() {
         ) : null}
       </View>
 
-      <FlatList
-        data={movies}
-        keyExtractor={(item) => item.key}
-        style={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No movies yet. Tap + to add one.</Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.movieItem}>
-            <View style={styles.movieInfo}>
-              <Text style={styles.movieTitle}>{item.value[1]}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.deleteBtn}
-              onPress={() => handleRemoveMovie(item.key)}
-            >
-              <Text style={styles.deleteBtnText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-
-      {showAdd ? (
-        <View style={styles.addForm}>
-          <TextInput
-            style={styles.formInput}
-            placeholder='Movie title'
-            placeholderTextColor='#666'
-            value={title}
-            onChangeText={setTitle}
-          />
-          <View style={styles.formActions}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
-              onPress={handleAddMovie}
-              disabled={!title.trim()}
-            >
-              <Text style={styles.addBtnText}>Add Movie</Text>
-            </TouchableOpacity>
-          </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size='large' color='#b0d943' />
+          <Text style={styles.loadingText}>Loading room...</Text>
         </View>
       ) : (
-        <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
+        <>
+          <FlatList
+            data={movies}
+            keyExtractor={(item) => item.key}
+            style={styles.list}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No movies yet. Tap + to add one.</Text>
+            }
+            renderItem={({ item }) => (
+              <View style={styles.movieItem}>
+                <View style={styles.movieInfo}>
+                  <Text style={styles.movieTitle}>{item.value[1]}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => handleRemoveMovie(item.key)}
+                >
+                  <Text style={styles.deleteBtnText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          {showAdd ? (
+            <View style={styles.addForm}>
+              <TextInput
+                style={styles.formInput}
+                placeholder='Movie title'
+                placeholderTextColor='#666'
+                value={title}
+                onChangeText={setTitle}
+              />
+              <View style={styles.formActions}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
+                  onPress={handleAddMovie}
+                  disabled={!title.trim()}
+                >
+                  <Text style={styles.addBtnText}>Add Movie</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
+              <Text style={styles.fabText}>+</Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </KeyboardAvoidingView>
   )
@@ -449,6 +465,16 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12
+  },
+  loadingText: {
+    color: '#7a9e2d',
+    fontSize: 15
   },
   emptyText: {
     color: '#555',

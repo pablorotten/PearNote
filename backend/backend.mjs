@@ -133,6 +133,8 @@ const discovery = swarm.join(discoveryKey, { client: true, server: true })
 await discovery.flushed()
 diag('Swarm join flushed')
 
+notifyUI()
+
 async function sendFullList(conn) {
   const movies = []
   for await (const { key, value } of bee.createReadStream()) {
