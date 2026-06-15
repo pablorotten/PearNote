@@ -127,6 +127,8 @@ if (!roomCode) {
 } else {
   diag('Joining room with code: ' + roomCode)
   discoveryKey = topicFromCode(roomCode)
+  const req = rpc.request(RPC_MY_INVITE)
+  req.send(roomCode)
 }
 
 diag('Joining swarm with discovery key: ' + b4a.toString(discoveryKey, 'hex'))

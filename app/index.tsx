@@ -54,9 +54,11 @@ export default function App() {
       if (req.command === RPC_MY_INVITE) {
         const code = b4a.toString(req.data)
         setMyCode(code)
-        Alert.alert('Room Created!', `Share this code: ${code}`, [
-          { text: 'Copy', onPress: () => Clipboard.setString(code) }
-        ])
+        if (mode === 'create') {
+          Alert.alert('Room Created!', `Share this code: ${code}`, [
+            { text: 'Copy', onPress: () => Clipboard.setString(code) }
+          ])
+        }
       }
 
       if (req.command === RPC_RESET) {
@@ -73,6 +75,9 @@ export default function App() {
       }
     })
 
+    if (mode === 'join') {
+      setMyCode(roomCode)
+    }
     setRpc(rpcInstance)
     setPhase('list')
   }
