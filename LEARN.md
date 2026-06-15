@@ -54,3 +54,62 @@ No. The spinner waits for the backend startup sequence:
 It does **not** wait for peer sync. The spinner disappears as soon as local data is sent to the UI. Sync from other peers arrives in the background and updates the list whenever a peer connects.
 
 Waiting for sync would be bad: if no peers are online, the user would be stuck on the spinner forever. Show local data instantly, sync arrives when peers connect.
+
+## Q: If all peers leave a room, is the data lost? Can a peer sync later?
+
+Yes, if you're the only peer in a room and you leave, your data is still saved **locally** on your device (in Corestore on the filesystem). It's not lost — it's just not reachable over the network.
+
+When you re-enter the same room:
+1. Corestore loads your local data and shows it immediately (no sync needed).
+2. Hyperswarm re-joins the DHT topic and looks for peers.
+
+The only way another peer can see your data is if **both of you are in the room at the same time**. If you have the data and the other peer doesn't, they sync from you when they connect.
+
+## Q: Can't one device seed multiple rooms at the same time?
+
+Technically yes. Each room is a separate `Worklet` instance (a Bare runtime process) with its own Corestore + Hyperswarm swarm. You could spawn multiple worklets in parallel and keep them running in the background.
+
+The cost per idle room:
+- **CPU**: Near zero — just listening for events
+- **Memory**: ~5-10MB per worklet (JS runtime + Corestore index)
+- **Network**: DHT re-announce every ~5-10 min per room, negligible bandwidth
+- **Battery**: Comparable to keeping a WebSocket connection open per room
+
+For 2-3 rooms it's nothing. For 30 rooms on mobile it becomes heavy:
+- **150-300MB** memory just for the idle worklets
+- 30 concurrent Hyperswarm topics in one process isn't well-tested on mobile
+- Battery drain from keep-alive traffic
+
+At that scale you'd want a different architecture — a single daemon multiplexing all rooms, or a desktop seed relay.
+
+For MovieKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
+
+## Q: How does a developer need to think about this architecture?
+
+Forget about servers. Think of each device as a node that holds its own piece of data.
+
+**The mindset shift:**
+- No "database in the cloud" — each device has its own Corestore (append-only log) on the filesystem
+- No "API calls" — peers connect directly via Hyperswarm and exchange messages over persistent TCP links
+- No "server always running" — data only flows while at least two peers are in the same room simultaneously
+- No "polling" — the DHT announces your presence, peers connect when they see you, everything is event-driven
+
+**The mental model:**
+```
+Device A (room "1234") ←→ Hyperswarm DHT ←→ Device B (room "1234")
+    │                                                 │
+    ├─ Corestore (local disk)                         ├─ Corestore (local disk)
+    ├─ Hyperbee (key-value)                           ├─ Hyperbee (key-value)
+    └─ Worklet (Bare runtime)                         └─ Worklet (Bare runtime)
+```
+
+Both devices run identical code. There's no client/server, no master/slave. Each writes to its own Corestore and broadcasts changes. When a peer connects, they exchange their full list and merge.
+
+**Limitations:**
+- If all peers leave a room, the data is **offline** until someone re-enters
+- There's no persistent storage "in the network" — only on devices
+- Sync is real-time only (both peers must be connected)
+- Mobile battery/memory limits how many rooms one device can seed in background
+- No history or conflict resolution beyond "last write wins"
+
+This is the pure P2P trade-off: no servers to maintain, but no guarantees either.
