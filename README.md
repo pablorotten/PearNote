@@ -49,7 +49,7 @@ adb -s e017a252 shell am start -n to.holepunch.bare.expo/.MainActivity
 > [!NOTE]
 > This APK will work without Metro (you can unplug the phone)
 
-## Logs
+## 🪵 Logs
 
 Clear logs:
 ```sh

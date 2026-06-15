@@ -12,7 +12,8 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   ScrollView,
-  Animated
+  Animated,
+  BackHandler
 } from 'react-native'
 import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -94,10 +95,7 @@ export default function App() {
   }
 
   function handleLeave() {
-    if (loading) return
-    if (workletRef.current) {
-      workletRef.current.terminate?.()
-    }
+    try { workletRef.current?.terminate?.() } catch (_) {}
     setPhase('menu')
     setMovies([])
     setMyCode('')
@@ -108,6 +106,16 @@ export default function App() {
     setRoomCode('')
     setLoading(false)
   }
+
+  useEffect(() => {
+    if (phase !== 'list') return
+    const onBack = () => {
+      handleLeave()
+      return true
+    }
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBack)
+    return () => sub.remove()
+  }, [phase])
 
   function startWorklet(mode: 'create' | 'join', code?: string) {
     const joinCode = code || (mode === 'join' ? roomCode : '')
