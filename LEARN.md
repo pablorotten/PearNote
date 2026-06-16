@@ -84,6 +84,45 @@ At that scale you'd want a different architecture — a single daemon multiplexi
 
 For MovieKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
 
+## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
+
+Yes, this is a real problem in the current implementation. Scenario:
+
+1. Peers A and B are synced with the same movie list
+2. B disconnects
+3. A removes some movies
+4. B reconnects, loads its stale local data (still has the deleted movies)
+5. B's `sendFullList` sends its stale data to A
+6. The deleted movies pop back up in A's list
+
+**Why this happens:** The current `handleSync` is purely additive:
+
+```js
+async function handleSync(movies) {
+  for (const { key, value } of movies) {
+    const existing = await bee.get(key)
+    if (!existing) await bee.put(key, value)  // only adds, never deletes
+  }
+  await notifyUI()
+}
+```
+
+It only adds missing items — it never removes them. And `sendFullList` sends the sending peer's data to the receiving peer (not the other way). There's no "this is the authoritative version" concept.
+
+**Is this a fundamental P2P limitation?**
+
+No — it's a design choice in this specific implementation. Here are ways to solve it:
+
+- **Event log (Hypercore's natural model)**: Instead of storing the latest state (key-value in Hyperbee), store every `add` and `remove` as entries in an append-only log. On reconnect, peers replay the full event log and converge on the same final state. This is how Hypercore is designed to be used.
+
+- **Version counter**: Each peer bumps a version number on every change. On reconnect, compare versions — the peer with the higher version wins and its full list replaces the other's.
+
+- **Tombstones**: Store removals as explicit entries (`['tombstone', key]`). During merge, tombstones cancel out adds. Both peers converge on the same set.
+
+- **Last-write-wins with timestamps**: Each entry has a timestamp. On merge, the newest timestamp wins for each key.
+
+The current code uses Hyperbee (key-value store built on Hypercore) and treats deletions as "remove the key" — losing the event history. Hypercore's append-only log naturally preserves every change, which is the right tool for this problem.
+
 ## Q: How does a developer need to think about this architecture?
 
 Forget about servers. Think of each device as a node that holds its own piece of data.
