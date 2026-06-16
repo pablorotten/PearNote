@@ -19,7 +19,8 @@ import {
   RPC_MY_INVITE,
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
-  RPC_DIAG
+  RPC_DIAG,
+  RPC_CLEAR
 } from '../rpc-commands.mjs'
 
 const { IPC } = BareKit
@@ -32,6 +33,9 @@ const rpc = new RPC(IPC, (req, error) => {
   if (req.command === RPC_REMOVE) {
     const key = b4a.toString(req.data)
     removeMovie(key)
+  }
+  if (req.command === RPC_CLEAR) {
+    clearAll()
   }
 })
 
@@ -46,12 +50,23 @@ function diag(msg) {
 diag('Backend started, argv: ' + JSON.stringify(Bare.argv))
 diag('argv[0] type: ' + typeof Bare.argv[0] + ' length: ' + (Bare.argv[0] ? Bare.argv[0].length : 0))
 
+let roomCode = Bare.argv[1] || null
+if (!roomCode) {
+  roomCode = String(Math.floor(1000 + Math.random() * 9000))
+  diag('Created room, code: ' + roomCode)
+  const req = rpc.request(RPC_MY_INVITE)
+  req.send(roomCode)
+} else {
+  diag('Joining room with code: ' + roomCode)
+  const req = rpc.request(RPC_MY_INVITE)
+  req.send(roomCode)
+}
+
 const storagePath = join(URL.fileURLToPath(Bare.argv[0]), 'moviekollections')
-const roomCode = Bare.argv[1] || null
-diag('storagePath: ' + storagePath + ' roomCode: ' + (roomCode || '(none)'))
+diag('storagePath: ' + storagePath + ' roomCode: ' + roomCode)
 
 const store = new Corestore(storagePath)
-const core = store.get({ name: 'movielist' })
+const core = store.get({ name: 'movielist-' + roomCode })
 const bee = new Hyperbee(core, {
   keyEncoding: 'utf-8',
   valueEncoding: 'json'
@@ -116,25 +131,13 @@ function topicFromCode(code) {
   return buf
 }
 
-let discoveryKey
-
-if (!roomCode) {
-  const simpleKey = String(Math.floor(1000 + Math.random() * 9000))
-  discoveryKey = topicFromCode(simpleKey)
-  diag('Created room, code: ' + simpleKey)
-  const req = rpc.request(RPC_MY_INVITE)
-  req.send(simpleKey)
-} else {
-  diag('Joining room with code: ' + roomCode)
-  discoveryKey = topicFromCode(roomCode)
-  const req = rpc.request(RPC_MY_INVITE)
-  req.send(roomCode)
-}
-
+const discoveryKey = topicFromCode(roomCode)
 diag('Joining swarm with discovery key: ' + b4a.toString(discoveryKey, 'hex'))
 const discovery = swarm.join(discoveryKey, { client: true, server: true })
 await discovery.flushed()
 diag('Swarm join flushed')
+
+notifyUI()
 
 async function sendFullList(conn) {
   const movies = []
@@ -196,5 +199,17 @@ async function handleRemoteAdd(key, value) {
 
 async function handleRemoteRemove(key) {
   await bee.del(key)
+  await notifyUI()
+}
+
+async function clearAll() {
+  diag('Clearing all movies')
+  const keys = []
+  for await (const { key } of bee.createReadStream()) {
+    keys.push(key)
+  }
+  for (const key of keys) {
+    await bee.del(key)
+  }
   await notifyUI()
 }

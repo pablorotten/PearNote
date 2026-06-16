@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -10,9 +10,12 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ScrollView,
+  Animated,
+  BackHandler
 } from 'react-native'
-import { documentDirectory } from 'expo-file-system/legacy'
+import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Worklet } from 'react-native-bare-kit'
 import bundle from './app.bundle.mjs'
@@ -24,12 +27,38 @@ import {
   RPC_RESET,
   RPC_MY_INVITE,
   RPC_PEER_JOINED,
-  RPC_PEER_LEFT
+  RPC_PEER_LEFT,
+  RPC_CLEAR
 } from '../rpc-commands.mjs'
 
 type Movie = {
   key: string
   value: [string, string]
+}
+
+function LoadingSpinner() {
+  const spin = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true
+      })
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [])
+  const rotate = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  })
+  return (
+    <View style={styles.loadingContainer}>
+      <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
+      <Text style={styles.loadingText}>Loading room...</Text>
+    </View>
+  )
 }
 
 export default function App() {
@@ -41,12 +70,40 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [roomHistory, setRoomHistory] = useState<string[]>([])
   const workletRef = useRef<any>(null)
+  const savedCodes = useRef<Set<string>>(new Set())
+  const historyPath = documentDirectory + '/room-history.json'
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const data = await readAsStringAsync(historyPath)
+        const codes: string[] = JSON.parse(data)
+        codes.forEach(c => savedCodes.current.add(c))
+        setRoomHistory(codes)
+      } catch (_) {}
+    })()
+  }, [])
+
+  async function saveToHistory(code: string) {
+    if (savedCodes.current.has(code)) return
+    savedCodes.current.add(code)
+    const updated = [code, ...roomHistory]
+    setRoomHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
+
+  async function removeFromHistory(code: string) {
+    savedCodes.current.delete(code)
+    const updated = roomHistory.filter(c => c !== code)
+    setRoomHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
 
   function handleLeave() {
-    if (workletRef.current) {
-      workletRef.current.terminate?.()
-    }
+    try { workletRef.current?.terminate?.() } catch (_) {}
     setPhase('menu')
     setMovies([])
     setMyCode('')
@@ -55,22 +112,37 @@ export default function App() {
     setShowAdd(false)
     setRpc(null)
     setRoomCode('')
+    setLoading(false)
   }
 
-  function startWorklet(mode: 'create' | 'join') {
+  useEffect(() => {
+    if (phase !== 'list') return
+    const onBack = () => {
+      handleLeave()
+      return true
+    }
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBack)
+    return () => sub.remove()
+  }, [phase])
+
+  function startWorklet(mode: 'create' | 'join', code?: string) {
+    const joinCode = code || (mode === 'join' ? roomCode : '')
     const worklet = new Worklet()
     workletRef.current = worklet
     const args = mode === 'create'
       ? [String(documentDirectory)]
-      : [String(documentDirectory), roomCode]
+      : [String(documentDirectory), joinCode]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
+
+    setLoading(true)
 
     const rpcInstance = new RPC(IPC, (req) => {
       if (req.command === RPC_MY_INVITE) {
         const code = b4a.toString(req.data)
         setMyCode(code)
+        saveToHistory(code)
         if (mode === 'create') {
           Alert.alert('Room Created!', `Share this code: ${code}`, [
             { text: 'Copy', onPress: () => Clipboard.setString(code) }
@@ -81,6 +153,7 @@ export default function App() {
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
         setMovies(data)
+        setLoading(false)
       }
 
       if (req.command === RPC_PEER_JOINED) {
@@ -93,7 +166,8 @@ export default function App() {
     })
 
     if (mode === 'join') {
-      setMyCode(roomCode)
+      setMyCode(joinCode)
+      saveToHistory(joinCode)
     }
     setRpc(rpcInstance)
     setPhase('list')
@@ -117,6 +191,28 @@ export default function App() {
     }
   }
 
+  function handleDeleteList() {
+    if (!myCode) return
+    Alert.alert(
+      'Delete List',
+      `Are you sure you want to leave the list ${myCode}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            if (rpc) {
+              const req = rpc.request(RPC_CLEAR)
+              req.send('')
+            }
+            handleLeave()
+          }
+        }
+      ]
+    )
+  }
+
   function copyCode() {
     if (myCode) {
       Clipboard.setString(myCode)
@@ -130,7 +226,7 @@ export default function App() {
         <Text style={styles.heading}>MovieKollections</Text>
         <Text style={styles.subtitle}>P2P Movie List Sharing</Text>
 
-        <View style={styles.menuContent}>
+        <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
           <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
             <Text style={styles.bigButtonText}>Create Room</Text>
             <Text style={styles.bigButtonSub}>Generate a new room code</Text>
@@ -158,7 +254,39 @@ export default function App() {
             <Text style={styles.bigButtonText}>Join Room</Text>
             <Text style={styles.bigButtonSub}>Connect to an existing room</Text>
           </TouchableOpacity>
-        </View>
+
+          {roomHistory.length > 0 && (
+            <View style={styles.historySection}>
+              <Text style={styles.historyTitle}>Recent Rooms</Text>
+              <View style={styles.historyList}>
+                {roomHistory.map(code => (
+                  <TouchableOpacity
+                    key={code}
+                    style={styles.historyItem}
+                    onPress={() => startWorklet('join', code)}
+                  >
+                    <Text style={styles.historyItemText}>Room {code}</Text>
+                    <TouchableOpacity
+                      style={styles.historyDeleteBtn}
+                      onPress={() => {
+                        Alert.alert(
+                          `Leave ${code}`,
+                          `Are you sure you want to leave ${code}?`,
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Leave', style: 'destructive', onPress: () => removeFromHistory(code) }
+                          ]
+                        )
+                      }}
+                    >
+                      <Text style={styles.historyDeleteBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </ScrollView>
       </View>
     )
   }
@@ -170,7 +298,7 @@ export default function App() {
       keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleLeave} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.heading}>MovieKollections</Text>
@@ -184,56 +312,66 @@ export default function App() {
             <Text style={styles.codeValue}>{myCode}</Text>
           </TouchableOpacity>
         ) : null}
+        <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
+          <Text style={styles.deleteListBtnText}>✕</Text>
+        </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={movies}
-        keyExtractor={(item) => item.key}
-        style={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No movies yet. Tap + to add one.</Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.movieItem}>
-            <View style={styles.movieInfo}>
-              <Text style={styles.movieTitle}>{item.value[1]}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.deleteBtn}
-              onPress={() => handleRemoveMovie(item.key)}
-            >
-              <Text style={styles.deleteBtnText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-
-      {showAdd ? (
-        <View style={styles.addForm}>
-          <TextInput
-            style={styles.formInput}
-            placeholder='Movie title'
-            placeholderTextColor='#666'
-            value={title}
-            onChangeText={setTitle}
-          />
-          <View style={styles.formActions}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
-              onPress={handleAddMovie}
-              disabled={!title.trim()}
-            >
-              <Text style={styles.addBtnText}>Add Movie</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      {loading ? (
+        <LoadingSpinner />
       ) : (
-        <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
+        <>
+          <FlatList
+            data={movies}
+            keyExtractor={(item) => item.key}
+            style={styles.list}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No movies yet. Tap + to add one.</Text>
+            }
+            renderItem={({ item }) => (
+              <View style={styles.movieItem}>
+                <View style={styles.movieInfo}>
+                  <Text style={styles.movieTitle}>{item.value[1]}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => handleRemoveMovie(item.key)}
+                >
+                  <Text style={styles.deleteBtnText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          {showAdd ? (
+            <View style={styles.addForm}>
+              <TextInput
+                style={styles.formInput}
+                placeholder='Movie title'
+                placeholderTextColor='#666'
+                value={title}
+                onChangeText={setTitle}
+                autoFocus
+              />
+              <View style={styles.formActions}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
+                  onPress={handleAddMovie}
+                  disabled={!title.trim()}
+                >
+                  <Text style={styles.addBtnText}>Add Movie</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
+              <Text style={styles.fabText}>+</Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </KeyboardAvoidingView>
   )
@@ -262,9 +400,53 @@ const styles = StyleSheet.create({
     marginBottom: 40
   },
   menuContent: {
-    flex: 1,
+    flex: 1
+  },
+  menuContentInner: {
     justifyContent: 'center',
     gap: 15
+  },
+  historySection: {
+    marginTop: 20
+  },
+  historyTitle: {
+    color: '#7a9e2d',
+    fontSize: 14,
+    marginBottom: 8
+  },
+  historyList: {
+    gap: 6
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a3d0a',
+    paddingLeft: 14,
+    paddingRight: 4,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2a5a0a'
+  },
+  historyItemText: {
+    flex: 1,
+    color: '#b0d943',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  historyDeleteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#3a0a0a',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  historyDeleteBtnText: {
+    color: '#d94b4b',
+    fontSize: 14,
+    fontWeight: 'bold',
+    lineHeight: 16
   },
   bigButton: {
     backgroundColor: '#1a3d0a',
@@ -337,6 +519,26 @@ const styles = StyleSheet.create({
     color: '#7a9e2d',
     fontSize: 14
   },
+  deleteListBtn: {
+    position: 'absolute',
+    right: 0,
+    top: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#3a0a0a',
+    borderWidth: 1,
+    borderColor: '#d94b4b',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10
+  },
+  deleteListBtnText: {
+    color: '#d94b4b',
+    fontSize: 14,
+    fontWeight: 'bold',
+    lineHeight: 16
+  },
   backBtn: {
     position: 'absolute',
     left: 0,
@@ -381,6 +583,24 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16
+  },
+  spinner: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderColor: '#1a3d0a',
+    borderTopColor: '#b0d943'
+  },
+  loadingText: {
+    color: '#7a9e2d',
+    fontSize: 15
   },
   emptyText: {
     color: '#555',
