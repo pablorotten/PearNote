@@ -1,14 +1,9 @@
 /* global Bare, BareKit */
 
-import process from 'bare-process'
-globalThis.process = process
-
 import RPC from 'bare-rpc'
 import b4a from 'b4a'
-import Hyperswarm from 'hyperswarm'
+import Autopass from 'autopass'
 import Corestore from 'corestore'
-import Hyperbee from 'hyperbee'
-import goodbye from 'graceful-goodbye'
 import { join } from 'bare-path'
 import URL from 'bare-url'
 
@@ -20,12 +15,15 @@ import {
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
   RPC_DIAG,
-  RPC_CLEAR
+  RPC_CLEAR,
+  RPC_ERROR
 } from '../rpc-commands.mjs'
 
 const { IPC } = BareKit
+const INIT_TIMEOUT = 30000
 
 const rpc = new RPC(IPC, (req, error) => {
+  if (error) return
   if (req.command === RPC_ADD) {
     const movie = JSON.parse(b4a.toString(req.data))
     addMovie(movie)
@@ -42,174 +40,184 @@ const rpc = new RPC(IPC, (req, error) => {
 function diag(msg) {
   console.log('DIAG:', msg)
   try {
-    const req = rpc.request(RPC_DIAG)
-    req.send(msg)
+    rpc.request(RPC_DIAG).send(msg)
   } catch (_) {}
 }
 
-diag('Backend started, argv: ' + JSON.stringify(Bare.argv))
-diag('argv[0] type: ' + typeof Bare.argv[0] + ' length: ' + (Bare.argv[0] ? Bare.argv[0].length : 0))
-
-let roomCode = Bare.argv[1] || null
-if (!roomCode) {
-  roomCode = String(Math.floor(1000 + Math.random() * 9000))
-  diag('Created room, code: ' + roomCode)
-  const req = rpc.request(RPC_MY_INVITE)
-  req.send(roomCode)
-} else {
-  diag('Joining room with code: ' + roomCode)
-  const req = rpc.request(RPC_MY_INVITE)
-  req.send(roomCode)
-}
-
-const storagePath = join(URL.fileURLToPath(Bare.argv[0]), 'moviekollections')
-diag('storagePath: ' + storagePath + ' roomCode: ' + roomCode)
-
-const store = new Corestore(storagePath)
-const core = store.get({ name: 'movielist-' + roomCode })
-const bee = new Hyperbee(core, {
-  keyEncoding: 'utf-8',
-  valueEncoding: 'json'
-})
-await bee.ready()
-
-const swarm = new Hyperswarm()
-diag('Swarm created')
-const peers = new Set()
-
-swarm.on('connection', (conn) => {
+function sendError(msg) {
+  diag('ERROR: ' + msg)
   try {
-    peers.add(conn)
-    diag('Connection established, peer count: ' + peers.size)
-
-    const req = rpc.request(RPC_PEER_JOINED)
-    req.send('connected')
-
-    sendFullList(conn)
-
-    conn.on('data', (data) => {
-      diag('Received data: ' + b4a.toString(data).substring(0, 80))
-      try {
-        const msg = JSON.parse(b4a.toString(data))
-        if (msg.type === 'sync') { diag('Handling sync with ' + msg.movies.length + ' movies'); handleSync(msg.movies) }
-        else if (msg.type === 'add') handleRemoteAdd(msg.key, msg.value)
-        else if (msg.type === 'remove') handleRemoteRemove(msg.key)
-      } catch (err) {
-        diag('Error processing peer data: ' + err.message)
-      }
-    })
-
-    conn.on('close', () => {
-      diag('Connection closed')
-      peers.delete(conn)
-      const req = rpc.request(RPC_PEER_LEFT)
-      req.send('disconnected')
-    })
-
-    conn.on('error', (err) => {
-      diag('Connection error: ' + err.message)
-      peers.delete(conn)
-    })
-  } catch (err) {
-    diag('Error in connection handler: ' + err.message)
-  }
-})
-
-swarm.on('error', (err) => {
-  diag('Swarm error: ' + err.message)
-})
-
-goodbye(() => {
-  diag('Swarm destroying')
-  swarm.destroy()
-})
-
-function topicFromCode(code) {
-  const buf = b4a.alloc(32)
-  const codeBuf = b4a.from(code)
-  buf.set(codeBuf)
-  return buf
+    rpc.request(RPC_ERROR).send(msg)
+  } catch (_) {}
 }
 
-const discoveryKey = topicFromCode(roomCode)
-diag('Joining swarm with discovery key: ' + b4a.toString(discoveryKey, 'hex'))
-const discovery = swarm.join(discoveryKey, { client: true, server: true })
-await discovery.flushed()
-diag('Swarm join flushed')
-
-notifyUI()
-
-async function sendFullList(conn) {
-  const movies = []
-  for await (const { key, value } of bee.createReadStream()) {
-    movies.push({ key, value })
-  }
-  conn.write(b4a.from(JSON.stringify({ type: 'sync', movies })))
+function timeoutPromise(ms, label) {
+  let timer
+  const t = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Timeout (' + ms + 'ms): ' + label)), ms)
+  })
+  return { promise: t, cancel: () => clearTimeout(timer) }
 }
 
-function broadcast(msg) {
-  diag('Broadcasting to ' + peers.size + ' peers: ' + msg.type)
-  const data = b4a.from(JSON.stringify(msg))
-  for (const peer of peers) {
-    try {
-      peer.write(data)
-    } catch (err) {
-      diag('Error broadcasting: ' + err.message)
+let pass
+
+async function init() {
+  try {
+    // Args: [documentDirectory, mode, storageId?]
+    // mode: 'create' | 'join' | 'rejoin'
+    // For 'create': no storageId needed, will create new
+    // For 'join': storageId is the invite code from another device
+    // For 'rejoin': storageId is the storage folder name to rejoin
+    
+    const baseDir = Bare.argv[0]
+    const mode = Bare.argv[1] || 'create'
+    const storageId = Bare.argv[2] || null
+    
+    diag('mode: ' + mode + ' storageId: ' + (storageId || '(none)'))
+
+    if (mode === 'create') {
+      // Create a new room with a unique storage path
+      const sessionId = Date.now().toString(36)
+      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', sessionId)
+      diag('Creating new room, storagePath: ' + storagePath)
+      
+      const store = new Corestore(storagePath)
+      const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
+      
+      pass = new Autopass(store)
+      await Promise.race([pass.ready(), readyTimeout])
+      cancelReady()
+      
+      diag('Autopass ready')
+      
+      // Create invite for others to join
+      const invite = await pass.createInvite()
+      diag('Created invite: ' + invite)
+      
+      // Send storageId (folder name) and invite for sharing
+      // Format: storageId|invite
+      try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + invite) } catch (_) {}
+      
+    } else if (mode === 'join') {
+      // Join an existing room using invite code from another device
+      const sessionId = Date.now().toString(36)
+      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', sessionId)
+      diag('Joining room, storagePath: ' + storagePath)
+      
+      const store = new Corestore(storagePath)
+      const { promise: pairTimeout, cancel: cancelPair } = timeoutPromise(INIT_TIMEOUT, 'Autopass.pair().finished()')
+      
+      const pair = Autopass.pair(store, storageId) // storageId is the invite code here
+      pass = await Promise.race([pair.finished(), pairTimeout])
+      cancelPair()
+      
+      await pass.ready()
+      
+      diag('Joined room')
+      
+      // Send storageId (folder name) and invite
+      try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + storageId) } catch (_) {}
+      
+    } else if (mode === 'rejoin') {
+      // Rejoin an existing room - storageId is the folder name
+      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', storageId)
+      diag('Rejoining room, storagePath: ' + storagePath)
+      
+      const store = new Corestore(storagePath)
+      const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
+      
+      // Just create Autopass with the store - it will load the existing base
+      pass = new Autopass(store)
+      await Promise.race([pass.ready(), readyTimeout])
+      cancelReady()
+      
+      diag('Rejoined room')
+      
+      // Create a new invite for this session
+      const invite = await pass.createInvite()
+      try { rpc.request(RPC_MY_INVITE).send(storageId + '|' + invite) } catch (_) {}
     }
+
+    const peers = new Set()
+
+    pass.swarm.on('connection', (conn) => {
+      peers.add(conn)
+      diag('Peer connected, count: ' + peers.size)
+      try { rpc.request(RPC_PEER_JOINED).send('connected') } catch (_) {}
+
+      conn.on('close', () => {
+        peers.delete(conn)
+        diag('Peer disconnected, count: ' + peers.size)
+        try { rpc.request(RPC_PEER_LEFT).send('disconnected') } catch (_) {}
+      })
+
+      conn.on('error', () => {
+        peers.delete(conn)
+      })
+    })
+
+    pass.on('update', () => {
+      notifyUI()
+    })
+
+    notifyUI()
+  } catch (err) {
+    diag('FATAL: ' + err.message + '\n' + (err.stack || ''))
+    sendError(err.message)
   }
 }
+
+init()
 
 async function notifyUI() {
-  const movies = []
-  for await (const { key, value } of bee.createReadStream()) {
-    movies.push({ key, value })
+  if (!pass) return
+  try {
+    const movies = []
+    const stream = pass.list()
+    for await (const record of stream) {
+      movies.push({ key: record.key, value: JSON.parse(record.value) })
+    }
+    try { rpc.request(RPC_RESET).send(JSON.stringify(movies)) } catch (_) {}
+  } catch (err) {
+    diag('notifyUI error: ' + err.message)
   }
-  const req = rpc.request(RPC_RESET)
-  req.send(JSON.stringify(movies))
 }
 
 async function addMovie(movie) {
-  const key = 'movie:' + Date.now()
-  const title = movie[1]
-  diag('Adding movie: ' + title)
-  await bee.put(key, ['movie', title])
-  await notifyUI()
-  broadcast({ type: 'add', key, value: ['movie', title] })
+  if (!pass) return
+  try {
+    const key = 'movie:' + Date.now()
+    const title = movie[1]
+    diag('Adding movie: ' + title)
+    await pass.add(key, JSON.stringify(['movie', title]))
+  } catch (err) {
+    diag('addMovie error: ' + err.message)
+  }
 }
 
 async function removeMovie(key) {
-  diag('Removing movie: ' + key)
-  await bee.del(key)
-  await notifyUI()
-  broadcast({ type: 'remove', key })
-}
-
-async function handleSync(movies) {
-  for (const { key, value } of movies) {
-    const existing = await bee.get(key)
-    if (!existing) await bee.put(key, value)
+  if (!pass) return
+  try {
+    diag('Removing movie: ' + key)
+    await pass.remove(key)
+  } catch (err) {
+    diag('removeMovie error: ' + err.message)
   }
-  await notifyUI()
-}
-
-async function handleRemoteAdd(key, value) {
-  await bee.put(key, value)
-  await notifyUI()
-}
-
-async function handleRemoteRemove(key) {
-  await bee.del(key)
-  await notifyUI()
 }
 
 async function clearAll() {
-  diag('Clearing all movies')
-  const keys = []
-  for await (const { key } of bee.createReadStream()) {
-    keys.push(key)
+  if (!pass) return
+  try {
+    diag('Clearing all movies')
+    const stream = pass.list()
+    const keys = []
+    for await (const record of stream) {
+      keys.push(record.key)
+    }
+    for (const key of keys) {
+      await pass.remove(key)
+    }
+  } catch (err) {
+    diag('clearAll error: ' + err.message)
   }
-  for (const key of keys) {
-    await bee.del(key)
-  }
-  await notifyUI()
 }

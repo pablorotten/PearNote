@@ -152,3 +152,52 @@ Both devices run identical code. There's no client/server, no master/slave. Each
 - No history or conflict resolution beyond "last write wins"
 
 This is the pure P2P trade-off: no servers to maintain, but no guarantees either.
+
+## Q: How does Autopass change the architecture?
+
+We replaced Hyperbee (key-value store) + custom broadcast messages with **Autopass**.
+
+**Before (Hyperbee):**
+```
+Peer A                   Peer B
+  │                        │
+  ├─ Hyperbee (local)      ├─ Hyperbee (local)
+  ├─ Hyperswarm topic      ├─ Hyperswarm topic
+  └─ Custom JSON messages  └─ Custom JSON messages
+       (add/remove/sync)
+```
+
+Every peer sent their own add/remove/sync messages over the swarm. Sync was purely additive (never deleted). Deletions were lost when stale peers reconnected.
+
+**After (Autopass):**
+```
+Peer A                   Peer B
+  │                        │
+  ├─ Autopass (local)      ├─ Autopass (local)
+  │   └─ Autobase          │   └─ Autobase
+  │       ├─ Own Hypercore │       ├─ Own Hypercore
+  │       └─ Shared view   │       └─ Shared view
+  └─ BlindPairing invite   └─ BlindPairing invite
+```
+
+Autopass wraps **Autobase** (multi-writer Hypercore). Each peer writes to their own Hypercore fork. Autopass merges all forks deterministically using a CRDT — every `add` and `remove` is an event in the append-only log. Replaying all events in order always produces the same final state.
+
+**Key differences:**
+- No more custom broadcast messages — Autopass handles replication internally
+- No more additive-only sync — Autopass correctly applies deletes from any peer
+- **Offline edits work** — peers can add/remove while disconnected, and changes merge deterministically when they reconnect
+- Invite codes are cryptographic keys (long z32 strings), not 4-digit numbers
+- BlindPairing handles secure peer discovery and authentication
+
+**New flow:**
+1. Creator: `new Autopass(store)` → generates invite via `createInvite()`
+2. Joiner: `Autopass.pair(store, invite)` → connects via BlindPairing → gets paired
+3. Both: `pass.add(key, value)` / `pass.remove(key)` → `pass.on('update')` fires on all peers
+4. Each `update` reads the full list via `pass.list()` and sends to UI via RPC
+
+**Conflict resolution** (from our discussion):
+- Every peer has their own Hypercore (append-only log)
+- Events are `add(key, value)` or `remove(key)` 
+- On replication, peers exchange all events from all writers
+- Merge is deterministic: replay events in order (same on all peers)
+- This fixes the stale-peer-desync problem completely
