@@ -238,7 +238,7 @@ export default function App() {
   if (phase === 'menu') {
     return (
       <View style={styles.container}>
-        <Text style={styles.heading}>P2PKollections</Text>
+        <Text style={styles.heading}>P2P Kollections</Text>
         <Text style={styles.subtitle}>P2P List Sharing</Text>
 
         <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
@@ -328,7 +328,7 @@ export default function App() {
         <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.heading}>P2PKollections</Text>
+        <Text style={styles.heading}>P2P Kollections</Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
           <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>

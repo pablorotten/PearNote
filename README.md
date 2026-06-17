@@ -51,7 +51,7 @@ adb -s e017a252 shell am start -n com.p2pkollections.app/.MainActivity
 > This APK will work without Metro (you can unplug the phone)
 
 
-Uninstall the app:
+❌ Uninstall the app:
 ```sh
 adb -s 6ae4c054c2b8 uninstall com.p2pkollections.app
 adb -s e017a252 uninstall com.p2pkollections.app
