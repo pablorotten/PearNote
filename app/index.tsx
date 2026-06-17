@@ -82,6 +82,8 @@ export default function App() {
   const [listHistory, setListHistory] = useState<ListEntry[]>([])
   const [listName, setListName] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [editTitleValue, setEditTitleValue] = useState('')
   const [currentListName, setCurrentListName] = useState('')
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
@@ -395,7 +397,28 @@ export default function App() {
         <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
+        {editingTitle ? (
+          <TextInput
+            style={styles.titleInput}
+            value={editTitleValue}
+            onChangeText={setEditTitleValue}
+            onSubmitEditing={() => {
+              const val = editTitleValue.trim()
+              if (val && rpc) {
+                const req = rpc.request(RPC_SET_NAME)
+                req.send(val)
+              }
+              setEditingTitle(false)
+            }}
+            onBlur={() => setEditingTitle(false)}
+            autoFocus
+            selectTextOnFocus
+          />
+        ) : (
+          <TouchableOpacity onLongPress={() => { setEditTitleValue(currentListName); setEditingTitle(true) }}>
+            <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
+          </TouchableOpacity>
+        )}
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
           <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
@@ -483,6 +506,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#b0d943',
     textAlign: 'center',
+    marginTop: 10
+  },
+  titleInput: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#b0d943',
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#b0d943',
+    paddingVertical: 2,
+    marginHorizontal: 40,
     marginTop: 10
   },
   subtitle: {
