@@ -20,6 +20,7 @@ import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-f
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Camera, CameraView } from 'expo-camera'
 import QRCode from 'react-native-qrcode-svg'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Worklet } from 'react-native-bare-kit'
 import bundle from './app.bundle.mjs'
 import RPC from 'bare-rpc'
@@ -89,6 +90,7 @@ export default function App() {
   const [editTitleValue, setEditTitleValue] = useState('')
   const [currentKollectionName, setCurrentKollectionName] = useState('')
   const [showQR, setShowQR] = useState(false)
+  const [keyExpanded, setKeyExpanded] = useState(false)
   const [scanning, setScanning] = useState(false)
   const scanningRef = useRef(false)
   const workletRef = useRef<any>(null)
@@ -436,13 +438,24 @@ export default function App() {
               <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
             </View>
             {myCode ? (
-              <View style={styles.shareRow}>
-                <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>            
-                  <Text style={styles.codeValue}>{myCode}</Text>
+              <View style={styles.shareSection}>
+                <TouchableOpacity onPress={() => setKeyExpanded(!keyExpanded)} style={styles.codeRow}>
+                  <Text
+                    style={styles.codeValue}
+                    numberOfLines={keyExpanded ? undefined : 1}
+                    ellipsizeMode='tail'
+                  >
+                    {myCode}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShowQR(true)} style={styles.shareBtn}>
-                  <Text style={styles.shareBtnText}>QR</Text>
-                </TouchableOpacity>
+                <View style={styles.shareActions}>
+                  <TouchableOpacity onPress={copyCode} style={styles.copyBtn}>
+                    <Text style={styles.copyBtnText}>Copy key</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShowQR(true)} style={styles.qrBtn}>
+                    <MaterialCommunityIcons name='qrcode' size={20} color='#011501' />
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : null}
             <TouchableOpacity onPress={handleDeleteKollection} style={styles.deleteListBtn}>
@@ -760,44 +773,48 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 'bold'
   },
-  codeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  shareSection: {
+    alignSelf: 'stretch',
     marginTop: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    gap: 8
+  },
+  codeRow: {
     backgroundColor: '#1a3d0a',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#b0d943',
-    gap: 6
-  },
-  codeLabel: {
-    color: '#7a9e2d',
-    fontSize: 12
+    paddingHorizontal: 16,
+    paddingVertical: 10
   },
   codeValue: {
     color: '#b0d943',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
-    letterSpacing: 2
+    letterSpacing: 1,
+    fontFamily: Platform.OS === 'android' ? 'monospace' : undefined
   },
-  shareRow: {
+  shareActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 8
+    gap: 10
   },
-  shareBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  copyBtn: {
+    flex: 1,
+    paddingVertical: 10,
     backgroundColor: '#b0d943',
-    borderRadius: 8
+    borderRadius: 8,
+    alignItems: 'center'
   },
-  shareBtnText: {
+  copyBtnText: {
     color: '#011501',
     fontSize: 14,
     fontWeight: 'bold'
+  },
+  qrBtn: {
+    width: 42,
+    borderRadius: 8,
+    backgroundColor: '#b0d943',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   list: {
     flex: 1
