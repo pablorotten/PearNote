@@ -58,7 +58,7 @@ function LoadingSpinner() {
   return (
     <View style={styles.loadingContainer}>
       <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
-      <Text style={styles.loadingText}>Loading room...</Text>
+      <Text style={styles.loadingText}>Loading list...</Text>
     </View>
   )
 }
@@ -66,17 +66,17 @@ function LoadingSpinner() {
 export default function App() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
   const [items, setItems] = useState<Item[]>([])
-  const [roomCode, setRoomCode] = useState('')
+  const [listCode, setListCode] = useState('')
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [roomHistory, setRoomHistory] = useState<string[]>([])
+  const [listHistory, setListHistory] = useState<string[]>([])
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
-  const historyPath = documentDirectory + '/room-history.json'
+  const historyPath = documentDirectory + '/list-history.json'
 
   useEffect(() => {
     ;(async () => {
@@ -84,7 +84,7 @@ export default function App() {
         const data = await readAsStringAsync(historyPath)
         const codes: string[] = JSON.parse(data)
         codes.forEach(c => savedCodes.current.add(c))
-        setRoomHistory(codes)
+        setListHistory(codes)
       } catch (_) {}
     })()
   }, [])
@@ -92,15 +92,15 @@ export default function App() {
   async function saveToHistory(code: string) {
     if (savedCodes.current.has(code)) return
     savedCodes.current.add(code)
-    const updated = [code, ...roomHistory]
-    setRoomHistory(updated)
+    const updated = [code, ...listHistory]
+    setListHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function removeFromHistory(code: string) {
     savedCodes.current.delete(code)
-    const updated = roomHistory.filter(c => c !== code)
-    setRoomHistory(updated)
+    const updated = listHistory.filter(c => c !== code)
+    setListHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -113,7 +113,7 @@ export default function App() {
     setTitle('')
     setShowAdd(false)
     setRpc(null)
-    setRoomCode('')
+    setListCode('')
     setLoading(false)
   }
 
@@ -128,15 +128,15 @@ export default function App() {
   }, [phase])
 
   function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string) {
-    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' roomCode=' + roomCode)
-    const roomId = code || (mode === 'join' ? roomCode : '')
+    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' listCode=' + listCode)
+    const listId = code || (mode === 'join' ? listCode : '')
     const worklet = new Worklet()
     workletRef.current = worklet
     
-    // Args: [documentDirectory, mode, roomId?]
+    // Args: [documentDirectory, mode, listId?]
     const args = mode === 'create'
       ? [String(documentDirectory), 'create']
-      : [String(documentDirectory), mode, roomId]
+      : [String(documentDirectory), mode, listId]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -152,7 +152,7 @@ export default function App() {
         // Save storageId to history for rejoin
         saveToHistory(storageId)
         if (mode === 'create') {
-          Alert.alert('Room Created!', `Share this invite code:\n${invite}`, [
+          Alert.alert('List Created!', `Share this invite code:\n${invite}`, [
             { text: 'Copy', onPress: () => Clipboard.setString(invite) }
           ])
         }
@@ -231,7 +231,7 @@ export default function App() {
   function copyCode() {
     if (myCode) {
       Clipboard.setString(myCode)
-      Alert.alert('Copied!', `Room code ${myCode} copied to clipboard`)
+      Alert.alert('Copied!', `List code ${myCode} copied to clipboard`)
     }
   }
 
@@ -243,8 +243,8 @@ export default function App() {
 
         <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
           <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
-            <Text style={styles.bigButtonText}>Create Room</Text>
-            <Text style={styles.bigButtonSub}>Generate a new room code</Text>
+            <Text style={styles.bigButtonText}>Create List</Text>
+            <Text style={styles.bigButtonSub}>Generate a new list code</Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
@@ -257,48 +257,48 @@ export default function App() {
             style={styles.input}
             placeholder='Paste invite code'
             placeholderTextColor='#666'
-            value={roomCode}
-            onChangeText={setRoomCode}
+            value={listCode}
+            onChangeText={setListCode}
             autoCapitalize='none'
             autoCorrect={false}
           />
           <TouchableOpacity
-            style={[styles.bigButton, !roomCode && styles.buttonDisabled]}
+            style={[styles.bigButton, !listCode && styles.buttonDisabled]}
             onPress={() => {
-              if (!roomCode) return
+              if (!listCode) return
               Alert.alert(
-                'Join Room',
-                `Connect to room with code: ${roomCode}?`,
+                'Join List',
+                `Connect to list with code: ${listCode}?`,
                 [
                   { text: 'Cancel', style: 'cancel' },
                   { text: 'Join', onPress: () => startWorklet('join') }
                 ]
               )
             }}
-            disabled={!roomCode}
+            disabled={!listCode}
           >
-            <Text style={styles.bigButtonText}>Join Room</Text>
-            <Text style={styles.bigButtonSub}>Connect to an existing room</Text>
+            <Text style={styles.bigButtonText}>Join List</Text>
+            <Text style={styles.bigButtonSub}>Connect to an existing list</Text>
           </TouchableOpacity>
 
-          {roomHistory.length > 0 && (
+          {listHistory.length > 0 && (
             <View style={styles.historySection}>
-              <Text style={styles.historyTitle}>Your Rooms</Text>
+              <Text style={styles.historyTitle}>Your Lists</Text>
               <View style={styles.historyList}>
-                {roomHistory.map(storageId => (
+                {listHistory.map(storageId => (
                   <View key={storageId} style={styles.historyItem}>
                     <TouchableOpacity
                       style={styles.historyItemContent}
                       onPress={() => startWorklet('rejoin', storageId)}
                     >
-                      <Text style={styles.historyItemText}>Room {storageId}</Text>
+                      <Text style={styles.historyItemText}>List {storageId}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.historyDeleteBtn}
                       onPress={() => {
                         Alert.alert(
-                          'Remove Room',
-                          `Remove this room from history?`,
+                          'Remove List',
+                          `Remove this list from history?`,
                           [
                             { text: 'Cancel', style: 'cancel' },
                             { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(storageId) }
@@ -335,7 +335,7 @@ export default function App() {
         </View>
         {myCode ? (
           <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>
-            <Text style={styles.codeLabel}>Room:</Text>
+            <Text style={styles.codeLabel}>List:</Text>
             <Text style={styles.codeValue}>{myCode}</Text>
           </TouchableOpacity>
         ) : null}

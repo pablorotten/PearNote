@@ -8,7 +8,7 @@ Create a **desktop/mobile app** that demonstrates P2P (peer-to-peer) list sharin
 
 #### Create a new list
 1. User generates a "pairing code" (discovery key) on one device
-2. User enter in a room that it's just a single list.
+2. User enters a list — a single shared list.
 3. User adds elements to the list
 4. User shares the pairing code with another device (QR code, copy-paste, etc.)
 5. Second device enters the pairing code
