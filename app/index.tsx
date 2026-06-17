@@ -327,7 +327,6 @@ export default function App() {
             ) : (
               <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
                 <Text style={styles.bigButtonText}>Create Kollection</Text>
-                <Text style={styles.bigButtonSub}>Name your new kollection</Text>
               </TouchableOpacity>
             )}
 
@@ -337,34 +336,36 @@ export default function App() {
               <View style={styles.dividerLine} />
             </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder='Paste invite code'
-              placeholderTextColor='#666'
-              value={kollectionCode}
-              onChangeText={setKollectionCode}
-              autoCapitalize='none'
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              style={[styles.bigButton, !kollectionCode && styles.buttonDisabled]}
-              onPress={() => {
-                if (!kollectionCode) return
-                startWorklet('join')
-              }}
-              disabled={!kollectionCode}
-            >
-              <Text style={styles.bigButtonText}>Join Kollection</Text>
-              <Text style={styles.bigButtonSub}>Connect to an existing kollection</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.scanBtn} onPress={async () => {
-              const { granted } = await Camera.requestCameraPermissionsAsync()
-              if (granted) { setScanning(true); scanningRef.current = true }
-              else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
-            }}>
-              <Text style={styles.scanBtnText}>Scan QR</Text>
-            </TouchableOpacity>
+            <View style={styles.joinRow}>
+              <View style={styles.joinInputGroup}>
+                <TextInput
+                  style={styles.joinInput}
+                  placeholder='Paste invite code'
+                  placeholderTextColor='#666'
+                  value={kollectionCode}
+                  onChangeText={setKollectionCode}
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={[styles.joinSubmitBtn, !kollectionCode && styles.buttonDisabled]}
+                  onPress={() => {
+                    if (!kollectionCode) return
+                    startWorklet('join')
+                  }}
+                  disabled={!kollectionCode}
+                >
+                  <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#011501' />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
+                const { granted } = await Camera.requestCameraPermissionsAsync()
+                if (granted) { setScanning(true); scanningRef.current = true }
+                else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
+              }}>
+                <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7a9e2d' />
+              </TouchableOpacity>
+            </View>
 
             {kollectionHistory.length > 0 && (
               <View style={styles.historySection}>
@@ -587,7 +588,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#b0d943',
     textAlign: 'center',
-    marginTop: 10
+    marginTop: 5
   },
   titleInput: {
     fontSize: 24,
@@ -605,14 +606,14 @@ const styles = StyleSheet.create({
     color: '#7a9e2d',
     textAlign: 'center',
     marginTop: 5,
-    marginBottom: 40
+    marginBottom: 25
   },
   menuContent: {
     flex: 1
   },
   menuContentInner: {
     justifyContent: 'center',
-    gap: 15
+    gap: 12
   },
   historySection: {
     marginTop: 20
@@ -664,7 +665,8 @@ const styles = StyleSheet.create({
   },
   bigButton: {
     backgroundColor: '#1a3d0a',
-    padding: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#b0d943',
@@ -675,19 +677,14 @@ const styles = StyleSheet.create({
     borderColor: '#555'
   },
   bigButtonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#b0d943',
-    marginBottom: 5
-  },
-  bigButtonSub: {
-    fontSize: 14,
-    color: '#7a9e2d'
+    color: '#b0d943'
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10
+    marginVertical: 6
   },
   dividerLine: {
     flex: 1,
@@ -699,16 +696,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 14
   },
-  input: {
-    height: 50,
-    borderColor: '#b0d943',
-    borderWidth: 2,
+  joinRow: {
+    flexDirection: 'row',
+    gap: 10
+  },
+  joinInputGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#1a3d0a',
     borderRadius: 10,
-    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    overflow: 'hidden'
+  },
+  joinInput: {
+    flex: 1,
+    height: 46,
+    paddingHorizontal: 14,
     color: '#b0d943',
-    fontSize: 18,
-    textAlign: 'center',
-    backgroundColor: '#1a3d0a'
+    fontSize: 15
+  },
+  joinSubmitBtn: {
+    width: 46,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#b0d943'
+  },
+  qrScanBtn: {
+    width: 46,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#7a9e2d',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   header: {
     marginBottom: 15,
@@ -927,19 +947,6 @@ const styles = StyleSheet.create({
     color: '#011501',
     fontWeight: 'bold',
     fontSize: 15
-  },
-  scanBtn: {
-    backgroundColor: '#1a3d0a',
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#7a9e2d',
-    alignItems: 'center'
-  },
-  scanBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#7a9e2d'
   },
   qrOverlay: {
     flex: 1,
