@@ -25,12 +25,12 @@ const INIT_TIMEOUT = 30000
 const rpc = new RPC(IPC, (req, error) => {
   if (error) return
   if (req.command === RPC_ADD) {
-    const movie = JSON.parse(b4a.toString(req.data))
-    addMovie(movie)
+    const item = JSON.parse(b4a.toString(req.data))
+    addItem(item)
   }
   if (req.command === RPC_REMOVE) {
     const key = b4a.toString(req.data)
-    removeMovie(key)
+    removeItem(key)
   }
   if (req.command === RPC_CLEAR) {
     clearAll()
@@ -78,7 +78,7 @@ async function init() {
     if (mode === 'create') {
       // Create a new room with a unique storage path
       const sessionId = Date.now().toString(36)
-      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', sessionId)
+      const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
       diag('Creating new room, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
@@ -101,7 +101,7 @@ async function init() {
     } else if (mode === 'join') {
       // Join an existing room using invite code from another device
       const sessionId = Date.now().toString(36)
-      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', sessionId)
+      const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
       diag('Joining room, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
@@ -120,7 +120,7 @@ async function init() {
       
     } else if (mode === 'rejoin') {
       // Rejoin an existing room - storageId is the folder name
-      const storagePath = join(URL.fileURLToPath(baseDir), 'moviekollections', storageId)
+      const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', storageId)
       diag('Rejoining room, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
@@ -172,43 +172,43 @@ init()
 async function notifyUI() {
   if (!pass) return
   try {
-    const movies = []
+    const items = []
     const stream = pass.list()
     for await (const record of stream) {
-      movies.push({ key: record.key, value: JSON.parse(record.value) })
+      items.push({ key: record.key, value: JSON.parse(record.value) })
     }
-    try { rpc.request(RPC_RESET).send(JSON.stringify(movies)) } catch (_) {}
+    try { rpc.request(RPC_RESET).send(JSON.stringify(items)) } catch (_) {}
   } catch (err) {
     diag('notifyUI error: ' + err.message)
   }
 }
 
-async function addMovie(movie) {
+async function addItem(item) {
   if (!pass) return
   try {
-    const key = 'movie:' + Date.now()
-    const title = movie[1]
-    diag('Adding movie: ' + title)
-    await pass.add(key, JSON.stringify(['movie', title]))
+    const key = 'item:' + Date.now()
+    const title = item[1]
+    diag('Adding item: ' + title)
+    await pass.add(key, JSON.stringify(['item', title]))
   } catch (err) {
-    diag('addMovie error: ' + err.message)
+    diag('addItem error: ' + err.message)
   }
 }
 
-async function removeMovie(key) {
+async function removeItem(key) {
   if (!pass) return
   try {
-    diag('Removing movie: ' + key)
+    diag('Removing item: ' + key)
     await pass.remove(key)
   } catch (err) {
-    diag('removeMovie error: ' + err.message)
+    diag('removeItem error: ' + err.message)
   }
 }
 
 async function clearAll() {
   if (!pass) return
   try {
-    diag('Clearing all movies')
+    diag('Clearing all items')
     const stream = pass.list()
     const keys = []
     for await (const record of stream) {

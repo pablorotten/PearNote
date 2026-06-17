@@ -1,4 +1,4 @@
-# Learnings from MovieKollections
+# Learnings from P2PKollections
 
 ## Q: What does 🟢 Connected mean inside a room?
 
@@ -49,7 +49,7 @@ No. The spinner waits for the backend startup sequence:
 
 1. `await bee.ready()` — load local Corestore data from disk (fast, <100ms)
 2. `await discovery.flushed()` — Hyperswarm finishes setting up for peer discovery
-3. `notifyUI()` — read local Hyperbee and send movies to the UI
+3. `notifyUI()` — read local Hyperbee and send data to the UI
 
 It does **not** wait for peer sync. The spinner disappears as soon as local data is sent to the UI. Sync from other peers arrives in the background and updates the list whenever a peer connects.
 
@@ -82,24 +82,24 @@ For 2-3 rooms it's nothing. For 30 rooms on mobile it becomes heavy:
 
 At that scale you'd want a different architecture — a single daemon multiplexing all rooms, or a desktop seed relay.
 
-For MovieKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
+For P2PKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
 
 ## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
 
 Yes, this is a real problem in the current implementation. Scenario:
 
-1. Peers A and B are synced with the same movie list
+1. Peers A and B are synced with the same list
 2. B disconnects
-3. A removes some movies
-4. B reconnects, loads its stale local data (still has the deleted movies)
+3. A removes some items
+4. B reconnects, loads its stale local data (still has the deleted items)
 5. B's `sendFullList` sends its stale data to A
-6. The deleted movies pop back up in A's list
+6. The deleted items pop back up in A's list
 
 **Why this happens:** The current `handleSync` is purely additive:
 
 ```js
-async function handleSync(movies) {
-  for (const { key, value } of movies) {
+async function handleSync(items) {
+  for (const { key, value } of items) {
     const existing = await bee.get(key)
     if (!existing) await bee.put(key, value)  // only adds, never deletes
   }
@@ -209,9 +209,9 @@ Autopass wraps **Autobase** (multi-writer Hypercore). Each peer writes to their 
 **The Problem:** With the original Hyperbee + Hyperswarm implementation, we had a critical sync bug:
 
 ```
-1. User 1 and User 2 both have movies [A, B, C]
+1. User 1 and User 2 both have items [A, B, C]
 2. User 2 disconnects (goes offline)
-3. User 1 deletes movie B → now has [A, C]
+3. User 1 deletes item B → now has [A, C]
 4. User 2 reconnects with stale local data [A, B, C]
 5. Sync runs — B gets re-added because sync was "additive only"
 6. Both users now have [A, B, C] — the deletion was lost!
@@ -265,15 +265,15 @@ This was one of our biggest challenges. The key insight:
 
 ```
 Session 1 (Create):
-  storagePath = /moviekollections/abc123
+  storagePath = /p2pkollections/abc123
   pass = new Autopass(store) → creates new base
   pass.key = 0x1234...  (stored in Corestore)
 
 Session 2 (Rejoin):
-  storagePath = /moviekollections/abc123  ← SAME PATH!
+  storagePath = /p2pkollections/abc123  ← SAME PATH!
   pass = new Autopass(store) → loads existing base
   pass.key = 0x1234...  (same as before)
-  Movies are still there!
+  Items are still there!
 ```
 
 **The mistake we made initially:** We used a unique timestamp-based storage path for EVERY session. This meant each session created a NEW Autobase instead of loading the existing one. The fix was to save the `storageId` (folder name) and reuse it when rejoining.
@@ -316,7 +316,7 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 **Solution:** Save `storageId` (folder name) to history, reuse it for rejoin.
 
 ### Challenge 2: `pass.add()` value must be a string
-**Problem:** Passing arrays like `['movie', title]` crashed with `uint must be positive`.
+**Problem:** Passing arrays like `['item', title]` crashed with `uint must be positive`.
 **Solution:** `JSON.stringify()` the value, `JSON.parse()` when reading.
 
 ### Challenge 3: Corestore file lock after crash
@@ -367,8 +367,8 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 │                           │                                   │
 │  ┌────────────────────────▼────────────────────────────────┐ │
 │  │                    Corestore                             │ │
-│  │  /moviekollections/abc123/  ← Room 1 data                │ │
-│  │  /moviekollections/def456/  ← Room 2 data                │ │
+│  │  /p2pkollections/abc123/  ← Room 1 data                │ │
+│  │  /p2pkollections/def456/  ← Room 2 data                │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -378,6 +378,48 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 2. Worklet loads/creates Autopass with the storage path
 3. Autopass joins DHT, finds peers, replicates data
 4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
-5. UI updates movie list
+5. UI updates the list
 
 **Key invariant:** Same `storageId` = same storage path = same Autobase = same room data.
+
+---
+
+## Q: Why doesn't pairing work on cellular (4G/5G)?
+
+### The problem
+
+BlindPairing requires a bidirectional DHT handshake between peers. Cellular networks (4G/5G) use **Carrier-Grade NAT (CGNAT)** which blocks inbound connections. The result:
+
+- **WiFi + WiFi** → pairing works (both peers reachable via DHT)
+- **WiFi + Cellular** → pairing fails for the cellular side (timeout after 30-90s)
+- **Once paired**, switching to cellular works fine for reconnection
+
+This is because `Autopass.pair()` (the initial handshake) needs *both* peers to be reachable via the DHT. CGNAT on cellular prevents the inbound half of the handshake. It's not a timeout issue — the connection never establishes at all.
+
+### Why rejoin works on cellular
+
+After the initial pairing, the base key is stored in Corestore. When rejoining, `new Autopass(store)` loads the existing base without needing a DHT handshake. Hyperswarm then connects via **outbound TCP** from the cellular side, which works fine because outbound connections traverse CGNAT without issues.
+
+### Current behavior
+
+| Scenario | Outcome |
+|---|---|
+| Both on WiFi | Works |
+| Creator on WiFi, joiner on cellular (1st time) | Fails (pair timeout) |
+| Creator on WiFi, joiner on cellular (rejoin) | Works |
+| Both on cellular (1st time) | Fails |
+| Both on cellular (rejoin) | Works |
+
+### Workaround
+
+Pair on WiFi first. After the initial pairing succeeds and the base key is stored in Corestore, switch back to cellular. Subsequent joins/rejoins will work.
+
+### Possible fixes
+
+1. **Relay server** — add a lightweight signaling server that relays the initial handshake. Both peers connect outbound to the relay, which forwards messages between them. This breaks pure P2P but enables cellular pairing.
+
+2. **UDP holepunching** — some cellular carriers allow UDP holepunching even when TCP is blocked. Hyperswarm could use a UDP relay for the initial handshake, then upgrade to direct TCP.
+
+3. **Retry with exponential backoff** — increase the timeout significantly (e.g., 3-5 minutes) and retry the pairing. Some CGNATs have temporary port mappings that expire quickly, so retries with different DHT entry points might work.
+
+4. **Hybrid approach** — use a simple HTTP server as a bootstrap node. Both peers POST their public keys to the server, which forwards them to each other. Once they have each other's keys, they can attempt direct DHT connection.
