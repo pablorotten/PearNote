@@ -381,3 +381,45 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 5. UI updates the list
 
 **Key invariant:** Same `storageId` = same storage path = same Autobase = same room data.
+
+---
+
+## Q: Why doesn't pairing work on cellular (4G/5G)?
+
+### The problem
+
+BlindPairing requires a bidirectional DHT handshake between peers. Cellular networks (4G/5G) use **Carrier-Grade NAT (CGNAT)** which blocks inbound connections. The result:
+
+- **WiFi + WiFi** → pairing works (both peers reachable via DHT)
+- **WiFi + Cellular** → pairing fails for the cellular side (timeout after 30-90s)
+- **Once paired**, switching to cellular works fine for reconnection
+
+This is because `Autopass.pair()` (the initial handshake) needs *both* peers to be reachable via the DHT. CGNAT on cellular prevents the inbound half of the handshake. It's not a timeout issue — the connection never establishes at all.
+
+### Why rejoin works on cellular
+
+After the initial pairing, the base key is stored in Corestore. When rejoining, `new Autopass(store)` loads the existing base without needing a DHT handshake. Hyperswarm then connects via **outbound TCP** from the cellular side, which works fine because outbound connections traverse CGNAT without issues.
+
+### Current behavior
+
+| Scenario | Outcome |
+|---|---|
+| Both on WiFi | Works |
+| Creator on WiFi, joiner on cellular (1st time) | Fails (pair timeout) |
+| Creator on WiFi, joiner on cellular (rejoin) | Works |
+| Both on cellular (1st time) | Fails |
+| Both on cellular (rejoin) | Works |
+
+### Workaround
+
+Pair on WiFi first. After the initial pairing succeeds and the base key is stored in Corestore, switch back to cellular. Subsequent joins/rejoins will work.
+
+### Possible fixes
+
+1. **Relay server** — add a lightweight signaling server that relays the initial handshake. Both peers connect outbound to the relay, which forwards messages between them. This breaks pure P2P but enables cellular pairing.
+
+2. **UDP holepunching** — some cellular carriers allow UDP holepunching even when TCP is blocked. Hyperswarm could use a UDP relay for the initial handshake, then upgrade to direct TCP.
+
+3. **Retry with exponential backoff** — increase the timeout significantly (e.g., 3-5 minutes) and retry the pairing. Some CGNATs have temporary port mappings that expire quickly, so retries with different DHT entry points might work.
+
+4. **Hybrid approach** — use a simple HTTP server as a bootstrap node. Both peers POST their public keys to the server, which forwards them to each other. Once they have each other's keys, they can attempt direct DHT connection.
