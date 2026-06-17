@@ -54,6 +54,8 @@ Uninstall the app:
 ```sh
 adb -s 6ae4c054c2b8 uninstall to.holepunch.bare.expo
 adb -s e017a252 uninstall to.holepunch.bare.expo
+
+adb -s 6ae4c054c2b8 uninstall to.holepunch.bare.expo; adb -s e017a252 uninstall to.holepunch.bare.expo
 ```
 
 ## 🪵 Logs
