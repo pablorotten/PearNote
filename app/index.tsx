@@ -42,7 +42,7 @@ type Item = {
   value: [string, string]
 }
 
-type ListEntry = {
+type KollectionEntry = {
   id: string
   name: string
 }
@@ -67,7 +67,7 @@ function LoadingSpinner() {
   return (
     <View style={styles.loadingContainer}>
       <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
-      <Text style={styles.loadingText}>Loading list...</Text>
+      <Text style={styles.loadingText}>Loading kollection...</Text>
     </View>
   )
 }
@@ -75,25 +75,25 @@ function LoadingSpinner() {
 export default function App() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
   const [items, setItems] = useState<Item[]>([])
-  const [listCode, setListCode] = useState('')
+  const [kollectionCode, setKollectionCode] = useState('')
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [listHistory, setListHistory] = useState<ListEntry[]>([])
-  const [listName, setListName] = useState('')
+  const [kollectionHistory, setKollectionHistory] = useState<KollectionEntry[]>([])
+  const [kollectionName, setKollectionName] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
   const [editTitleValue, setEditTitleValue] = useState('')
-  const [currentListName, setCurrentListName] = useState('')
+  const [currentKollectionName, setCurrentKollectionName] = useState('')
   const [showQR, setShowQR] = useState(false)
   const [scanning, setScanning] = useState(false)
   const scanningRef = useRef(false)
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
-  const historyPath = documentDirectory + '/list-history.json'
+  const historyPath = documentDirectory + '/kollection-history.json'
 
   useEffect(() => {
     ;(async () => {
@@ -101,13 +101,13 @@ export default function App() {
         const data = await readAsStringAsync(historyPath)
         const parsed = JSON.parse(data)
         if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-          const entries: ListEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed List' }))
+          const entries: KollectionEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed Kollection' }))
           entries.forEach(e => savedCodes.current.add(e.id))
-          setListHistory(entries)
+          setKollectionHistory(entries)
         } else {
-          const entries: ListEntry[] = parsed
+          const entries: KollectionEntry[] = parsed
           entries.forEach(e => savedCodes.current.add(e.id))
-          setListHistory(entries)
+          setKollectionHistory(entries)
         }
       } catch (_) {}
     })()
@@ -116,24 +116,24 @@ export default function App() {
   async function saveToHistory(id: string, name: string) {
     if (savedCodes.current.has(id)) return
     savedCodes.current.add(id)
-    const entry: ListEntry = { id, name }
-    const updated = [entry, ...listHistory]
-    setListHistory(updated)
+    const entry: KollectionEntry = { id, name }
+    const updated = [entry, ...kollectionHistory]
+    setKollectionHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function removeFromHistory(id: string) {
     savedCodes.current.delete(id)
-    const updated = listHistory.filter(e => e.id !== id)
-    setListHistory(updated)
+    const updated = kollectionHistory.filter(e => e.id !== id)
+    setKollectionHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function updateHistoryName(syncedName: string) {
-    const lastEntry = listHistory[0]
+    const lastEntry = kollectionHistory[0]
     if (!lastEntry || lastEntry.name === syncedName) return
-    const updated = [{ ...lastEntry, name: syncedName }, ...listHistory.slice(1)]
-    setListHistory(updated)
+    const updated = [{ ...lastEntry, name: syncedName }, ...kollectionHistory.slice(1)]
+    setKollectionHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -146,9 +146,9 @@ export default function App() {
     setTitle('')
     setShowAdd(false)
     setRpc(null)
-    setListCode('')
+    setKollectionCode('')
     setLoading(false)
-    setCurrentListName('')
+    setCurrentKollectionName('')
   }
 
   useEffect(() => {
@@ -162,16 +162,16 @@ export default function App() {
   }, [phase])
 
   function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string, name?: string) {
-    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' listCode=' + listCode)
-    const listId = code || (mode === 'join' ? listCode : '')
-    if (name) setCurrentListName(name)
+    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' kollectionCode=' + kollectionCode)
+    const kollectionId = code || (mode === 'join' ? kollectionCode : '')
+    if (name) setCurrentKollectionName(name)
     const worklet = new Worklet()
     workletRef.current = worklet
     
-    // Args: [documentDirectory, mode, listId?]
+    // Args: [documentDirectory, mode, kollectionId?]
     const args = mode === 'create'
       ? [String(documentDirectory), 'create']
-      : [String(documentDirectory), mode, listId]
+      : [String(documentDirectory), mode, kollectionId]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -185,20 +185,20 @@ export default function App() {
         const [storageId, invite] = data.split('|')
         setMyCode(invite)
         if (mode === 'create' && name) {
-          setCurrentListName(name)
+          setCurrentKollectionName(name)
           saveToHistory(storageId, name)
           const nameReq = rpcInstance.request(RPC_SET_NAME)
           nameReq.send(name)
         } else if (mode === 'rejoin') {
-          const existing = listHistory.find(e => e.id === storageId)
-          setCurrentListName(existing ? existing.name : storageId)
+          const existing = kollectionHistory.find(e => e.id === storageId)
+          setCurrentKollectionName(existing ? existing.name : storageId)
           saveToHistory(storageId, existing ? existing.name : storageId)
         } else {
-          setCurrentListName(storageId)
+          setCurrentKollectionName(storageId)
           saveToHistory(storageId, storageId)
         }
         if (mode === 'create') {
-          Alert.alert('List Created!', `Share this code:\n${invite}`, [
+          Alert.alert('Kollection Created!', `Share this code:\n${invite}`, [
             { text: 'Copy Code', onPress: () => Clipboard.setString(invite) }
           ])
         }
@@ -206,12 +206,12 @@ export default function App() {
 
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
-        const nameEntry = data.find((d: any) => d.key === '_list_name')
+        const nameEntry = data.find((d: any) => d.key === '_kollection_name')
         if (nameEntry) {
-          setCurrentListName(nameEntry.value[1])
+          setCurrentKollectionName(nameEntry.value[1])
           updateHistoryName(nameEntry.value[1])
         }
-        setItems(data.filter((d: any) => d.key !== '_list_name'))
+        setItems(data.filter((d: any) => d.key !== '_kollection_name'))
         setLoading(false)
       }
 
@@ -257,11 +257,11 @@ export default function App() {
     }
   }
 
-  function handleDeleteList() {
+  function handleDeleteKollection() {
     if (!myCode) return
     Alert.alert(
-      'Delete List',
-      `Are you sure you want to leave the list ${myCode}?`,
+      'Delete Kollection',
+      `Are you sure you want to leave the kollection ${myCode}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -282,7 +282,7 @@ export default function App() {
   function copyCode() {
     if (myCode) {
       Clipboard.setString(myCode)
-      Alert.alert('Copied!', `List code ${myCode} copied to clipboard`)
+      Alert.alert('Copied!', `Invite code ${myCode} copied to clipboard`)
     }
   }
 
@@ -291,32 +291,32 @@ export default function App() {
       {phase === 'menu' ? (
         <View style={styles.container}>
           <Text style={styles.heading}>P2P Kollections</Text>
-          <Text style={styles.subtitle}>P2P List Sharing</Text>
+          <Text style={styles.subtitle}>P2P Kollection Sharing</Text>
 
           <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
             {showCreateForm ? (
               <View style={styles.nameForm}>
                 <TextInput
                   style={styles.formInput}
-                  placeholder='List name'
+                  placeholder='Kollection name'
                   placeholderTextColor='#666'
-                  value={listName}
-                  onChangeText={setListName}
+                  value={kollectionName}
+                  onChangeText={setKollectionName}
                   autoFocus
                 />
                 <View style={styles.formActions}>
-                  <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setListName('') }}>
+                  <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setKollectionName('') }}>
                     <Text style={styles.cancelBtnText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.addBtn, !listName.trim() && styles.buttonDisabled]}
+                    style={[styles.addBtn, !kollectionName.trim() && styles.buttonDisabled]}
                     onPress={() => {
-                      if (!listName.trim()) return
+                      if (!kollectionName.trim()) return
                       setShowCreateForm(false)
-                      startWorklet('create', undefined, listName.trim())
-                      setListName('')
+                      startWorklet('create', undefined, kollectionName.trim())
+                      setKollectionName('')
                     }}
-                    disabled={!listName.trim()}
+                    disabled={!kollectionName.trim()}
                   >
                     <Text style={styles.addBtnText}>Create</Text>
                   </TouchableOpacity>
@@ -324,8 +324,8 @@ export default function App() {
               </View>
             ) : (
               <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
-                <Text style={styles.bigButtonText}>Create List</Text>
-                <Text style={styles.bigButtonSub}>Name your new list</Text>
+                <Text style={styles.bigButtonText}>Create Kollection</Text>
+                <Text style={styles.bigButtonSub}>Name your new kollection</Text>
               </TouchableOpacity>
             )}
 
@@ -339,21 +339,21 @@ export default function App() {
               style={styles.input}
               placeholder='Paste invite code'
               placeholderTextColor='#666'
-              value={listCode}
-              onChangeText={setListCode}
+              value={kollectionCode}
+              onChangeText={setKollectionCode}
               autoCapitalize='none'
               autoCorrect={false}
             />
             <TouchableOpacity
-              style={[styles.bigButton, !listCode && styles.buttonDisabled]}
+              style={[styles.bigButton, !kollectionCode && styles.buttonDisabled]}
               onPress={() => {
-                if (!listCode) return
+                if (!kollectionCode) return
                 startWorklet('join')
               }}
-              disabled={!listCode}
+              disabled={!kollectionCode}
             >
-              <Text style={styles.bigButtonText}>Join List</Text>
-              <Text style={styles.bigButtonSub}>Connect to an existing list</Text>
+              <Text style={styles.bigButtonText}>Join Kollection</Text>
+              <Text style={styles.bigButtonSub}>Connect to an existing kollection</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.scanBtn} onPress={async () => {
@@ -361,14 +361,14 @@ export default function App() {
               if (granted) { setScanning(true); scanningRef.current = true }
               else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
             }}>
-              <Text style={styles.scanBtnText}>Scan QR Code</Text>
+              <Text style={styles.scanBtnText}>Scan QR</Text>
             </TouchableOpacity>
 
-            {listHistory.length > 0 && (
+            {kollectionHistory.length > 0 && (
               <View style={styles.historySection}>
-                <Text style={styles.historyTitle}>Your Lists</Text>
+                <Text style={styles.historyTitle}>Your Kollections</Text>
                 <View style={styles.historyList}>
-                  {listHistory.map(entry => (
+                  {kollectionHistory.map(entry => (
                     <View key={entry.id} style={styles.historyItem}>
                       <TouchableOpacity
                         style={styles.historyItemContent}
@@ -381,7 +381,7 @@ export default function App() {
                         style={styles.historyDeleteBtn}
                         onPress={() => {
                           Alert.alert(
-                            'Remove List',
+                            'Remove Kollection',
                             `Remove "${entry.name}" from history?`,
                             [
                               { text: 'Cancel', style: 'cancel' },
@@ -427,8 +427,8 @@ export default function App() {
                 selectTextOnFocus
               />
             ) : (
-              <TouchableOpacity onLongPress={() => { setEditTitleValue(currentListName); setEditingTitle(true) }}>
-                <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
+              <TouchableOpacity onLongPress={() => { setEditTitleValue(currentKollectionName); setEditingTitle(true) }}>
+                <Text style={styles.heading}>{currentKollectionName || 'P2P Kollections'}</Text>
               </TouchableOpacity>
             )}
             <View style={styles.statusRow}>
@@ -445,7 +445,7 @@ export default function App() {
                 </TouchableOpacity>
               </View>
             ) : null}
-            <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
+            <TouchableOpacity onPress={handleDeleteKollection} style={styles.deleteListBtn}>
               <Text style={styles.deleteListBtnText}>✕</Text>
             </TouchableOpacity>
           </View>

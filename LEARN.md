@@ -230,7 +230,7 @@ The root cause: Hyperbee stores **current state** (key-value pairs), not **event
 | **Sync** | Custom broadcast messages | Built-in replication |
 | **Deletions** | Lost on stale peer reconnect | Preserved as events, always applied |
 | **Offline edits** | Problematic (merge conflicts) | Works correctly (CRDT merge) |
-| **Invite codes** | Custom 4-digit list codes | Cryptographic z32 strings (BlindPairing) |
+| **Invite codes** | Custom 4-digit kollection codes | Cryptographic z32 strings (BlindPairing) |
 | **Peer discovery** | Manual Hyperswarm topic join | BlindPairing handles authentication |
 
 ## Q: How does Autopass pairing work?
@@ -247,7 +247,7 @@ Joiner (Device B):
   1. Autopass.pair(store, inviteCode) → connects via DHT
   2. BlindPairing handshake with Device A
   3. pair.finished() → returns paired Autopass instance
-  4. Device B now has the base key and can write to the shared list
+  4. Device B now has the base key and can write to the shared kollection
 
 After pairing:
   - Both devices can do new Autopass(store) to reconnect
@@ -284,26 +284,26 @@ Session 2 (Rejoin):
 // Args: [documentDirectory, mode, storageId?]
 
 mode = 'create'
-  // Create new list with unique storage path
+  // Create new kollection with unique storage path
   // storageId = timestamp (e.g., "mqham920")
   // Returns: storageId|invite
 
 mode = 'join'  
-  // Join someone else's list using their invite code
+  // Join someone else's kollection using their invite code
   // storageId = invite code from other device
   // Creates new storage path, pairs via BlindPairing
   // Returns: storageId|invite
 
 mode = 'rejoin'
-  // Rejoin a list you've been in before
+  // Rejoin a kollection you've been in before
   // storageId = folder name from history (e.g., "mqham920")
   // Uses SAME storage path → loads existing Autobase
   // Returns: storageId|invite
 ```
 
-## Q: Why can't you join your own list with the invite code?
+## Q: Why can't you join your own kollection with the invite code?
 
-If you create a list, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
+If you create a kollection, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
 
 **Why:** `Autopass.pair()` needs to complete a BlindPairing handshake with the HOST. When you leave, the host worklet is terminated. No host = no one to complete the handshake = `pair.finished()` times out.
 
@@ -321,7 +321,7 @@ If you create a list, leave (terminate worklet), then try to JOIN with your own 
 
 ### Challenge 3: Corestore file lock after crash
 **Problem:** If the worklet crashed or was terminated abruptly, Corestore might leave locks.
-**Solution:** Each list uses its own storage folder. If corrupted, delete and recreate.
+**Solution:** Each kollection uses its own storage folder. If corrupted, delete and recreate.
 
 ### Challenge 4: `pair.finished()` hangs forever
 **Problem:** No built-in timeout — if host is offline, it hangs.
@@ -341,7 +341,7 @@ If you create a list, leave (terminate worklet), then try to JOIN with your own 
 ┌─────────────────────────────────────────────────────────────┐
 │                      React Native UI                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │ Create List │  │ Join List   │  │ Your Lists  │          │
+│  │ Create Kollection │  │ Join Kollection   │  │ Your Kollections  │          │
 │  │  (mode:     │  │  (mode:     │  │  (mode:     │          │
 │  │   create)   │  │   join)     │  │   rejoin)   │          │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
@@ -380,7 +380,7 @@ If you create a list, leave (terminate worklet), then try to JOIN with your own 
 4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
 5. UI updates the list
 
-**Key invariant:** Same `storageId` = same storage path = same Autobase = same list data.
+**Key invariant:** Same `storageId` = same storage path = same Autobase = same kollection data.
 
 ---
 

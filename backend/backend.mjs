@@ -81,10 +81,10 @@ async function init() {
     diag('mode: ' + mode + ' storageId: ' + (storageId || '(none)'))
 
     if (mode === 'create') {
-      // Create a new list with a unique storage path
+      // Create a new kollection with a unique storage path
       const sessionId = Date.now().toString(36)
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
-      diag('Creating new list, storagePath: ' + storagePath)
+      diag('Creating new kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
@@ -104,10 +104,10 @@ async function init() {
       try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + invite) } catch (_) {}
       
     } else if (mode === 'join') {
-      // Join an existing list using invite code from another device
+      // Join an existing kollection using invite code from another device
       const sessionId = Date.now().toString(36)
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
-      diag('Joining list, storagePath: ' + storagePath)
+      diag('Joining kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: pairTimeout, cancel: cancelPair } = timeoutPromise(INIT_TIMEOUT, 'Autopass.pair().finished()')
@@ -118,15 +118,15 @@ async function init() {
       
       await pass.ready()
       
-      diag('Joined list')
+      diag('Joined kollection')
       
       // Send storageId (folder name) and invite
       try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + storageId) } catch (_) {}
       
     } else if (mode === 'rejoin') {
-      // Rejoin an existing list - storageId is the folder name
+      // Rejoin an existing kollection - storageId is the folder name
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', storageId)
-      diag('Rejoining list, storagePath: ' + storagePath)
+      diag('Rejoining kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
@@ -136,7 +136,7 @@ async function init() {
       await Promise.race([pass.ready(), readyTimeout])
       cancelReady()
       
-      diag('Rejoined list')
+      diag('Rejoined kollection')
       
       // Create a new invite for this session
       const invite = await pass.createInvite()
@@ -203,10 +203,10 @@ async function addItem(item) {
 async function setListName(name) {
   if (!pass) return
   try {
-    diag('Setting list name: ' + name)
-    await pass.add('_list_name', JSON.stringify(['_name', name]))
+    diag('Setting kollection name: ' + name)
+    await pass.add('_kollection_name', JSON.stringify(['_name', name]))
   } catch (err) {
-    diag('setListName error: ' + err.message)
+    diag('setKollectionName error: ' + err.message)
   }
 }
 
