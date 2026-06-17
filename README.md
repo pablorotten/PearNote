@@ -49,6 +49,15 @@ adb -s e017a252 shell am start -n to.holepunch.bare.expo/.MainActivity
 > [!NOTE]
 > This APK will work without Metro (you can unplug the phone)
 
+
+Uninstall the app:
+```sh
+adb -s 6ae4c054c2b8 uninstall to.holepunch.bare.expo
+adb -s e017a252 uninstall to.holepunch.bare.expo
+
+adb -s 6ae4c054c2b8 uninstall to.holepunch.bare.expo; adb -s e017a252 uninstall to.holepunch.bare.expo
+```
+
 ## 🪵 Logs
 
 Clear logs:
@@ -59,10 +68,12 @@ adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c
 Log specific device only Warning and above:
 ```sh
 adb -s 6ae4c054c2b8 logcat -c
-adb -s 6ae4c054c2b8 logcat *:W -d > 6ae4c054c2b8.log
+adb -s 6ae4c054c2b8 logcat *:W -d > logs/6ae4c054c2b8.log
+adb -s 6ae4c054c2b8 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/6ae4c054c2b8.log
 
 adb -s e017a252 logcat -c
-adb -s e017a252 logcat *:W -d > e017a252.log
+adb -s e017a252 logcat *:W -d > logs/e017a252.log
+adb -s e017a252 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/e017a252.log
 ```
 
 Log specific app messages, for example in th app you have `console.log('DIAG:', msg)`

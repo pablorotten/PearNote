@@ -28,7 +28,9 @@ import {
   RPC_MY_INVITE,
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
-  RPC_CLEAR
+  RPC_CLEAR,
+  RPC_DIAG,
+  RPC_ERROR
 } from '../rpc-commands.mjs'
 
 type Movie = {
@@ -125,13 +127,16 @@ export default function App() {
     return () => sub.remove()
   }, [phase])
 
-  function startWorklet(mode: 'create' | 'join', code?: string) {
-    const joinCode = code || (mode === 'join' ? roomCode : '')
+  function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string) {
+    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' roomCode=' + roomCode)
+    const roomId = code || (mode === 'join' ? roomCode : '')
     const worklet = new Worklet()
     workletRef.current = worklet
+    
+    // Args: [documentDirectory, mode, roomId?]
     const args = mode === 'create'
-      ? [String(documentDirectory)]
-      : [String(documentDirectory), joinCode]
+      ? [String(documentDirectory), 'create']
+      : [String(documentDirectory), mode, roomId]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -140,12 +145,15 @@ export default function App() {
 
     const rpcInstance = new RPC(IPC, (req) => {
       if (req.command === RPC_MY_INVITE) {
-        const code = b4a.toString(req.data)
-        setMyCode(code)
-        saveToHistory(code)
+        // Format: storageId|invite
+        const data = b4a.toString(req.data)
+        const [storageId, invite] = data.split('|')
+        setMyCode(invite)
+        // Save storageId to history for rejoin
+        saveToHistory(storageId)
         if (mode === 'create') {
-          Alert.alert('Room Created!', `Share this code: ${code}`, [
-            { text: 'Copy', onPress: () => Clipboard.setString(code) }
+          Alert.alert('Room Created!', `Share this invite code:\n${invite}`, [
+            { text: 'Copy', onPress: () => Clipboard.setString(invite) }
           ])
         }
       }
@@ -163,12 +171,19 @@ export default function App() {
       if (req.command === RPC_PEER_LEFT) {
         setConnected(false)
       }
+
+      if (req.command === RPC_DIAG) {
+        console.log('BARE_DIAG: ' + b4a.toString(req.data))
+      }
+
+      if (req.command === RPC_ERROR) {
+        const msg = b4a.toString(req.data)
+        console.log('BARE_ERROR: ' + msg)
+        setLoading(false)
+        Alert.alert('Error', msg)
+      }
     })
 
-    if (mode === 'join') {
-      setMyCode(joinCode)
-      saveToHistory(joinCode)
-    }
     setRpc(rpcInstance)
     setPhase('list')
   }
@@ -240,15 +255,26 @@ export default function App() {
 
           <TextInput
             style={styles.input}
-            placeholder='Enter room code'
+            placeholder='Paste invite code'
             placeholderTextColor='#666'
             value={roomCode}
             onChangeText={setRoomCode}
-            keyboardType='number-pad'
+            autoCapitalize='none'
+            autoCorrect={false}
           />
           <TouchableOpacity
             style={[styles.bigButton, !roomCode && styles.buttonDisabled]}
-            onPress={() => roomCode && startWorklet('join')}
+            onPress={() => {
+              if (!roomCode) return
+              Alert.alert(
+                'Join Room',
+                `Connect to room with code: ${roomCode}?`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Join', onPress: () => startWorklet('join') }
+                ]
+              )
+            }}
             disabled={!roomCode}
           >
             <Text style={styles.bigButtonText}>Join Room</Text>
@@ -257,31 +283,32 @@ export default function App() {
 
           {roomHistory.length > 0 && (
             <View style={styles.historySection}>
-              <Text style={styles.historyTitle}>Recent Rooms</Text>
+              <Text style={styles.historyTitle}>Your Rooms</Text>
               <View style={styles.historyList}>
-                {roomHistory.map(code => (
-                  <TouchableOpacity
-                    key={code}
-                    style={styles.historyItem}
-                    onPress={() => startWorklet('join', code)}
-                  >
-                    <Text style={styles.historyItemText}>Room {code}</Text>
+                {roomHistory.map(storageId => (
+                  <View key={storageId} style={styles.historyItem}>
+                    <TouchableOpacity
+                      style={styles.historyItemContent}
+                      onPress={() => startWorklet('rejoin', storageId)}
+                    >
+                      <Text style={styles.historyItemText}>Room {storageId}</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.historyDeleteBtn}
                       onPress={() => {
                         Alert.alert(
-                          `Leave ${code}`,
-                          `Are you sure you want to leave ${code}?`,
+                          'Remove Room',
+                          `Remove this room from history?`,
                           [
                             { text: 'Cancel', style: 'cancel' },
-                            { text: 'Leave', style: 'destructive', onPress: () => removeFromHistory(code) }
+                            { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(storageId) }
                           ]
                         )
                       }}
                     >
                       <Text style={styles.historyDeleteBtnText}>✕</Text>
                     </TouchableOpacity>
-                  </TouchableOpacity>
+                  </View>
                 ))}
               </View>
             </View>
@@ -421,12 +448,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a3d0a',
-    paddingLeft: 14,
-    paddingRight: 4,
-    paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#2a5a0a'
+  },
+  historyItemContent: {
+    flex: 1,
+    paddingLeft: 14,
+    paddingVertical: 4
   },
   historyItemText: {
     flex: 1,

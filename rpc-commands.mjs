@@ -6,3 +6,5 @@ export const RPC_PEER_JOINED = 4
 export const RPC_PEER_LEFT = 5
 export const RPC_DIAG = 6
 export const RPC_CLEAR = 7
+export const RPC_ERROR = 8
+export const RPC_EXIT = 9
