@@ -266,14 +266,7 @@ export default function App() {
             style={[styles.bigButton, !listCode && styles.buttonDisabled]}
             onPress={() => {
               if (!listCode) return
-              Alert.alert(
-                'Join List',
-                `Connect to list with code: ${listCode}?`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Join', onPress: () => startWorklet('join') }
-                ]
-              )
+              startWorklet('join')
             }}
             disabled={!listCode}
           >
