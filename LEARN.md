@@ -201,3 +201,183 @@ Autopass wraps **Autobase** (multi-writer Hypercore). Each peer writes to their 
 - On replication, peers exchange all events from all writers
 - Merge is deterministic: replay events in order (same on all peers)
 - This fixes the stale-peer-desync problem completely
+
+---
+
+## Q: Why did we switch from Hyperbee to Autopass?
+
+**The Problem:** With the original Hyperbee + Hyperswarm implementation, we had a critical sync bug:
+
+```
+1. User 1 and User 2 both have movies [A, B, C]
+2. User 2 disconnects (goes offline)
+3. User 1 deletes movie B → now has [A, C]
+4. User 2 reconnects with stale local data [A, B, C]
+5. Sync runs — B gets re-added because sync was "additive only"
+6. Both users now have [A, B, C] — the deletion was lost!
+```
+
+The root cause: Hyperbee stores **current state** (key-value pairs), not **events**. When peer B reconnects with stale data, there's no record that "B was deleted" — only that "B exists in B's local store." The additive merge logic re-introduced deleted items.
+
+**The Solution:** Autopass uses **Autobase** under the hood, which stores **events** (add/remove operations) in append-only Hypercores. Each peer has their own Hypercore, and Autobase merges all events deterministically. Since deletions are events too, they're never lost — replaying all events in order always produces the correct final state.
+
+## Q: What are the key differences between Hyperbee and Autopass?
+
+| Aspect | Hyperbee (before) | Autopass (after) |
+|--------|------------------|------------------|
+| **Data model** | Key-value store (current state) | Event log (append-only operations) |
+| **Writers** | Single writer per Hypercore | Multi-writer via Autobase |
+| **Sync** | Custom broadcast messages | Built-in replication |
+| **Deletions** | Lost on stale peer reconnect | Preserved as events, always applied |
+| **Offline edits** | Problematic (merge conflicts) | Works correctly (CRDT merge) |
+| **Invite codes** | Custom 4-digit room codes | Cryptographic z32 strings (BlindPairing) |
+| **Peer discovery** | Manual Hyperswarm topic join | BlindPairing handles authentication |
+
+## Q: How does Autopass pairing work?
+
+Autopass uses **BlindPairing** for secure peer discovery:
+
+```
+Creator (Device A):
+  1. new Autopass(store) → creates new Autobase with unique key
+  2. pass.createInvite() → generates one-time invite code (z32 string)
+  3. Share invite code with Device B (copy/paste, QR, etc.)
+
+Joiner (Device B):
+  1. Autopass.pair(store, inviteCode) → connects via DHT
+  2. BlindPairing handshake with Device A
+  3. pair.finished() → returns paired Autopass instance
+  4. Device B now has the base key and can write to the shared room
+
+After pairing:
+  - Both devices can do new Autopass(store) to reconnect
+  - The base key is stored in the Corestore
+  - No need for invite code again — just use the same storage path
+```
+
+**Important:** `pair.finished()` requires the **host to be online**. If Device A terminates its worklet (leaves the room), Device B cannot pair. The invite code is for initial pairing only, not for reconnection.
+
+## Q: How do you rejoin a room after leaving?
+
+This was one of our biggest challenges. The key insight:
+
+**Autopass stores the base key in the Corestore.** If you use the same storage path, `new Autopass(store)` loads the existing base — no pairing needed!
+
+```
+Session 1 (Create):
+  storagePath = /moviekollections/abc123
+  pass = new Autopass(store) → creates new base
+  pass.key = 0x1234...  (stored in Corestore)
+
+Session 2 (Rejoin):
+  storagePath = /moviekollections/abc123  ← SAME PATH!
+  pass = new Autopass(store) → loads existing base
+  pass.key = 0x1234...  (same as before)
+  Movies are still there!
+```
+
+**The mistake we made initially:** We used a unique timestamp-based storage path for EVERY session. This meant each session created a NEW Autobase instead of loading the existing one. The fix was to save the `storageId` (folder name) and reuse it when rejoining.
+
+## Q: What are the three modes in the backend?
+
+```javascript
+// Args: [documentDirectory, mode, storageId?]
+
+mode = 'create'
+  // Create new room with unique storage path
+  // storageId = timestamp (e.g., "mqham920")
+  // Returns: storageId|invite
+
+mode = 'join'  
+  // Join someone else's room using their invite code
+  // storageId = invite code from other device
+  // Creates new storage path, pairs via BlindPairing
+  // Returns: storageId|invite
+
+mode = 'rejoin'
+  // Rejoin a room you've been in before
+  // storageId = folder name from history (e.g., "mqham920")
+  // Uses SAME storage path → loads existing Autobase
+  // Returns: storageId|invite
+```
+
+## Q: Why can't you join your own room with the invite code?
+
+If you create a room, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
+
+**Why:** `Autopass.pair()` needs to complete a BlindPairing handshake with the HOST. When you leave, the host worklet is terminated. No host = no one to complete the handshake = `pair.finished()` times out.
+
+**The fix:** Don't use `join` mode for your own rooms. Use `rejoin` mode with the same storage path. The invite code is ONLY for other devices to join while you're hosting.
+
+## Q: What challenges did we face implementing Autopass?
+
+### Challenge 1: Storage path consistency
+**Problem:** Using unique paths per session meant each session created a new Autobase.
+**Solution:** Save `storageId` (folder name) to history, reuse it for rejoin.
+
+### Challenge 2: `pass.add()` value must be a string
+**Problem:** Passing arrays like `['movie', title]` crashed with `uint must be positive`.
+**Solution:** `JSON.stringify()` the value, `JSON.parse()` when reading.
+
+### Challenge 3: Corestore file lock after crash
+**Problem:** If the worklet crashed or was terminated abruptly, Corestore might leave locks.
+**Solution:** Each room uses its own storage folder. If corrupted, delete and recreate.
+
+### Challenge 4: `pair.finished()` hangs forever
+**Problem:** No built-in timeout — if host is offline, it hangs.
+**Solution:** Wrap with `Promise.race()` and a 30-second timeout.
+
+### Challenge 5: `process.exit()` crashes the app
+**Problem:** Calling `process.exit()` in the worklet crashed the React Native app.
+**Solution:** Just call `pass.suspend()` and let the UI call `worklet.terminate()`.
+
+### Challenge 6: Logs not appearing in logcat
+**Problem:** Bare worklet's `console.log` didn't show in Android logcat with expected tags.
+**Solution:** Forward logs via RPC to React Native, which logs with `ReactNativeJS` tag.
+
+## Q: What's the final architecture?
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      React Native UI                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │ Create Room │  │ Join Room   │  │ Your Rooms  │          │
+│  │  (mode:     │  │  (mode:     │  │  (mode:     │          │
+│  │   create)   │  │   join)     │  │   rejoin)   │          │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
+│         │                │                │                  │
+│         └────────────────┼────────────────┘                  │
+│                          │                                   │
+│                    ┌─────▼─────┐                             │
+│                    │  Worklet  │  (Bare runtime)             │
+│                    │   + RPC   │                             │
+│                    └─────┬─────┘                             │
+└──────────────────────────┼───────────────────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────────────────┐
+│                       Backend                                 │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                      Autopass                            │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │ │
+│  │  │  Autobase   │  │ BlindPairing│  │  Hyperswarm │      │ │
+│  │  │ (multi-     │  │ (secure     │  │  (DHT peer  │      │ │
+│  │  │  writer)    │  │  invites)   │  │  discovery) │      │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘      │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                           │                                   │
+│  ┌────────────────────────▼────────────────────────────────┐ │
+│  │                    Corestore                             │ │
+│  │  /moviekollections/abc123/  ← Room 1 data                │ │
+│  │  /moviekollections/def456/  ← Room 2 data                │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Data flow:**
+1. UI calls `startWorklet(mode, storageId)` → starts Bare worklet
+2. Worklet loads/creates Autopass with the storage path
+3. Autopass joins DHT, finds peers, replicates data
+4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
+5. UI updates movie list
+
+**Key invariant:** Same `storageId` = same storage path = same Autobase = same room data.
