@@ -13,10 +13,13 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Animated,
-  BackHandler
+  BackHandler,
+  Modal
 } from 'react-native'
 import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
+import { Camera, CameraView } from 'expo-camera'
+import QRCode from 'react-native-qrcode-svg'
 import { Worklet } from 'react-native-bare-kit'
 import bundle from './app.bundle.mjs'
 import RPC from 'bare-rpc'
@@ -85,6 +88,9 @@ export default function App() {
   const [editingTitle, setEditingTitle] = useState(false)
   const [editTitleValue, setEditTitleValue] = useState('')
   const [currentListName, setCurrentListName] = useState('')
+  const [showQR, setShowQR] = useState(false)
+  const [scanning, setScanning] = useState(false)
+  const scanningRef = useRef(false)
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/list-history.json'
@@ -192,8 +198,8 @@ export default function App() {
           saveToHistory(storageId, storageId)
         }
         if (mode === 'create') {
-          Alert.alert('List Created!', `Share this invite code:\n${invite}`, [
-            { text: 'Copy', onPress: () => Clipboard.setString(invite) }
+          Alert.alert('List Created!', `Share this code:\n${invite}`, [
+            { text: 'Copy Code', onPress: () => Clipboard.setString(invite) }
           ])
         }
       }
@@ -280,216 +286,278 @@ export default function App() {
     }
   }
 
-  if (phase === 'menu') {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.heading}>P2P Kollections</Text>
-        <Text style={styles.subtitle}>P2P List Sharing</Text>
-
-        <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
-          {showCreateForm ? (
-            <View style={styles.nameForm}>
-              <TextInput
-                style={styles.formInput}
-                placeholder='List name'
-                placeholderTextColor='#666'
-                value={listName}
-                onChangeText={setListName}
-                autoFocus
-              />
-              <View style={styles.formActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setListName('') }}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.addBtn, !listName.trim() && styles.buttonDisabled]}
-                  onPress={() => {
-                    if (!listName.trim()) return
-                    setShowCreateForm(false)
-                    startWorklet('create', undefined, listName.trim())
-                    setListName('')
-                  }}
-                  disabled={!listName.trim()}
-                >
-                  <Text style={styles.addBtnText}>Create</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
-              <Text style={styles.bigButtonText}>Create List</Text>
-              <Text style={styles.bigButtonSub}>Name your new list</Text>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <TextInput
-            style={styles.input}
-            placeholder='Paste invite code'
-            placeholderTextColor='#666'
-            value={listCode}
-            onChangeText={setListCode}
-            autoCapitalize='none'
-            autoCorrect={false}
-          />
-          <TouchableOpacity
-            style={[styles.bigButton, !listCode && styles.buttonDisabled]}
-            onPress={() => {
-              if (!listCode) return
-              startWorklet('join')
-            }}
-            disabled={!listCode}
-          >
-            <Text style={styles.bigButtonText}>Join List</Text>
-            <Text style={styles.bigButtonSub}>Connect to an existing list</Text>
-          </TouchableOpacity>
-
-          {listHistory.length > 0 && (
-            <View style={styles.historySection}>
-              <Text style={styles.historyTitle}>Your Lists</Text>
-              <View style={styles.historyList}>
-                {listHistory.map(entry => (
-                  <View key={entry.id} style={styles.historyItem}>
-                    <TouchableOpacity
-                      style={styles.historyItemContent}
-                      onPress={() => startWorklet('rejoin', entry.id, entry.name)}
-                    >
-                      <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
-                      <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.historyDeleteBtn}
-                      onPress={() => {
-                        Alert.alert(
-                          'Remove List',
-                          `Remove "${entry.name}" from history?`,
-                          [
-                            { text: 'Cancel', style: 'cancel' },
-                            { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
-                          ]
-                        )
-                      }}
-                    >
-                      <Text style={styles.historyDeleteBtnText}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-        </ScrollView>
-      </View>
-    )
-  }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior='padding'
-      keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
-          <Text style={styles.backBtnText}>‹</Text>
-        </TouchableOpacity>
-        {editingTitle ? (
-          <TextInput
-            style={styles.titleInput}
-            value={editTitleValue}
-            onChangeText={setEditTitleValue}
-            onSubmitEditing={() => {
-              const val = editTitleValue.trim()
-              if (val && rpc) {
-                const req = rpc.request(RPC_SET_NAME)
-                req.send(val)
-              }
-              setEditingTitle(false)
-            }}
-            onBlur={() => setEditingTitle(false)}
-            autoFocus
-            selectTextOnFocus
-          />
-        ) : (
-          <TouchableOpacity onLongPress={() => { setEditTitleValue(currentListName); setEditingTitle(true) }}>
-            <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
-          </TouchableOpacity>
-        )}
-        <View style={styles.statusRow}>
-          <View style={[styles.statusDot, connected && styles.statusDotOn]} />
-          <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
-        </View>
-        {myCode ? (
-          <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>            
-            <Text style={styles.codeValue}>{myCode}</Text>
-          </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
-          <Text style={styles.deleteListBtnText}>✕</Text>
-        </TouchableOpacity>
-      </View>
+    <>
+      {phase === 'menu' ? (
+        <View style={styles.container}>
+          <Text style={styles.heading}>P2P Kollections</Text>
+          <Text style={styles.subtitle}>P2P List Sharing</Text>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item.key}
-            style={styles.list}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No items yet. Tap + to add one.</Text>
-            }
-            renderItem={({ item }) => (
-              <View style={styles.itemRow}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemTitle}>{item.value[1]}</Text>
+          <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
+            {showCreateForm ? (
+              <View style={styles.nameForm}>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder='List name'
+                  placeholderTextColor='#666'
+                  value={listName}
+                  onChangeText={setListName}
+                  autoFocus
+                />
+                <View style={styles.formActions}>
+                  <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setListName('') }}>
+                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.addBtn, !listName.trim() && styles.buttonDisabled]}
+                    onPress={() => {
+                      if (!listName.trim()) return
+                      setShowCreateForm(false)
+                      startWorklet('create', undefined, listName.trim())
+                      setListName('')
+                    }}
+                    disabled={!listName.trim()}
+                  >
+                    <Text style={styles.addBtnText}>Create</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => handleRemoveItem(item.key)}
-                >
-                  <Text style={styles.deleteBtnText}>✕</Text>
-                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
+                <Text style={styles.bigButtonText}>Create List</Text>
+                <Text style={styles.bigButtonSub}>Name your new list</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder='Paste invite code'
+              placeholderTextColor='#666'
+              value={listCode}
+              onChangeText={setListCode}
+              autoCapitalize='none'
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={[styles.bigButton, !listCode && styles.buttonDisabled]}
+              onPress={() => {
+                if (!listCode) return
+                startWorklet('join')
+              }}
+              disabled={!listCode}
+            >
+              <Text style={styles.bigButtonText}>Join List</Text>
+              <Text style={styles.bigButtonSub}>Connect to an existing list</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.scanBtn} onPress={async () => {
+              const { granted } = await Camera.requestCameraPermissionsAsync()
+              if (granted) { setScanning(true); scanningRef.current = true }
+              else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
+            }}>
+              <Text style={styles.scanBtnText}>Scan QR Code</Text>
+            </TouchableOpacity>
+
+            {listHistory.length > 0 && (
+              <View style={styles.historySection}>
+                <Text style={styles.historyTitle}>Your Lists</Text>
+                <View style={styles.historyList}>
+                  {listHistory.map(entry => (
+                    <View key={entry.id} style={styles.historyItem}>
+                      <TouchableOpacity
+                        style={styles.historyItemContent}
+                        onPress={() => startWorklet('rejoin', entry.id, entry.name)}
+                      >
+                        <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
+                        <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.historyDeleteBtn}
+                        onPress={() => {
+                          Alert.alert(
+                            'Remove List',
+                            `Remove "${entry.name}" from history?`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
+                            ]
+                          )
+                        }}
+                      >
+                        <Text style={styles.historyDeleteBtnText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
-          />
-
-          {showAdd ? (
-            <View style={styles.addForm}>
+          </ScrollView>
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior='padding'
+          keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
+              <Text style={styles.backBtnText}>‹</Text>
+            </TouchableOpacity>
+            {editingTitle ? (
               <TextInput
-                style={styles.formInput}
-                placeholder='Title'
-                placeholderTextColor='#666'
-                value={title}
-                onChangeText={setTitle}
+                style={styles.titleInput}
+                value={editTitleValue}
+                onChangeText={setEditTitleValue}
+                onSubmitEditing={() => {
+                  const val = editTitleValue.trim()
+                  if (val && rpc) {
+                    const req = rpc.request(RPC_SET_NAME)
+                    req.send(val)
+                  }
+                  setEditingTitle(false)
+                }}
+                onBlur={() => setEditingTitle(false)}
                 autoFocus
+                selectTextOnFocus
               />
-              <View style={styles.formActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
+            ) : (
+              <TouchableOpacity onLongPress={() => { setEditTitleValue(currentListName); setEditingTitle(true) }}>
+                <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
+              </TouchableOpacity>
+            )}
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, connected && styles.statusDotOn]} />
+              <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+            </View>
+            {myCode ? (
+              <View style={styles.shareRow}>
+                <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>            
+                  <Text style={styles.codeValue}>{myCode}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
-                  onPress={handleAddItem}
-                  disabled={!title.trim()}
-                >
-                  <Text style={styles.addBtnText}>Add Item</Text>
+                <TouchableOpacity onPress={() => setShowQR(true)} style={styles.shareBtn}>
+                  <Text style={styles.shareBtnText}>QR</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
-              <Text style={styles.fabText}>+</Text>
+            ) : null}
+            <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
+              <Text style={styles.deleteListBtnText}>✕</Text>
             </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <FlatList
+                data={items}
+                keyExtractor={(item) => item.key}
+                style={styles.list}
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>No items yet. Tap + to add one.</Text>
+                }
+                renderItem={({ item }) => (
+                  <View style={styles.itemRow}>
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemTitle}>{item.value[1]}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.deleteBtn}
+                      onPress={() => handleRemoveItem(item.key)}
+                    >
+                      <Text style={styles.deleteBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+
+              {showAdd ? (
+                <View style={styles.addForm}>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder='Title'
+                    placeholderTextColor='#666'
+                    value={title}
+                    onChangeText={setTitle}
+                    autoFocus
+                  />
+                  <View style={styles.formActions}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
+                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
+                      onPress={handleAddItem}
+                      disabled={!title.trim()}
+                    >
+                      <Text style={styles.addBtnText}>Add Item</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
+                  <Text style={styles.fabText}>+</Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
-        </>
+        </KeyboardAvoidingView>
       )}
-    </KeyboardAvoidingView>
+
+      {showQR && myCode && (
+        <Modal visible={showQR} transparent animationType='fade' onRequestClose={() => setShowQR(false)}>
+          <View style={styles.qrOverlay}>
+            <View style={styles.qrContainer}>
+              <Text style={styles.qrTitle}>Scan to join</Text>
+              <QRCode value={myCode} size={220} backgroundColor='#fff' color='#000' />
+              <TouchableOpacity style={styles.qrCloseBtn} onPress={() => setShowQR(false)}>
+                <Text style={styles.qrCloseBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {scanning && (
+        <View style={StyleSheet.absoluteFillObject}>
+          <CameraView
+            style={StyleSheet.absoluteFillObject}
+            onBarcodeScanned={({ data }) => {
+              if (!data || !scanningRef.current) return
+              scanningRef.current = false
+              setScanning(false)
+              startWorklet('join', data)
+            }}
+          />
+          <View style={styles.scannerOverlay}>
+            <TouchableOpacity style={styles.scannerCloseBtn} onPress={() => { scanningRef.current = false; setScanning(false) }}>
+              <Text style={styles.scannerCloseBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </>
+  )
+}
+
+function QRCodeModal({ visible, code, onClose }: { visible: boolean, code: string, onClose: () => void }) {
+  return (
+    <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
+      <View style={styles.qrOverlay}>
+        <View style={styles.qrContainer}>
+          <Text style={styles.qrTitle}>Scan to join</Text>
+          <QRCode value={code} size={220} backgroundColor='#fff' color='#000' />
+          <TouchableOpacity style={styles.qrCloseBtn} onPress={onClose}>
+            <Text style={styles.qrCloseBtnText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   )
 }
 
@@ -714,6 +782,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 2
   },
+  shareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    gap: 8
+  },
+  shareBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#b0d943',
+    borderRadius: 8
+  },
+  shareBtnText: {
+    color: '#011501',
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
   list: {
     flex: 1
   },
@@ -825,6 +910,65 @@ const styles = StyleSheet.create({
     color: '#011501',
     fontWeight: 'bold',
     fontSize: 15
+  },
+  scanBtn: {
+    backgroundColor: '#1a3d0a',
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#7a9e2d',
+    alignItems: 'center'
+  },
+  scanBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#7a9e2d'
+  },
+  qrOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  qrContainer: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    gap: 20
+  },
+  qrTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#011501'
+  },
+  qrCloseBtn: {
+    backgroundColor: '#b0d943',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8
+  },
+  qrCloseBtnText: {
+    color: '#011501',
+    fontWeight: 'bold',
+    fontSize: 15
+  },
+  scannerOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: 20,
+    paddingBottom: 60
+  },
+  scannerCloseBtn: {
+    backgroundColor: '#d94b4b',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center'
+  },
+  scannerCloseBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
   fab: {
     position: 'absolute',

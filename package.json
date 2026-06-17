@@ -28,6 +28,7 @@
     "corestore": "^7.10.1",
     "expo": "~55.0.23",
     "expo-build-properties": "~55.0.9",
+    "expo-camera": "~55.0.19",
     "expo-constants": "~55.0.7",
     "expo-linking": "~55.0.15",
     "expo-router": "~55.0.14",
@@ -38,6 +39,7 @@
     "react-native": "0.83.6",
     "react-native-b4a": "^0.0.4",
     "react-native-bare-kit": "^0.13.3",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.23.0"
   },
