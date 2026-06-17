@@ -11,7 +11,7 @@ const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
 
-console.log('🍐 MovieKollections - Phone-to-Phone Setup\n')
+console.log('🍐 P2PKollections - Phone-to-Phone Setup\n')
 
 // Step 1: Backup originals
 console.log('📦 Step 1: Backing up original files...')

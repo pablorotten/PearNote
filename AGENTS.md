@@ -1,4 +1,4 @@
-# AGENTS.md — MovieKollections
+# AGENTS.md — P2PKollections
 
 ## Logcat commands (filtered to app only)
 
@@ -39,11 +39,11 @@ Then rebuild APK: `npm run android`
 
 ## Test flow
 
-1. **Create room** (Phone A): open app → tap "Create Room" → wait for loading spinner → verify "Room Created!" alert with invite code appears → verify movies appear on screen
-2. **Join** (Phone B): open app → paste invite code from A → tap "Join Room" → wait for loading → verify both phones show same movie list
-3. **Add movie**: type title on A → tap + → verify movie appears on both phones within seconds
-4. **Remove movie**: tap X on a movie → verify it disappears on both phones
-5. **Leave and re-enter**: tap ← on Phone A → tap the room in "Your Rooms" history → should rejoin with same movies
+1. **Create room** (Phone A): open app → tap "Create Room" → wait for loading spinner → verify "Room Created!" alert with invite code appears → verify items appear on screen
+2. **Join** (Phone B): open app → paste invite code from A → tap "Join Room" → wait for loading → verify both phones show same list
+3. **Add item**: type title on A → tap + → verify item appears on both phones within seconds
+4. **Remove item**: tap X on an item → verify it disappears on both phones
+5. **Leave and re-enter**: tap ← on Phone A → tap the room in "Your Rooms" history → should rejoin with same items
 
 ## Known issues
 
@@ -52,4 +52,4 @@ Then rebuild APK: `npm run android`
 - `pair.finished()` has no built-in timeout → 30s wrapper timeout added
 - `pass.add(key, value)` requires value to be a **string** (not array), or it crashes with `uint must be positive`
 - History items store old invite codes; tapping them now COPIES the code instead of trying to JOIN a dead room. Always use **Create Room** for new sessions.
-- Each room session now uses a unique timestamp-based storage path (`moviekollections/<sessionId>`) to prevent Corestore state corruption between sessions. Old session dirs accumulate but are harmless.
+- Each room session now uses a unique timestamp-based storage path (`p2pkollections/<sessionId>`) to prevent Corestore state corruption between sessions. Old session dirs accumulate but are harmless.

@@ -1,18 +1,18 @@
-# MovieKollections Project Plan
+# P2PKollections Project Plan
 
 ## 🎯 Project Goal
 
-Create a **desktop/mobile app** that demonstrates P2P (peer-to-peer) movie list sharing using the **Pear framework** from Holepunch. This is primarily for creating a **video tutorial showcasing how Pear works**.
+Create a **desktop/mobile app** that demonstrates P2P (peer-to-peer) list sharing using the **Pear framework** from Holepunch. This is primarily for creating a **video tutorial showcasing how Pear works**.
 
 ### Key User Flow
 
 #### Create a new list
 1. User generates a "pairing code" (discovery key) on one device
-2. User enter in a room that it's just a single list of movies.
-3. User adds movies to the list (searching via TMDB API)
+2. User enter in a room that it's just a single list.
+3. User adds elements to the list
 4. User shares the pairing code with another device (QR code, copy-paste, etc.)
 5. Second device enters the pairing code
-6. Both devices see the same list of movies and can add/remove items in real-time (P2P sync)
+6. Both devices see the same list and can add/remove items in real-time (P2P sync)
 
 ---
 
@@ -42,7 +42,7 @@ Possible stack to be used:
 
 We start from this tutorial <https://docs.pears.com/guide/making-a-bare-mobile-app.html> and some modifications I did to make it work. The modified code is in C:\Users\pablo\DEV\projects\bare-mobile-application so you can take a look but it's exactly the same as this one.
 
-P2P mobile app for shared movie watchlists. Two phones sync items directly — no desktop, no server. Phone A adds a movie, phone B sees it instantly (or when back online).
+P2P mobile app for shared lists. Two phones sync items directly — no desktop, no server. Phone A adds an element, phone B sees it instantly (or when back online).
 
 This initial project works by doing:
 ```sh
@@ -52,7 +52,7 @@ npm run android
 ```
 
 > [!WARNING]
-> VERY IMPORTANT: The starting project connects a phone to a desktop worker (phone is a "client" and desktop is the "server"). For MovieKollections, we want **phone-to-phone P2P** with no desktop. This means both phones must run the same Bare worklet code and pair with each other as equals (multi-writer). The tutorial's single-worker pattern won't work for our use case.
+> VERY IMPORTANT: The starting project connects a phone to a desktop worker (phone is a "client" and desktop is the "server"). For P2PKollections, we want **phone-to-phone P2P** with no desktop. This means both phones must run the same Bare worklet code and pair with each other as equals (multi-writer). The tutorial's single-worker pattern won't work for our use case.
 
 ### Tech Stack
 
@@ -89,11 +89,11 @@ MEmu emulator installs its own ADB (v40) which conflicts with SDK ADB (v41). Uni
 6. Autopass version compatibility
 Both sides must use the same `autopass` major version. The tutorial uses 2.x but npm installs 3.x. The mobile app in this project uses `autopass@^3.4.1`.
 
-### Architecture for MovieKollections (P2P Phone ↔ Phone)
+### Architecture for P2PKollections (P2P Phone ↔ Phone)
 
 #### Directory structure
 ```
-moviekollections/
+p2pkollections/
 ├── app/
 │   ├── index.tsx          # UI
 │   └── app.bundle.mjs     # generated bundle
@@ -105,7 +105,7 @@ moviekollections/
 
 #### `backend/backend.mjs` — multi-writer, NO `rmSync`
 ```
-- Create Corestore at `documentDirectory/moviekollections/`
+- Create Corestore at `documentDirectory/p2pkollections/`
 - Create Autopass from existing store (don't delete!)
 - If an invite is provided → pair with it (Autopass.pair)
 - Generate own invite → send to UI via RPC
@@ -119,7 +119,7 @@ Phase 1: Start worklet with invite (or empty)
          → Receive own invite from backend
          → Display own invite (for other phone to copy)
 
-Phase 2: Show list + "Add movie" TextInput + "Share invite" button
+Phase 2: Show list + "Add element" TextInput + "Share invite" button
          → Changes sync automatically via autopass `update` event
 ```
 
@@ -132,8 +132,8 @@ RPC_MY_INVITE = 2  // backend sends its invite
 
 #### Data format
 ```json
-["movie", "Inception", "2010", "Christopher Nolan"]
-["movie", "The Matrix", "1999", "The Wachowskis"]
+["item", "Inception", "2010", "Christopher Nolan"]
+["item", "The Matrix", "1999", "The Wachowskis"]
 ```
 
 ### Multi-writer pairing flow
@@ -149,7 +149,7 @@ Phone A restarts WITH Phone B's invite
 ```
 
 #### Persistence
-Each phone stores its own Corestore at `documentDirectory/moviekollections/`.
+Each phone stores its own Corestore at `documentDirectory/p2pkollections/`.
 Data survives app restarts. Reconnect later to sync missed changes.
 
 ### Key files from this repo to reference

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MovieKollections",
-    "slug": "moviekollections",
+    "name": "P2PKollections",
+    "slug": "p2pkollections",
     "version": "1.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
-    "scheme": "moviekollections",
+    "scheme": "p2pkollections",
     "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moviekollections.app"
+      "bundleIdentifier": "com.p2pkollections.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#011501"
       },
-      "package": "com.moviekollections.app"
+      "package": "com.p2pkollections.app"
     },
     "plugins": [
       ["expo-router"],

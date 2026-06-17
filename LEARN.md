@@ -1,4 +1,4 @@
-# Learnings from MovieKollections
+# Learnings from P2PKollections
 
 ## Q: What does 🟢 Connected mean inside a room?
 
@@ -49,7 +49,7 @@ No. The spinner waits for the backend startup sequence:
 
 1. `await bee.ready()` — load local Corestore data from disk (fast, <100ms)
 2. `await discovery.flushed()` — Hyperswarm finishes setting up for peer discovery
-3. `notifyUI()` — read local Hyperbee and send movies to the UI
+3. `notifyUI()` — read local Hyperbee and send data to the UI
 
 It does **not** wait for peer sync. The spinner disappears as soon as local data is sent to the UI. Sync from other peers arrives in the background and updates the list whenever a peer connects.
 
@@ -82,24 +82,24 @@ For 2-3 rooms it's nothing. For 30 rooms on mobile it becomes heavy:
 
 At that scale you'd want a different architecture — a single daemon multiplexing all rooms, or a desktop seed relay.
 
-For MovieKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
+For P2PKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
 
 ## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
 
 Yes, this is a real problem in the current implementation. Scenario:
 
-1. Peers A and B are synced with the same movie list
+1. Peers A and B are synced with the same list
 2. B disconnects
-3. A removes some movies
-4. B reconnects, loads its stale local data (still has the deleted movies)
+3. A removes some items
+4. B reconnects, loads its stale local data (still has the deleted items)
 5. B's `sendFullList` sends its stale data to A
-6. The deleted movies pop back up in A's list
+6. The deleted items pop back up in A's list
 
 **Why this happens:** The current `handleSync` is purely additive:
 
 ```js
-async function handleSync(movies) {
-  for (const { key, value } of movies) {
+async function handleSync(items) {
+  for (const { key, value } of items) {
     const existing = await bee.get(key)
     if (!existing) await bee.put(key, value)  // only adds, never deletes
   }
@@ -209,9 +209,9 @@ Autopass wraps **Autobase** (multi-writer Hypercore). Each peer writes to their 
 **The Problem:** With the original Hyperbee + Hyperswarm implementation, we had a critical sync bug:
 
 ```
-1. User 1 and User 2 both have movies [A, B, C]
+1. User 1 and User 2 both have items [A, B, C]
 2. User 2 disconnects (goes offline)
-3. User 1 deletes movie B → now has [A, C]
+3. User 1 deletes item B → now has [A, C]
 4. User 2 reconnects with stale local data [A, B, C]
 5. Sync runs — B gets re-added because sync was "additive only"
 6. Both users now have [A, B, C] — the deletion was lost!
@@ -265,15 +265,15 @@ This was one of our biggest challenges. The key insight:
 
 ```
 Session 1 (Create):
-  storagePath = /moviekollections/abc123
+  storagePath = /p2pkollections/abc123
   pass = new Autopass(store) → creates new base
   pass.key = 0x1234...  (stored in Corestore)
 
 Session 2 (Rejoin):
-  storagePath = /moviekollections/abc123  ← SAME PATH!
+  storagePath = /p2pkollections/abc123  ← SAME PATH!
   pass = new Autopass(store) → loads existing base
   pass.key = 0x1234...  (same as before)
-  Movies are still there!
+  Items are still there!
 ```
 
 **The mistake we made initially:** We used a unique timestamp-based storage path for EVERY session. This meant each session created a NEW Autobase instead of loading the existing one. The fix was to save the `storageId` (folder name) and reuse it when rejoining.
@@ -316,7 +316,7 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 **Solution:** Save `storageId` (folder name) to history, reuse it for rejoin.
 
 ### Challenge 2: `pass.add()` value must be a string
-**Problem:** Passing arrays like `['movie', title]` crashed with `uint must be positive`.
+**Problem:** Passing arrays like `['item', title]` crashed with `uint must be positive`.
 **Solution:** `JSON.stringify()` the value, `JSON.parse()` when reading.
 
 ### Challenge 3: Corestore file lock after crash
@@ -367,8 +367,8 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 │                           │                                   │
 │  ┌────────────────────────▼────────────────────────────────┐ │
 │  │                    Corestore                             │ │
-│  │  /moviekollections/abc123/  ← Room 1 data                │ │
-│  │  /moviekollections/def456/  ← Room 2 data                │ │
+│  │  /p2pkollections/abc123/  ← Room 1 data                │ │
+│  │  /p2pkollections/def456/  ← Room 2 data                │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -378,6 +378,6 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 2. Worklet loads/creates Autopass with the storage path
 3. Autopass joins DHT, finds peers, replicates data
 4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
-5. UI updates movie list
+5. UI updates the list
 
 **Key invariant:** Same `storageId` = same storage path = same Autobase = same room data.

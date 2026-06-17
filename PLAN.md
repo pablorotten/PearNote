@@ -1,8 +1,8 @@
-# MovieKollections — Implementation Plan
+# P2PKollections — Implementation Plan
 
 ## Goal
 
-Two phones connect P2P to share a movie list. No servers, no desktop. Peer-to-peer using Holepunch's raw libraries (Hyperswarm + Corestore), **not** Autopass.
+Two phones connect P2P to share a list. No servers, no desktop. Peer-to-peer using Holepunch's raw libraries (Hyperswarm + Corestore), **not** Autopass.
 
 ---
 
@@ -24,7 +24,7 @@ Two phones connect P2P to share a movie list. No servers, no desktop. Peer-to-pe
 |---|---|
 | `hyperswarm` | P2P discovery + encrypted connections |
 | `corestore` | Persistent Hypercore storage on each phone |
-| `hyperbee` | Key-value DB on top of Corestore (movies list) |
+| `hyperbee` | Key-value DB on top of Corestore (list data) |
 | `b4a` | Buffer encoding/decoding |
 | `bare-rpc` | Communication between React UI and Bare worklet |
 | `graceful-goodbye` | Clean shutdown |
@@ -55,7 +55,7 @@ Phone A                          Phone B
 ```
 
 Each phone:
-- Stores movies locally in **Corestore + Hyperbee** at `documentDirectory/moviekollections/`
+- Stores data locally in **Corestore + Hyperbee** at `documentDirectory/p2pkollections/`
 - Joins a **Hyperswarm** room identified by a shared discovery key
 - On connection, replicates its hyperbee to the peer
 - On local change (add/remove), broadcasts the diff to connected peers
@@ -68,8 +68,8 @@ Each phone:
 ### Step 1 — Update `rpc-commands.mjs`
 
 ```js
-export const RPC_ADD       = 0  // add a movie (send to worklet)
-export const RPC_REMOVE    = 1  // remove a movie (send to worklet)
+export const RPC_ADD       = 0  // add an item (send to worklet)
+export const RPC_REMOVE    = 1  // remove an item (send to worklet)
 export const RPC_RESET     = 2  // re-render full list (worklet → UI)
 export const RPC_MY_INVITE = 3  // own discovery key (worklet → UI)
 export const RPC_PEER_JOINED = 4  // peer connected (worklet → UI)
@@ -81,16 +81,16 @@ export const RPC_PEER_LEFT   = 5  // peer disconnected (worklet → UI)
 Bare worklet that:
 
 1. **Starts Corestore** at persistent path — no wipe
-2. **Opens a Hyperbee** store for the movie list
+2. **Opens a Hyperbee** store for the list
 3. **Connects to Hyperswarm**:
    - No invite → create simple numeric key (user-typed, e.g. `"1234"`), send to UI via `RPC_MY_INVITE`
    - With invite → join that room using the simple key as discovery topic
    > **v1**: keys are short numbers for easy testing. **v2+**: upgrade to cryptographically random keys.
 4. **On peer connection**:
-   - Send full local movie list via `RPC_RESET`
-   - Listen for incoming movie diffs (add/remove)
+   - Send full local list via `RPC_RESET`
+   - Listen for incoming diffs (add/remove)
 5. **On `RPC_ADD` from UI**:
-   - Add movie to local Hyperbee
+   - Add item to local Hyperbee
    - Broadcast to connected peers
 6. **On `RPC_REMOVE` from UI**:
    - Remove from local Hyperbee
@@ -106,20 +106,20 @@ React Native UI with two phases:
 - TextInput for "Enter Room Key" + "Join" button
 - Shows own room key (copy to clipboard)
 
-**Phase 2 — Movie List:**
-- `FlatList` with movie title, year, director
-- "Add Movie" button → opens form (title, year, director)
+**Phase 2 — List View:**
+- `FlatList` with item details
+- "Add Item" button → opens form (title, year, director)
 - Swipe/long-press to delete
 - "Share Key" button to copy invite again
 - Status indicator: connected/not connected
 
 ### Step 4 — Update `app.json`
 
-- `name`: `"MovieKollections"`
-- `slug`: `"moviekollections"`
-- `android.package`: `"com.moviekollections.app"`
-- `ios.bundleIdentifier`: `"com.moviekollections.app"`
-- `scheme`: `"moviekollections"`
+- `name`: `"P2PKollections"`
+- `slug`: `"p2pkollections"`
+- `android.package`: `"com.p2pkollections.app"`
+- `ios.bundleIdentifier`: `"com.p2pkollections.app"`
+- `scheme`: `"p2pkollections"`
 
 ### Step 5 — Build Bundle
 
@@ -147,15 +147,15 @@ After v1 works end-to-end with simple numeric keys (e.g. `"1234"`):
 
 ## Data Format
 
-Movies are stored in Hyperbee as key-value pairs:
+Items are stored in Hyperbee as key-value pairs:
 
-- **Key**: `movie:<timestamp>` (unique per entry)
-- **Value**: JSON `["movie", "Title", "Year", "Director"]`
+- **Key**: `item:<timestamp>` (unique per entry)
+- **Value**: JSON `["item", "Title", "Year", "Director"]`
 
 Sync messages over Hyperswarm are newline-delimited JSON:
 ```
-{"type":"add","key":"movie:123","value":["movie","Inception","2010","Christopher Nolan"]}\n
-{"type":"remove","key":"movie:123"}\n
+{"type":"add","key":"item:123","value":["item","Inception","2010","Christopher Nolan"]}\n
+{"type":"remove","key":"item:123"}\n
 ```
 
 ---
@@ -178,7 +178,7 @@ Sync messages over Hyperswarm are newline-delimited JSON:
 
 **Problem**: `new Hyperbee(store, { ... })` crashed because Hyperbee expects a Hypercore instance, not a Corestore.
 
-**Fix**: Call `store.get({ name: 'movielist' })` first to obtain a Hypercore, then pass that to `new Hyperbee(core, { ... })`.
+**Fix**: Call `store.get({ name: 'list' })` first to obtain a Hypercore, then pass that to `new Hyperbee(core, { ... })`.
 
 **Commit**: `8b9eb92`
 
@@ -231,7 +231,7 @@ After:   register handler → swarm.join() → await flushed()   (always catches
 
 ### 5. Android bottom nav bar overlap
 
-**Problem**: The FAB (floating action button) and movie list items were hidden behind the Android system navigation bar.
+**Problem**: The FAB (floating action button) and list items were hidden behind the Android system navigation bar.
 
 **Fix**: Added `paddingBottom: 60` to the main container on Android, and positioned the FAB at `bottom: 70`.
 

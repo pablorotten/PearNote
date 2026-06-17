@@ -33,7 +33,7 @@ import {
   RPC_ERROR
 } from '../rpc-commands.mjs'
 
-type Movie = {
+type Item = {
   key: string
   value: [string, string]
 }
@@ -65,7 +65,7 @@ function LoadingSpinner() {
 
 export default function App() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
-  const [movies, setMovies] = useState<Movie[]>([])
+  const [items, setItems] = useState<Item[]>([])
   const [roomCode, setRoomCode] = useState('')
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
@@ -107,7 +107,7 @@ export default function App() {
   function handleLeave() {
     try { workletRef.current?.terminate?.() } catch (_) {}
     setPhase('menu')
-    setMovies([])
+    setItems([])
     setMyCode('')
     setConnected(false)
     setTitle('')
@@ -160,7 +160,7 @@ export default function App() {
 
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
-        setMovies(data)
+        setItems(data)
         setLoading(false)
       }
 
@@ -188,18 +188,18 @@ export default function App() {
     setPhase('list')
   }
 
-  function handleAddMovie() {
+  function handleAddItem() {
     if (!title.trim()) return
-    const movie: [string, string] = ['movie', title.trim()]
+    const item: [string, string] = ['item', title.trim()]
     if (rpc) {
       const req = rpc.request(RPC_ADD)
-      req.send(JSON.stringify(movie))
+      req.send(JSON.stringify(item))
     }
     setTitle('')
     setShowAdd(false)
   }
 
-  function handleRemoveMovie(key: string) {
+  function handleRemoveItem(key: string) {
     if (rpc) {
       const req = rpc.request(RPC_REMOVE)
       req.send(key)
@@ -238,8 +238,8 @@ export default function App() {
   if (phase === 'menu') {
     return (
       <View style={styles.container}>
-        <Text style={styles.heading}>MovieKollections</Text>
-        <Text style={styles.subtitle}>P2P Movie List Sharing</Text>
+        <Text style={styles.heading}>P2PKollections</Text>
+        <Text style={styles.subtitle}>P2P List Sharing</Text>
 
         <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
           <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
@@ -328,7 +328,7 @@ export default function App() {
         <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.heading}>MovieKollections</Text>
+        <Text style={styles.heading}>P2PKollections</Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
           <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
@@ -349,20 +349,20 @@ export default function App() {
       ) : (
         <>
           <FlatList
-            data={movies}
+            data={items}
             keyExtractor={(item) => item.key}
             style={styles.list}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No movies yet. Tap + to add one.</Text>
+              <Text style={styles.emptyText}>No items yet. Tap + to add one.</Text>
             }
             renderItem={({ item }) => (
-              <View style={styles.movieItem}>
-                <View style={styles.movieInfo}>
-                  <Text style={styles.movieTitle}>{item.value[1]}</Text>
+              <View style={styles.itemRow}>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemTitle}>{item.value[1]}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.deleteBtn}
-                  onPress={() => handleRemoveMovie(item.key)}
+                  onPress={() => handleRemoveItem(item.key)}
                 >
                   <Text style={styles.deleteBtnText}>✕</Text>
                 </TouchableOpacity>
@@ -374,7 +374,7 @@ export default function App() {
             <View style={styles.addForm}>
               <TextInput
                 style={styles.formInput}
-                placeholder='Movie title'
+                placeholder='Title'
                 placeholderTextColor='#666'
                 value={title}
                 onChangeText={setTitle}
@@ -386,10 +386,10 @@ export default function App() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
-                  onPress={handleAddMovie}
+                  onPress={handleAddItem}
                   disabled={!title.trim()}
                 >
-                  <Text style={styles.addBtnText}>Add Movie</Text>
+                  <Text style={styles.addBtnText}>Add Item</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     fontSize: 16
   },
-  movieItem: {
+  itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a3d0a',
@@ -647,10 +647,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2a5a0a'
   },
-  movieInfo: {
+  itemInfo: {
     flex: 1
   },
-  movieTitle: {
+  itemTitle: {
     fontSize: 17,
     fontWeight: 'bold',
     color: '#b0d943'
