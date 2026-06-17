@@ -16,7 +16,8 @@ import {
   RPC_PEER_LEFT,
   RPC_DIAG,
   RPC_CLEAR,
-  RPC_ERROR
+  RPC_ERROR,
+  RPC_SET_NAME
 } from '../rpc-commands.mjs'
 
 const { IPC } = BareKit
@@ -34,6 +35,10 @@ const rpc = new RPC(IPC, (req, error) => {
   }
   if (req.command === RPC_CLEAR) {
     clearAll()
+  }
+  if (req.command === RPC_SET_NAME) {
+    const name = b4a.toString(req.data)
+    setListName(name)
   }
 })
 
@@ -76,10 +81,10 @@ async function init() {
     diag('mode: ' + mode + ' storageId: ' + (storageId || '(none)'))
 
     if (mode === 'create') {
-      // Create a new room with a unique storage path
+      // Create a new kollection with a unique storage path
       const sessionId = Date.now().toString(36)
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
-      diag('Creating new room, storagePath: ' + storagePath)
+      diag('Creating new kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
@@ -99,10 +104,10 @@ async function init() {
       try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + invite) } catch (_) {}
       
     } else if (mode === 'join') {
-      // Join an existing room using invite code from another device
+      // Join an existing kollection using invite code from another device
       const sessionId = Date.now().toString(36)
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', sessionId)
-      diag('Joining room, storagePath: ' + storagePath)
+      diag('Joining kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: pairTimeout, cancel: cancelPair } = timeoutPromise(INIT_TIMEOUT, 'Autopass.pair().finished()')
@@ -113,15 +118,15 @@ async function init() {
       
       await pass.ready()
       
-      diag('Joined room')
+      diag('Joined kollection')
       
       // Send storageId (folder name) and invite
       try { rpc.request(RPC_MY_INVITE).send(sessionId + '|' + storageId) } catch (_) {}
       
     } else if (mode === 'rejoin') {
-      // Rejoin an existing room - storageId is the folder name
+      // Rejoin an existing kollection - storageId is the folder name
       const storagePath = join(URL.fileURLToPath(baseDir), 'p2pkollections', storageId)
-      diag('Rejoining room, storagePath: ' + storagePath)
+      diag('Rejoining kollection, storagePath: ' + storagePath)
       
       const store = new Corestore(storagePath)
       const { promise: readyTimeout, cancel: cancelReady } = timeoutPromise(INIT_TIMEOUT, 'Autopass.ready()')
@@ -131,7 +136,7 @@ async function init() {
       await Promise.race([pass.ready(), readyTimeout])
       cancelReady()
       
-      diag('Rejoined room')
+      diag('Rejoined kollection')
       
       // Create a new invite for this session
       const invite = await pass.createInvite()
@@ -192,6 +197,16 @@ async function addItem(item) {
     await pass.add(key, JSON.stringify(['item', title]))
   } catch (err) {
     diag('addItem error: ' + err.message)
+  }
+}
+
+async function setListName(name) {
+  if (!pass) return
+  try {
+    diag('Setting kollection name: ' + name)
+    await pass.add('_kollection_name', JSON.stringify(['_name', name]))
+  } catch (err) {
+    diag('setKollectionName error: ' + err.message)
   }
 }
 

@@ -1,10 +1,10 @@
 # Learnings from P2PKollections
 
-## Q: What does 🟢 Connected mean inside a room?
+## Q: What does 🟢 Connected mean inside a list?
 
 When the backend receives a Hyperswarm connection — `swarm.on('connection', ...)` fires, which sends `RPC_PEER_JOINED` to the UI.
 
-It means **at least one other peer is directly connected** via the P2P swarm. If you're alone in the room, it shows disconnected. If another phone is in the same room and the swarm connected, it turns green.
+It means **at least one other peer is directly connected** via the P2P swarm. If you're alone in the list, it shows disconnected. If another phone is in the same list and the swarm connected, it turns green.
 
 ## Q: How many states does the connection logic have?
 
@@ -12,7 +12,7 @@ After loading completes (spinner disappears), there are 2 states:
 
 | State | Condition | What's happening |
 |---|---|---|
-| **Disconnected** | After loading, no connection event | You're in the room, swarm is listening, but no other peer connected yet |
+| **Disconnected** | After loading, no connection event | You're in the list, swarm is listening, but no other peer connected yet |
 | **Connected** 🟢 | `RPC_PEER_JOINED` received | At least one peer connected via Hyperswarm |
 
 There's also a **Loading** (spinner) phase before these states — backend starting up, loading local storage, joining the swarm.
@@ -23,7 +23,7 @@ So the full flow is:
 
 ```
 Loading → Disconnected (swarm searching in background) → Connected 🟢 (peer found)
-                                                         → Disconnected (peer left)
+                                                          → Disconnected (peer left)
 ```
 
 ## Q: This "searching" is periodic? Does it re-search from time to time?
@@ -55,34 +55,34 @@ It does **not** wait for peer sync. The spinner disappears as soon as local data
 
 Waiting for sync would be bad: if no peers are online, the user would be stuck on the spinner forever. Show local data instantly, sync arrives when peers connect.
 
-## Q: If all peers leave a room, is the data lost? Can a peer sync later?
+## Q: If all peers leave a list, is the data lost? Can a peer sync later?
 
-Yes, if you're the only peer in a room and you leave, your data is still saved **locally** on your device (in Corestore on the filesystem). It's not lost — it's just not reachable over the network.
+Yes, if you're the only peer in a list and you leave, your data is still saved **locally** on your device (in Corestore on the filesystem). It's not lost — it's just not reachable over the network.
 
-When you re-enter the same room:
+When you re-enter the same list:
 1. Corestore loads your local data and shows it immediately (no sync needed).
 2. Hyperswarm re-joins the DHT topic and looks for peers.
 
-The only way another peer can see your data is if **both of you are in the room at the same time**. If you have the data and the other peer doesn't, they sync from you when they connect.
+The only way another peer can see your data is if **both of you are in the list at the same time**. If you have the data and the other peer doesn't, they sync from you when they connect.
 
-## Q: Can't one device seed multiple rooms at the same time?
+## Q: Can't one device seed multiple lists at the same time?
 
-Technically yes. Each room is a separate `Worklet` instance (a Bare runtime process) with its own Corestore + Hyperswarm swarm. You could spawn multiple worklets in parallel and keep them running in the background.
+Technically yes. Each list is a separate `Worklet` instance (a Bare runtime process) with its own Corestore + Hyperswarm swarm. You could spawn multiple worklets in parallel and keep them running in the background.
 
-The cost per idle room:
+The cost per idle list:
 - **CPU**: Near zero — just listening for events
 - **Memory**: ~5-10MB per worklet (JS runtime + Corestore index)
-- **Network**: DHT re-announce every ~5-10 min per room, negligible bandwidth
-- **Battery**: Comparable to keeping a WebSocket connection open per room
+- **Network**: DHT re-announce every ~5-10 min per list, negligible bandwidth
+- **Battery**: Comparable to keeping a WebSocket connection open per list
 
-For 2-3 rooms it's nothing. For 30 rooms on mobile it becomes heavy:
+For 2-3 lists it's nothing. For 30 lists on mobile it becomes heavy:
 - **150-300MB** memory just for the idle worklets
 - 30 concurrent Hyperswarm topics in one process isn't well-tested on mobile
 - Battery drain from keep-alive traffic
 
-At that scale you'd want a different architecture — a single daemon multiplexing all rooms, or a desktop seed relay.
+At that scale you'd want a different architecture — a single daemon multiplexing all lists, or a desktop seed relay.
 
-For P2PKollections as a demo: sync happens only when two users are **both in the same room at the same time**. If one leaves, the room goes offline until they return.
+For P2PKollections as a demo: sync happens only when two users are **both in the same list at the same time**. If one leaves, the list goes offline until they return.
 
 ## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
 
@@ -130,12 +130,12 @@ Forget about servers. Think of each device as a node that holds its own piece of
 **The mindset shift:**
 - No "database in the cloud" — each device has its own Corestore (append-only log) on the filesystem
 - No "API calls" — peers connect directly via Hyperswarm and exchange messages over persistent TCP links
-- No "server always running" — data only flows while at least two peers are in the same room simultaneously
+- No "server always running" — data only flows while at least two peers are in the same list simultaneously
 - No "polling" — the DHT announces your presence, peers connect when they see you, everything is event-driven
 
 **The mental model:**
 ```
-Device A (room "1234") ←→ Hyperswarm DHT ←→ Device B (room "1234")
+Device A (list "1234") ←→ Hyperswarm DHT ←→ Device B (list "1234")
     │                                                 │
     ├─ Corestore (local disk)                         ├─ Corestore (local disk)
     ├─ Hyperbee (key-value)                           ├─ Hyperbee (key-value)
@@ -145,10 +145,10 @@ Device A (room "1234") ←→ Hyperswarm DHT ←→ Device B (room "1234")
 Both devices run identical code. There's no client/server, no master/slave. Each writes to its own Corestore and broadcasts changes. When a peer connects, they exchange their full list and merge.
 
 **Limitations:**
-- If all peers leave a room, the data is **offline** until someone re-enters
+- If all peers leave a list, the data is **offline** until someone re-enters
 - There's no persistent storage "in the network" — only on devices
 - Sync is real-time only (both peers must be connected)
-- Mobile battery/memory limits how many rooms one device can seed in background
+- Mobile battery/memory limits how many lists one device can seed in background
 - No history or conflict resolution beyond "last write wins"
 
 This is the pure P2P trade-off: no servers to maintain, but no guarantees either.
@@ -230,7 +230,7 @@ The root cause: Hyperbee stores **current state** (key-value pairs), not **event
 | **Sync** | Custom broadcast messages | Built-in replication |
 | **Deletions** | Lost on stale peer reconnect | Preserved as events, always applied |
 | **Offline edits** | Problematic (merge conflicts) | Works correctly (CRDT merge) |
-| **Invite codes** | Custom 4-digit room codes | Cryptographic z32 strings (BlindPairing) |
+| **Invite codes** | Custom 4-digit kollection codes | Cryptographic z32 strings (BlindPairing) |
 | **Peer discovery** | Manual Hyperswarm topic join | BlindPairing handles authentication |
 
 ## Q: How does Autopass pairing work?
@@ -247,7 +247,7 @@ Joiner (Device B):
   1. Autopass.pair(store, inviteCode) → connects via DHT
   2. BlindPairing handshake with Device A
   3. pair.finished() → returns paired Autopass instance
-  4. Device B now has the base key and can write to the shared room
+  4. Device B now has the base key and can write to the shared kollection
 
 After pairing:
   - Both devices can do new Autopass(store) to reconnect
@@ -255,9 +255,9 @@ After pairing:
   - No need for invite code again — just use the same storage path
 ```
 
-**Important:** `pair.finished()` requires the **host to be online**. If Device A terminates its worklet (leaves the room), Device B cannot pair. The invite code is for initial pairing only, not for reconnection.
+**Important:** `pair.finished()` requires the **host to be online**. If Device A terminates its worklet (leaves the list), Device B cannot pair. The invite code is for initial pairing only, not for reconnection.
 
-## Q: How do you rejoin a room after leaving?
+## Q: How do you rejoin a list after leaving?
 
 This was one of our biggest challenges. The key insight:
 
@@ -284,30 +284,30 @@ Session 2 (Rejoin):
 // Args: [documentDirectory, mode, storageId?]
 
 mode = 'create'
-  // Create new room with unique storage path
+  // Create new kollection with unique storage path
   // storageId = timestamp (e.g., "mqham920")
   // Returns: storageId|invite
 
 mode = 'join'  
-  // Join someone else's room using their invite code
+  // Join someone else's kollection using their invite code
   // storageId = invite code from other device
   // Creates new storage path, pairs via BlindPairing
   // Returns: storageId|invite
 
 mode = 'rejoin'
-  // Rejoin a room you've been in before
+  // Rejoin a kollection you've been in before
   // storageId = folder name from history (e.g., "mqham920")
   // Uses SAME storage path → loads existing Autobase
   // Returns: storageId|invite
 ```
 
-## Q: Why can't you join your own room with the invite code?
+## Q: Why can't you join your own kollection with the invite code?
 
-If you create a room, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
+If you create a kollection, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
 
 **Why:** `Autopass.pair()` needs to complete a BlindPairing handshake with the HOST. When you leave, the host worklet is terminated. No host = no one to complete the handshake = `pair.finished()` times out.
 
-**The fix:** Don't use `join` mode for your own rooms. Use `rejoin` mode with the same storage path. The invite code is ONLY for other devices to join while you're hosting.
+**The fix:** Don't use `join` mode for your own lists. Use `rejoin` mode with the same storage path. The invite code is ONLY for other devices to join while you're hosting.
 
 ## Q: What challenges did we face implementing Autopass?
 
@@ -321,7 +321,7 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 
 ### Challenge 3: Corestore file lock after crash
 **Problem:** If the worklet crashed or was terminated abruptly, Corestore might leave locks.
-**Solution:** Each room uses its own storage folder. If corrupted, delete and recreate.
+**Solution:** Each kollection uses its own storage folder. If corrupted, delete and recreate.
 
 ### Challenge 4: `pair.finished()` hangs forever
 **Problem:** No built-in timeout — if host is offline, it hangs.
@@ -341,7 +341,7 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 ┌─────────────────────────────────────────────────────────────┐
 │                      React Native UI                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │ Create Room │  │ Join Room   │  │ Your Rooms  │          │
+│  │ Create Kollection │  │ Join Kollection   │  │ Your Kollections  │          │
 │  │  (mode:     │  │  (mode:     │  │  (mode:     │          │
 │  │   create)   │  │   join)     │  │   rejoin)   │          │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
@@ -367,8 +367,8 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 │                           │                                   │
 │  ┌────────────────────────▼────────────────────────────────┐ │
 │  │                    Corestore                             │ │
-│  │  /p2pkollections/abc123/  ← Room 1 data                │ │
-│  │  /p2pkollections/def456/  ← Room 2 data                │ │
+│  │  /p2pkollections/abc123/  ← List 1 data                │ │
+│  │  /p2pkollections/def456/  ← List 2 data                │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -380,7 +380,7 @@ If you create a room, leave (terminate worklet), then try to JOIN with your own 
 4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
 5. UI updates the list
 
-**Key invariant:** Same `storageId` = same storage path = same Autobase = same room data.
+**Key invariant:** Same `storageId` = same storage path = same Autobase = same kollection data.
 
 ---
 

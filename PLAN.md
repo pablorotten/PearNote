@@ -56,7 +56,7 @@ Phone A                          Phone B
 
 Each phone:
 - Stores data locally in **Corestore + Hyperbee** at `documentDirectory/p2pkollections/`
-- Joins a **Hyperswarm** room identified by a shared discovery key
+- Joins a **Hyperswarm** list identified by a shared discovery key
 - On connection, replicates its hyperbee to the peer
 - On local change (add/remove), broadcasts the diff to connected peers
 - On receiving a diff, applies it locally
@@ -84,7 +84,7 @@ Bare worklet that:
 2. **Opens a Hyperbee** store for the list
 3. **Connects to Hyperswarm**:
    - No invite → create simple numeric key (user-typed, e.g. `"1234"`), send to UI via `RPC_MY_INVITE`
-   - With invite → join that room using the simple key as discovery topic
+   - With invite → join that list using the simple key as discovery topic
    > **v1**: keys are short numbers for easy testing. **v2+**: upgrade to cryptographically random keys.
 4. **On peer connection**:
    - Send full local list via `RPC_RESET`
@@ -102,9 +102,9 @@ Bare worklet that:
 React Native UI with two phases:
 
 **Phase 1 — Pairing:**
-- "Create Room" button → generates discovery key
-- TextInput for "Enter Room Key" + "Join" button
-- Shows own room key (copy to clipboard)
+- "Create List" button → generates discovery key
+- TextInput for "Enter List Key" + "Join" button
+- Shows own list key (copy to clipboard)
 
 **Phase 2 — List View:**
 - `FlatList` with item details
@@ -137,9 +137,9 @@ npx tsc --noEmit
 
 After v1 works end-to-end with simple numeric keys (e.g. `"1234"`):
 
-1. Generate a cryptographically random 32-byte key on "Create Room"
+1. Generate a cryptographically random 32-byte key on "Create List"
 2. Encode it as a human-readable phrase or QR code
-3. Decode input back to 32-byte key on "Join Room"
+3. Decode input back to 32-byte key on "Join List"
 4. Use the 32-byte key as the Hyperswarm discovery topic
 5. Remove the simple numeric key path entirely
 

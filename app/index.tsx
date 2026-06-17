@@ -13,10 +13,14 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Animated,
-  BackHandler
+  BackHandler,
+  Modal
 } from 'react-native'
 import { documentDirectory, writeAsStringAsync, readAsStringAsync } from 'expo-file-system/legacy'
 import Clipboard from '@react-native-clipboard/clipboard'
+import { Camera, CameraView } from 'expo-camera'
+import QRCode from 'react-native-qrcode-svg'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Worklet } from 'react-native-bare-kit'
 import bundle from './app.bundle.mjs'
 import RPC from 'bare-rpc'
@@ -30,12 +34,18 @@ import {
   RPC_PEER_LEFT,
   RPC_CLEAR,
   RPC_DIAG,
-  RPC_ERROR
+  RPC_ERROR,
+  RPC_SET_NAME
 } from '../rpc-commands.mjs'
 
 type Item = {
   key: string
   value: [string, string]
+}
+
+type KollectionEntry = {
+  id: string
+  name: string
 }
 
 function LoadingSpinner() {
@@ -58,7 +68,7 @@ function LoadingSpinner() {
   return (
     <View style={styles.loadingContainer}>
       <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
-      <Text style={styles.loadingText}>Loading room...</Text>
+      <Text style={styles.loadingText}>Loading kollection...</Text>
     </View>
   )
 }
@@ -66,41 +76,66 @@ function LoadingSpinner() {
 export default function App() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
   const [items, setItems] = useState<Item[]>([])
-  const [roomCode, setRoomCode] = useState('')
+  const [kollectionCode, setKollectionCode] = useState('')
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [roomHistory, setRoomHistory] = useState<string[]>([])
+  const [kollectionHistory, setKollectionHistory] = useState<KollectionEntry[]>([])
+  const [kollectionName, setKollectionName] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [editTitleValue, setEditTitleValue] = useState('')
+  const [currentKollectionName, setCurrentKollectionName] = useState('')
+  const [showQR, setShowQR] = useState(false)
+  const [keyExpanded, setKeyExpanded] = useState(false)
+  const [scanning, setScanning] = useState(false)
+  const scanningRef = useRef(false)
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
-  const historyPath = documentDirectory + '/room-history.json'
+  const historyPath = documentDirectory + '/kollection-history.json'
 
   useEffect(() => {
     ;(async () => {
       try {
         const data = await readAsStringAsync(historyPath)
-        const codes: string[] = JSON.parse(data)
-        codes.forEach(c => savedCodes.current.add(c))
-        setRoomHistory(codes)
+        const parsed = JSON.parse(data)
+        if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+          const entries: KollectionEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed Kollection' }))
+          entries.forEach(e => savedCodes.current.add(e.id))
+          setKollectionHistory(entries)
+        } else {
+          const entries: KollectionEntry[] = parsed
+          entries.forEach(e => savedCodes.current.add(e.id))
+          setKollectionHistory(entries)
+        }
       } catch (_) {}
     })()
   }, [])
 
-  async function saveToHistory(code: string) {
-    if (savedCodes.current.has(code)) return
-    savedCodes.current.add(code)
-    const updated = [code, ...roomHistory]
-    setRoomHistory(updated)
+  async function saveToHistory(id: string, name: string) {
+    if (savedCodes.current.has(id)) return
+    savedCodes.current.add(id)
+    const entry: KollectionEntry = { id, name }
+    const updated = [entry, ...kollectionHistory]
+    setKollectionHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
-  async function removeFromHistory(code: string) {
-    savedCodes.current.delete(code)
-    const updated = roomHistory.filter(c => c !== code)
-    setRoomHistory(updated)
+  async function removeFromHistory(id: string) {
+    savedCodes.current.delete(id)
+    const updated = kollectionHistory.filter(e => e.id !== id)
+    setKollectionHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
+
+  async function updateHistoryName(syncedName: string) {
+    const lastEntry = kollectionHistory[0]
+    if (!lastEntry || lastEntry.name === syncedName) return
+    const updated = [{ ...lastEntry, name: syncedName }, ...kollectionHistory.slice(1)]
+    setKollectionHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -113,8 +148,9 @@ export default function App() {
     setTitle('')
     setShowAdd(false)
     setRpc(null)
-    setRoomCode('')
+    setKollectionCode('')
     setLoading(false)
+    setCurrentKollectionName('')
   }
 
   useEffect(() => {
@@ -127,16 +163,17 @@ export default function App() {
     return () => sub.remove()
   }, [phase])
 
-  function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string) {
-    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' roomCode=' + roomCode)
-    const roomId = code || (mode === 'join' ? roomCode : '')
+  function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string, name?: string) {
+    console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' kollectionCode=' + kollectionCode)
+    const kollectionId = code || (mode === 'join' ? kollectionCode : '')
+    if (name) setCurrentKollectionName(name)
     const worklet = new Worklet()
     workletRef.current = worklet
     
-    // Args: [documentDirectory, mode, roomId?]
+    // Args: [documentDirectory, mode, kollectionId?]
     const args = mode === 'create'
       ? [String(documentDirectory), 'create']
-      : [String(documentDirectory), mode, roomId]
+      : [String(documentDirectory), mode, kollectionId]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -149,18 +186,34 @@ export default function App() {
         const data = b4a.toString(req.data)
         const [storageId, invite] = data.split('|')
         setMyCode(invite)
-        // Save storageId to history for rejoin
-        saveToHistory(storageId)
+        if (mode === 'create' && name) {
+          setCurrentKollectionName(name)
+          saveToHistory(storageId, name)
+          const nameReq = rpcInstance.request(RPC_SET_NAME)
+          nameReq.send(name)
+        } else if (mode === 'rejoin') {
+          const existing = kollectionHistory.find(e => e.id === storageId)
+          setCurrentKollectionName(existing ? existing.name : storageId)
+          saveToHistory(storageId, existing ? existing.name : storageId)
+        } else {
+          setCurrentKollectionName(storageId)
+          saveToHistory(storageId, storageId)
+        }
         if (mode === 'create') {
-          Alert.alert('Room Created!', `Share this invite code:\n${invite}`, [
-            { text: 'Copy', onPress: () => Clipboard.setString(invite) }
+          Alert.alert('Kollection Created!', `Share this code:\n${invite}`, [
+            { text: 'Copy Code', onPress: () => Clipboard.setString(invite) }
           ])
         }
       }
 
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
-        setItems(data)
+        const nameEntry = data.find((d: any) => d.key === '_kollection_name')
+        if (nameEntry) {
+          setCurrentKollectionName(nameEntry.value[1])
+          updateHistoryName(nameEntry.value[1])
+        }
+        setItems(data.filter((d: any) => d.key !== '_kollection_name'))
         setLoading(false)
       }
 
@@ -206,11 +259,11 @@ export default function App() {
     }
   }
 
-  function handleDeleteList() {
+  function handleDeleteKollection() {
     if (!myCode) return
     Alert.alert(
-      'Delete List',
-      `Are you sure you want to leave the list ${myCode}?`,
+      'Delete Kollection',
+      `Are you sure you want to leave the kollection ${myCode}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -231,176 +284,294 @@ export default function App() {
   function copyCode() {
     if (myCode) {
       Clipboard.setString(myCode)
-      Alert.alert('Copied!', `Room code ${myCode} copied to clipboard`)
+      Alert.alert('Copied!', `Invite code ${myCode} copied to clipboard`)
     }
   }
 
-  if (phase === 'menu') {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.heading}>P2PKollections</Text>
-        <Text style={styles.subtitle}>P2P List Sharing</Text>
-
-        <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
-          <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
-            <Text style={styles.bigButtonText}>Create Room</Text>
-            <Text style={styles.bigButtonSub}>Generate a new room code</Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <TextInput
-            style={styles.input}
-            placeholder='Paste invite code'
-            placeholderTextColor='#666'
-            value={roomCode}
-            onChangeText={setRoomCode}
-            autoCapitalize='none'
-            autoCorrect={false}
-          />
-          <TouchableOpacity
-            style={[styles.bigButton, !roomCode && styles.buttonDisabled]}
-            onPress={() => {
-              if (!roomCode) return
-              Alert.alert(
-                'Join Room',
-                `Connect to room with code: ${roomCode}?`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Join', onPress: () => startWorklet('join') }
-                ]
-              )
-            }}
-            disabled={!roomCode}
-          >
-            <Text style={styles.bigButtonText}>Join Room</Text>
-            <Text style={styles.bigButtonSub}>Connect to an existing room</Text>
-          </TouchableOpacity>
-
-          {roomHistory.length > 0 && (
-            <View style={styles.historySection}>
-              <Text style={styles.historyTitle}>Your Rooms</Text>
-              <View style={styles.historyList}>
-                {roomHistory.map(storageId => (
-                  <View key={storageId} style={styles.historyItem}>
-                    <TouchableOpacity
-                      style={styles.historyItemContent}
-                      onPress={() => startWorklet('rejoin', storageId)}
-                    >
-                      <Text style={styles.historyItemText}>Room {storageId}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.historyDeleteBtn}
-                      onPress={() => {
-                        Alert.alert(
-                          'Remove Room',
-                          `Remove this room from history?`,
-                          [
-                            { text: 'Cancel', style: 'cancel' },
-                            { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(storageId) }
-                          ]
-                        )
-                      }}
-                    >
-                      <Text style={styles.historyDeleteBtnText}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-        </ScrollView>
-      </View>
-    )
-  }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior='padding'
-      keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
-          <Text style={styles.backBtnText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>P2PKollections</Text>
-        <View style={styles.statusRow}>
-          <View style={[styles.statusDot, connected && styles.statusDotOn]} />
-          <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
-        </View>
-        {myCode ? (
-          <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>
-            <Text style={styles.codeLabel}>Room:</Text>
-            <Text style={styles.codeValue}>{myCode}</Text>
-          </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity onPress={handleDeleteList} style={styles.deleteListBtn}>
-          <Text style={styles.deleteListBtnText}>✕</Text>
-        </TouchableOpacity>
-      </View>
+    <>
+      {phase === 'menu' ? (
+        <View style={styles.container}>
+          <Text style={styles.heading}>P2P Kollections</Text>
+          <Text style={styles.subtitle}>P2P Kollection Sharing</Text>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item.key}
-            style={styles.list}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No items yet. Tap + to add one.</Text>
-            }
-            renderItem={({ item }) => (
-              <View style={styles.itemRow}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemTitle}>{item.value[1]}</Text>
+          <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
+            {showCreateForm ? (
+              <View style={styles.nameForm}>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder='Kollection name'
+                  placeholderTextColor='#666'
+                  value={kollectionName}
+                  onChangeText={setKollectionName}
+                  autoFocus
+                />
+                <View style={styles.formActions}>
+                  <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setKollectionName('') }}>
+                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.addBtn, !kollectionName.trim() && styles.buttonDisabled]}
+                    onPress={() => {
+                      if (!kollectionName.trim()) return
+                      setShowCreateForm(false)
+                      startWorklet('create', undefined, kollectionName.trim())
+                      setKollectionName('')
+                    }}
+                    disabled={!kollectionName.trim()}
+                  >
+                    <Text style={styles.addBtnText}>Create</Text>
+                  </TouchableOpacity>
                 </View>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
+                <Text style={styles.bigButtonText}>Create Kollection</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.joinRow}>
+              <View style={styles.joinInputGroup}>
+                <TextInput
+                  style={styles.joinInput}
+                  placeholder='Paste invite code'
+                  placeholderTextColor='#666'
+                  value={kollectionCode}
+                  onChangeText={setKollectionCode}
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                />
                 <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => handleRemoveItem(item.key)}
+                  style={[styles.joinSubmitBtn, !kollectionCode && styles.buttonDisabled]}
+                  onPress={() => {
+                    if (!kollectionCode) return
+                    startWorklet('join')
+                  }}
+                  disabled={!kollectionCode}
                 >
-                  <Text style={styles.deleteBtnText}>✕</Text>
+                  <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#011501' />
                 </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
+                const { granted } = await Camera.requestCameraPermissionsAsync()
+                if (granted) { setScanning(true); scanningRef.current = true }
+                else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
+              }}>
+                <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7a9e2d' />
+              </TouchableOpacity>
+            </View>
+
+            {kollectionHistory.length > 0 && (
+              <View style={styles.historySection}>
+                <Text style={styles.historyTitle}>Your Kollections</Text>
+                <View style={styles.historyList}>
+                  {kollectionHistory.map(entry => (
+                    <View key={entry.id} style={styles.historyItem}>
+                      <TouchableOpacity
+                        style={styles.historyItemContent}
+                        onPress={() => startWorklet('rejoin', entry.id, entry.name)}
+                      >
+                        <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
+                        <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.historyDeleteBtn}
+                        onPress={() => {
+                          Alert.alert(
+                            'Remove Kollection',
+                            `Remove "${entry.name}" from history?`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
+                            ]
+                          )
+                        }}
+                      >
+                        <Text style={styles.historyDeleteBtnText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
-          />
-
-          {showAdd ? (
-            <View style={styles.addForm}>
-              <TextInput
-                style={styles.formInput}
-                placeholder='Title'
-                placeholderTextColor='#666'
-                value={title}
-                onChangeText={setTitle}
-                autoFocus
-              />
-              <View style={styles.formActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
-                  onPress={handleAddItem}
-                  disabled={!title.trim()}
-                >
-                  <Text style={styles.addBtnText}>Add Item</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
-              <Text style={styles.fabText}>+</Text>
+          </ScrollView>
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior='padding'
+          keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
+              <Text style={styles.backBtnText}>‹</Text>
             </TouchableOpacity>
+            {editingTitle ? (
+              <TextInput
+                style={styles.titleInput}
+                value={editTitleValue}
+                onChangeText={setEditTitleValue}
+                onSubmitEditing={() => {
+                  const val = editTitleValue.trim()
+                  if (val && rpc) {
+                    const req = rpc.request(RPC_SET_NAME)
+                    req.send(val)
+                  }
+                  setEditingTitle(false)
+                }}
+                onBlur={() => setEditingTitle(false)}
+                autoFocus
+                selectTextOnFocus
+              />
+            ) : (
+              <TouchableOpacity onLongPress={() => { setEditTitleValue(currentKollectionName); setEditingTitle(true) }}>
+                <Text style={styles.heading}>{currentKollectionName || 'P2P Kollections'}</Text>
+              </TouchableOpacity>
+            )}
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, connected && styles.statusDotOn]} />
+              <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+            </View>
+            {myCode ? (
+              <View style={styles.shareSection}>
+                <TouchableOpacity onPress={() => setKeyExpanded(!keyExpanded)} style={styles.codeRow}>
+                  <Text
+                    style={styles.codeValue}
+                    numberOfLines={keyExpanded ? undefined : 1}
+                    ellipsizeMode='tail'
+                  >
+                    {myCode}
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.shareActions}>
+                  <TouchableOpacity onPress={copyCode} style={styles.copyBtn}>
+                    <Text style={styles.copyBtnText}>Copy key</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShowQR(true)} style={styles.qrBtn}>
+                    <MaterialCommunityIcons name='qrcode' size={20} color='#011501' />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : null}
+            <TouchableOpacity onPress={handleDeleteKollection} style={styles.deleteListBtn}>
+              <Text style={styles.deleteListBtnText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <FlatList
+                data={items}
+                keyExtractor={(item) => item.key}
+                style={styles.list}
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>No items yet. Tap + to add one.</Text>
+                }
+                renderItem={({ item }) => (
+                  <View style={styles.itemRow}>
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemTitle}>{item.value[1]}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.deleteBtn}
+                      onPress={() => handleRemoveItem(item.key)}
+                    >
+                      <Text style={styles.deleteBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+
+              {showAdd ? (
+                <View style={styles.addForm}>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder='Title'
+                    placeholderTextColor='#666'
+                    value={title}
+                    onChangeText={setTitle}
+                    autoFocus
+                  />
+                  <View style={styles.formActions}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
+                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.addBtn, !title.trim() && styles.buttonDisabled]}
+                      onPress={handleAddItem}
+                      disabled={!title.trim()}
+                    >
+                      <Text style={styles.addBtnText}>Add Item</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.fab} onPress={() => setShowAdd(true)}>
+                  <Text style={styles.fabText}>+</Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
-        </>
+        </KeyboardAvoidingView>
       )}
-    </KeyboardAvoidingView>
+
+      {showQR && myCode && (
+        <Modal visible={showQR} transparent animationType='fade' onRequestClose={() => setShowQR(false)}>
+          <View style={styles.qrOverlay}>
+            <View style={styles.qrContainer}>
+              <Text style={styles.qrTitle}>Scan to join</Text>
+              <QRCode value={myCode} size={220} backgroundColor='#fff' color='#000' />
+              <TouchableOpacity style={styles.qrCloseBtn} onPress={() => setShowQR(false)}>
+                <Text style={styles.qrCloseBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {scanning && (
+        <View style={StyleSheet.absoluteFillObject}>
+          <CameraView
+            style={StyleSheet.absoluteFillObject}
+            onBarcodeScanned={({ data }) => {
+              if (!data || !scanningRef.current) return
+              scanningRef.current = false
+              setScanning(false)
+              startWorklet('join', data)
+            }}
+          />
+          <View style={styles.scannerOverlay}>
+            <TouchableOpacity style={styles.scannerCloseBtn} onPress={() => { scanningRef.current = false; setScanning(false) }}>
+              <Text style={styles.scannerCloseBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </>
+  )
+}
+
+function QRCodeModal({ visible, code, onClose }: { visible: boolean, code: string, onClose: () => void }) {
+  return (
+    <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
+      <View style={styles.qrOverlay}>
+        <View style={styles.qrContainer}>
+          <Text style={styles.qrTitle}>Scan to join</Text>
+          <QRCode value={code} size={220} backgroundColor='#fff' color='#000' />
+          <TouchableOpacity style={styles.qrCloseBtn} onPress={onClose}>
+            <Text style={styles.qrCloseBtnText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   )
 }
 
@@ -417,6 +588,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#b0d943',
     textAlign: 'center',
+    marginTop: 5
+  },
+  titleInput: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#b0d943',
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#b0d943',
+    paddingVertical: 2,
+    marginHorizontal: 40,
     marginTop: 10
   },
   subtitle: {
@@ -424,14 +606,14 @@ const styles = StyleSheet.create({
     color: '#7a9e2d',
     textAlign: 'center',
     marginTop: 5,
-    marginBottom: 40
+    marginBottom: 25
   },
   menuContent: {
     flex: 1
   },
   menuContentInner: {
     justifyContent: 'center',
-    gap: 15
+    gap: 12
   },
   historySection: {
     marginTop: 20
@@ -458,10 +640,14 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   historyItemText: {
-    flex: 1,
     color: '#b0d943',
     fontSize: 16,
     fontWeight: 'bold'
+  },
+  historyItemSub: {
+    color: '#7a9e2d',
+    fontSize: 12,
+    marginTop: 2
   },
   historyDeleteBtn: {
     width: 36,
@@ -479,7 +665,8 @@ const styles = StyleSheet.create({
   },
   bigButton: {
     backgroundColor: '#1a3d0a',
-    padding: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#b0d943',
@@ -490,19 +677,14 @@ const styles = StyleSheet.create({
     borderColor: '#555'
   },
   bigButtonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#b0d943',
-    marginBottom: 5
-  },
-  bigButtonSub: {
-    fontSize: 14,
-    color: '#7a9e2d'
+    color: '#b0d943'
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10
+    marginVertical: 6
   },
   dividerLine: {
     flex: 1,
@@ -514,16 +696,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 14
   },
-  input: {
-    height: 50,
-    borderColor: '#b0d943',
-    borderWidth: 2,
+  joinRow: {
+    flexDirection: 'row',
+    gap: 10
+  },
+  joinInputGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#1a3d0a',
     borderRadius: 10,
-    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    overflow: 'hidden'
+  },
+  joinInput: {
+    flex: 1,
+    height: 46,
+    paddingHorizontal: 14,
     color: '#b0d943',
-    fontSize: 18,
-    textAlign: 'center',
-    backgroundColor: '#1a3d0a'
+    fontSize: 15
+  },
+  joinSubmitBtn: {
+    width: 46,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#b0d943'
+  },
+  qrScanBtn: {
+    width: 46,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#7a9e2d',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   header: {
     marginBottom: 15,
@@ -588,27 +793,48 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 'bold'
   },
-  codeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  shareSection: {
+    alignSelf: 'stretch',
     marginTop: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    gap: 8
+  },
+  codeRow: {
     backgroundColor: '#1a3d0a',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#b0d943',
-    gap: 6
-  },
-  codeLabel: {
-    color: '#7a9e2d',
-    fontSize: 12
+    paddingHorizontal: 16,
+    paddingVertical: 10
   },
   codeValue: {
     color: '#b0d943',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
-    letterSpacing: 2
+    letterSpacing: 1,
+    fontFamily: Platform.OS === 'android' ? 'monospace' : undefined
+  },
+  shareActions: {
+    flexDirection: 'row',
+    gap: 10
+  },
+  copyBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    backgroundColor: '#b0d943',
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  copyBtnText: {
+    color: '#011501',
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
+  qrBtn: {
+    width: 42,
+    borderRadius: 8,
+    backgroundColor: '#b0d943',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   list: {
     flex: 1
@@ -670,6 +896,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold'
   },
+  nameForm: {
+    backgroundColor: '#1a3d0a',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    gap: 10
+  },
   addForm: {
     backgroundColor: '#1a3d0a',
     padding: 16,
@@ -713,6 +947,52 @@ const styles = StyleSheet.create({
     color: '#011501',
     fontWeight: 'bold',
     fontSize: 15
+  },
+  qrOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  qrContainer: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    gap: 20
+  },
+  qrTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#011501'
+  },
+  qrCloseBtn: {
+    backgroundColor: '#b0d943',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8
+  },
+  qrCloseBtnText: {
+    color: '#011501',
+    fontWeight: 'bold',
+    fontSize: 15
+  },
+  scannerOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: 20,
+    paddingBottom: 60
+  },
+  scannerCloseBtn: {
+    backgroundColor: '#d94b4b',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center'
+  },
+  scannerCloseBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
   fab: {
     position: 'absolute',
