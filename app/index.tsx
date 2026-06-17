@@ -30,12 +30,18 @@ import {
   RPC_PEER_LEFT,
   RPC_CLEAR,
   RPC_DIAG,
-  RPC_ERROR
+  RPC_ERROR,
+  RPC_SET_NAME
 } from '../rpc-commands.mjs'
 
 type Item = {
   key: string
   value: [string, string]
+}
+
+type ListEntry = {
+  id: string
+  name: string
 }
 
 function LoadingSpinner() {
@@ -73,7 +79,10 @@ export default function App() {
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [listHistory, setListHistory] = useState<string[]>([])
+  const [listHistory, setListHistory] = useState<ListEntry[]>([])
+  const [listName, setListName] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [currentListName, setCurrentListName] = useState('')
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/list-history.json'
@@ -82,24 +91,40 @@ export default function App() {
     ;(async () => {
       try {
         const data = await readAsStringAsync(historyPath)
-        const codes: string[] = JSON.parse(data)
-        codes.forEach(c => savedCodes.current.add(c))
-        setListHistory(codes)
+        const parsed = JSON.parse(data)
+        if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+          const entries: ListEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed List' }))
+          entries.forEach(e => savedCodes.current.add(e.id))
+          setListHistory(entries)
+        } else {
+          const entries: ListEntry[] = parsed
+          entries.forEach(e => savedCodes.current.add(e.id))
+          setListHistory(entries)
+        }
       } catch (_) {}
     })()
   }, [])
 
-  async function saveToHistory(code: string) {
-    if (savedCodes.current.has(code)) return
-    savedCodes.current.add(code)
-    const updated = [code, ...listHistory]
+  async function saveToHistory(id: string, name: string) {
+    if (savedCodes.current.has(id)) return
+    savedCodes.current.add(id)
+    const entry: ListEntry = { id, name }
+    const updated = [entry, ...listHistory]
     setListHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
-  async function removeFromHistory(code: string) {
-    savedCodes.current.delete(code)
-    const updated = listHistory.filter(c => c !== code)
+  async function removeFromHistory(id: string) {
+    savedCodes.current.delete(id)
+    const updated = listHistory.filter(e => e.id !== id)
+    setListHistory(updated)
+    await writeAsStringAsync(historyPath, JSON.stringify(updated))
+  }
+
+  async function updateHistoryName(syncedName: string) {
+    const lastEntry = listHistory[0]
+    if (!lastEntry || lastEntry.name === syncedName) return
+    const updated = [{ ...lastEntry, name: syncedName }, ...listHistory.slice(1)]
     setListHistory(updated)
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
@@ -115,6 +140,7 @@ export default function App() {
     setRpc(null)
     setListCode('')
     setLoading(false)
+    setCurrentListName('')
   }
 
   useEffect(() => {
@@ -127,9 +153,10 @@ export default function App() {
     return () => sub.remove()
   }, [phase])
 
-  function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string) {
+  function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string, name?: string) {
     console.log('startWorklet mode=' + mode + ' code=' + (code || '(none)') + ' listCode=' + listCode)
     const listId = code || (mode === 'join' ? listCode : '')
+    if (name) setCurrentListName(name)
     const worklet = new Worklet()
     workletRef.current = worklet
     
@@ -149,8 +176,19 @@ export default function App() {
         const data = b4a.toString(req.data)
         const [storageId, invite] = data.split('|')
         setMyCode(invite)
-        // Save storageId to history for rejoin
-        saveToHistory(storageId)
+        if (mode === 'create' && name) {
+          setCurrentListName(name)
+          saveToHistory(storageId, name)
+          const nameReq = rpcInstance.request(RPC_SET_NAME)
+          nameReq.send(name)
+        } else if (mode === 'rejoin') {
+          const existing = listHistory.find(e => e.id === storageId)
+          setCurrentListName(existing ? existing.name : storageId)
+          saveToHistory(storageId, existing ? existing.name : storageId)
+        } else {
+          setCurrentListName(storageId)
+          saveToHistory(storageId, storageId)
+        }
         if (mode === 'create') {
           Alert.alert('List Created!', `Share this invite code:\n${invite}`, [
             { text: 'Copy', onPress: () => Clipboard.setString(invite) }
@@ -160,7 +198,12 @@ export default function App() {
 
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
-        setItems(data)
+        const nameEntry = data.find((d: any) => d.key === '_list_name')
+        if (nameEntry) {
+          setCurrentListName(nameEntry.value[1])
+          updateHistoryName(nameEntry.value[1])
+        }
+        setItems(data.filter((d: any) => d.key !== '_list_name'))
         setLoading(false)
       }
 
@@ -242,10 +285,40 @@ export default function App() {
         <Text style={styles.subtitle}>P2P List Sharing</Text>
 
         <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
-          <TouchableOpacity style={styles.bigButton} onPress={() => startWorklet('create')}>
-            <Text style={styles.bigButtonText}>Create List</Text>
-            <Text style={styles.bigButtonSub}>Generate a new list code</Text>
-          </TouchableOpacity>
+          {showCreateForm ? (
+            <View style={styles.nameForm}>
+              <TextInput
+                style={styles.formInput}
+                placeholder='List name'
+                placeholderTextColor='#666'
+                value={listName}
+                onChangeText={setListName}
+                autoFocus
+              />
+              <View style={styles.formActions}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setListName('') }}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, !listName.trim() && styles.buttonDisabled]}
+                  onPress={() => {
+                    if (!listName.trim()) return
+                    setShowCreateForm(false)
+                    startWorklet('create', undefined, listName.trim())
+                    setListName('')
+                  }}
+                  disabled={!listName.trim()}
+                >
+                  <Text style={styles.addBtnText}>Create</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
+              <Text style={styles.bigButtonText}>Create List</Text>
+              <Text style={styles.bigButtonSub}>Name your new list</Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
@@ -278,23 +351,24 @@ export default function App() {
             <View style={styles.historySection}>
               <Text style={styles.historyTitle}>Your Lists</Text>
               <View style={styles.historyList}>
-                {listHistory.map(storageId => (
-                  <View key={storageId} style={styles.historyItem}>
+                {listHistory.map(entry => (
+                  <View key={entry.id} style={styles.historyItem}>
                     <TouchableOpacity
                       style={styles.historyItemContent}
-                      onPress={() => startWorklet('rejoin', storageId)}
+                      onPress={() => startWorklet('rejoin', entry.id, entry.name)}
                     >
-                      <Text style={styles.historyItemText}>List {storageId}</Text>
+                      <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
+                      <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.historyDeleteBtn}
                       onPress={() => {
                         Alert.alert(
                           'Remove List',
-                          `Remove this list from history?`,
+                          `Remove "${entry.name}" from history?`,
                           [
                             { text: 'Cancel', style: 'cancel' },
-                            { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(storageId) }
+                            { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
                           ]
                         )
                       }}
@@ -321,14 +395,13 @@ export default function App() {
         <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.heading}>P2P Kollections</Text>
+        <Text style={styles.heading}>{currentListName || 'P2P Kollections'}</Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusDot, connected && styles.statusDotOn]} />
           <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
         </View>
         {myCode ? (
-          <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>
-            <Text style={styles.codeLabel}>List:</Text>
+          <TouchableOpacity onPress={copyCode} style={styles.codeBadge}>            
             <Text style={styles.codeValue}>{myCode}</Text>
           </TouchableOpacity>
         ) : null}
@@ -451,10 +524,14 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   historyItemText: {
-    flex: 1,
     color: '#b0d943',
     fontSize: 16,
     fontWeight: 'bold'
+  },
+  historyItemSub: {
+    color: '#7a9e2d',
+    fontSize: 12,
+    marginTop: 2
   },
   historyDeleteBtn: {
     width: 36,
@@ -662,6 +739,14 @@ const styles = StyleSheet.create({
     color: '#d94b4b',
     fontSize: 14,
     fontWeight: 'bold'
+  },
+  nameForm: {
+    backgroundColor: '#1a3d0a',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#b0d943',
+    gap: 10
   },
   addForm: {
     backgroundColor: '#1a3d0a',

@@ -16,7 +16,8 @@ import {
   RPC_PEER_LEFT,
   RPC_DIAG,
   RPC_CLEAR,
-  RPC_ERROR
+  RPC_ERROR,
+  RPC_SET_NAME
 } from '../rpc-commands.mjs'
 
 const { IPC } = BareKit
@@ -34,6 +35,10 @@ const rpc = new RPC(IPC, (req, error) => {
   }
   if (req.command === RPC_CLEAR) {
     clearAll()
+  }
+  if (req.command === RPC_SET_NAME) {
+    const name = b4a.toString(req.data)
+    setListName(name)
   }
 })
 
@@ -192,6 +197,16 @@ async function addItem(item) {
     await pass.add(key, JSON.stringify(['item', title]))
   } catch (err) {
     diag('addItem error: ' + err.message)
+  }
+}
+
+async function setListName(name) {
+  if (!pass) return
+  try {
+    diag('Setting list name: ' + name)
+    await pass.add('_list_name', JSON.stringify(['_name', name]))
+  } catch (err) {
+    diag('setListName error: ' + err.message)
   }
 }
 
