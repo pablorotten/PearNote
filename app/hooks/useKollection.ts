@@ -14,6 +14,7 @@ import {
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
   RPC_CLEAR,
+  RPC_CLEAR_DONE,
   RPC_DIAG,
   RPC_ERROR,
   RPC_SET_NAME
@@ -28,7 +29,7 @@ export function useKollectionLogic() {
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
-  const [rpc, setRpc] = useState<any>(null)
+  const [rpc, setRpc] = useState<RPC | null>(null)
   const [loading, setLoading] = useState(false)
   const [kollectionHistory, setKollectionHistory] = useState<KollectionEntry[]>([])
   const [kollectionName, setKollectionName] = useState('')
@@ -40,9 +41,15 @@ export function useKollectionLogic() {
   const [keyExpanded, setKeyExpanded] = useState(false)
   const [scanning, setScanning] = useState(false)
   const scanningRef = useRef(false)
-  const workletRef = useRef<any>(null)
+  const workletRef = useRef<Worklet | null>(null)
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/kollection-history.json'
+  const kollectionHistoryRef = useRef(kollectionHistory)
+  const sessionStorageIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    kollectionHistoryRef.current = kollectionHistory
+  }, [kollectionHistory])
 
   useEffect(() => {
     ;(async () => {
@@ -66,23 +73,31 @@ export function useKollectionLogic() {
     if (savedCodes.current.has(id)) return
     savedCodes.current.add(id)
     const entry: KollectionEntry = { id, name }
-    const updated = [entry, ...kollectionHistory]
+    const current = kollectionHistoryRef.current
+    const updated = [entry, ...current]
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function removeFromHistory(id: string) {
     savedCodes.current.delete(id)
-    const updated = kollectionHistory.filter(e => e.id !== id)
+    const current = kollectionHistoryRef.current
+    const updated = current.filter(e => e.id !== id)
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
-  async function updateHistoryName(syncedName: string) {
-    const lastEntry = kollectionHistory[0]
-    if (!lastEntry || lastEntry.name === syncedName) return
-    const updated = [{ ...lastEntry, name: syncedName }, ...kollectionHistory.slice(1)]
+  async function updateHistoryName(id: string, syncedName: string) {
+    const current = kollectionHistoryRef.current
+    const idx = current.findIndex(e => e.id === id)
+    if (idx === -1) return
+    const entry = current[idx]
+    if (entry.name === syncedName) return
+    const updated = current.map((e, i) => i === idx ? { ...e, name: syncedName } : e)
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -129,6 +144,7 @@ export function useKollectionLogic() {
       if (req.command === RPC_MY_INVITE) {
         const data = b4a.toString(req.data)
         const [storageId, invite] = data.split('|')
+        sessionStorageIdRef.current = storageId
         setMyCode(invite)
         if (mode === 'create' && name) {
           setCurrentKollectionName(name)
@@ -136,7 +152,7 @@ export function useKollectionLogic() {
           const nameReq = rpcInstance.request(RPC_SET_NAME)
           nameReq.send(name)
         } else if (mode === 'rejoin') {
-          const existing = kollectionHistory.find(e => e.id === storageId)
+          const existing = kollectionHistoryRef.current.find(e => e.id === storageId)
           setCurrentKollectionName(existing ? existing.name : storageId)
           saveToHistory(storageId, existing ? existing.name : storageId)
         } else {
@@ -151,13 +167,13 @@ export function useKollectionLogic() {
       }
 
       if (req.command === RPC_RESET) {
-        const data = JSON.parse(b4a.toString(req.data))
-        const nameEntry = data.find((d: any) => d.key === '_kollection_name')
-        if (nameEntry) {
+        const data: Item[] = JSON.parse(b4a.toString(req.data))
+        const nameEntry = data.find((d) => d.key === '_kollection_name')
+        if (nameEntry && sessionStorageIdRef.current) {
           setCurrentKollectionName(nameEntry.value[1])
-          updateHistoryName(nameEntry.value[1])
+          updateHistoryName(sessionStorageIdRef.current, nameEntry.value[1])
         }
-        setItems(data.filter((d: any) => d.key !== '_kollection_name'))
+        setItems(data.filter((d) => d.key !== '_kollection_name'))
         setLoading(false)
       }
 
@@ -178,6 +194,10 @@ export function useKollectionLogic() {
         console.log('BARE_ERROR: ' + msg)
         setLoading(false)
         Alert.alert('Error', msg)
+      }
+
+      if (req.command === RPC_CLEAR_DONE) {
+        handleLeave()
       }
     })
 
@@ -218,7 +238,7 @@ export function useKollectionLogic() {
               const req = rpc.request(RPC_CLEAR)
               req.send('')
             }
-            handleLeave()
+            setLoading(true)
           }
         }
       ]

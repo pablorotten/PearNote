@@ -16,6 +16,7 @@ import {
   RPC_PEER_LEFT,
   RPC_DIAG,
   RPC_CLEAR,
+  RPC_CLEAR_DONE,
   RPC_ERROR,
   RPC_SET_NAME
 } from '../rpc-commands.mjs'
@@ -180,7 +181,11 @@ async function notifyUI() {
     const items = []
     const stream = pass.list()
     for await (const record of stream) {
-      items.push({ key: record.key, value: JSON.parse(record.value) })
+      try {
+        items.push({ key: record.key, value: JSON.parse(record.value) })
+      } catch (_) {
+        diag('Skipping corrupt record: ' + record.key)
+      }
     }
     try { rpc.request(RPC_RESET).send(JSON.stringify(items)) } catch (_) {}
   } catch (err) {
@@ -232,6 +237,8 @@ async function clearAll() {
     for (const key of keys) {
       await pass.remove(key)
     }
+    diag('Clear complete')
+    try { rpc.request(RPC_CLEAR_DONE).send('') } catch (_) {}
   } catch (err) {
     diag('clearAll error: ' + err.message)
   }

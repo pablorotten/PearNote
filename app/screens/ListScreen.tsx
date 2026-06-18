@@ -35,7 +35,7 @@ export function ListScreen() {
       keyboardVerticalOffset={Platform.OS === 'android' ? StatusBar.currentHeight : 0}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleLeave} style={[styles.backBtn, loading && styles.buttonDisabled]}>
+        <TouchableOpacity onPress={handleLeave} disabled={loading} style={[styles.backBtn, loading && styles.buttonDisabled]}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
         {editingTitle ? (

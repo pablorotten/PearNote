@@ -636,3 +636,47 @@ Yes. The backend is the API gateway — it translates between two worlds:
 | *(invite code)* | `pass.createInvite()` | **autopass** |
 
 The frontend never imports `autopass`, `corestore`, or `hyperswarm`. It only talks to `backend.mjs` over IPC. The backend is a thin adapter: the frontend sends high-level commands like "add this item", and the backend translates them into Holepunch operations, then pushes results back.
+
+---
+
+## Q: What is Corestore? What is the "file lock"?
+
+Corestore is the **local database** on your phone's filesystem. Every kollection creates its own storage folder:
+
+```
+p2pkollections/mqham920/
+├── corestore.db
+├── corestore.wal
+└── bits/
+```
+
+It stores:
+- The **Autobase keys** (needed to rejoin a kollection without pairing again)
+- The **Hypercore append-only logs** (all add/remove events)
+- The **current data** (items you see in the list)
+
+### What is the file lock?
+
+When the Worklet opens a Corestore, it places a **lock file** in that folder — like an "occupied" sign on a bathroom. This prevents two processes from writing to the same database at the same time, which would corrupt the data.
+
+When you **leave** a kollection normally (tap ‹ back button), `handleLeave()` calls `worklet.terminate()`, which kills the Worklet thread **instantly** — like pulling the power cord. The lock file stays on disk.
+
+Next time you try to open that same kollection, Corestore sees the stale lock and refuses, thinking another process is still using it.
+
+### What's the proper shutdown?
+
+The AGENTS.md describes the correct sequence but it's never implemented:
+
+```js
+await pass.suspend()  // gracefully release Corestore lock
+await goodbye.run()   // flush any pending writes
+process.exit(0)       // then exit
+```
+
+Currently, `worklet.terminate()` skips this entirely — the lock is abandoned.
+
+### Is the lock a real problem in practice?
+
+In the current app, every session uses a **unique timestamp-based folder** (`p2pkollections/mqham920`, `p2pkollections/abc123`, etc.). So a stale lock in one folder doesn't affect a different session. The lock only matters if you try to **rejoin** the same kollection later — if the previous session left a stale lock, the rejoin could fail.
+
+This is a known issue tracked in the AGENTS.md but not yet fixed. Each session creates a new folder, which avoids the lock problem but also means old session folders accumulate on disk.
