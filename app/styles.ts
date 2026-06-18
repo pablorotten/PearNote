@@ -3,7 +3,7 @@ import { StyleSheet, Platform, StatusBar } from 'react-native'
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEF7EE',
+    backgroundColor: '#FFF5F6',
     padding: 20,
     paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0) + 20,
     paddingBottom: Platform.OS === 'android' ? 60 : 20
