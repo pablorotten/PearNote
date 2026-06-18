@@ -18,8 +18,8 @@ export function MenuScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>PearNote</Text>
-      <Text style={styles.subtitle}>Synced. Private.</Text>
+      <Text style={styles.heading}>🍐 PearNote</Text>
+      <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
         {showCreateForm ? (
@@ -27,7 +27,7 @@ export function MenuScreen() {
             <TextInput
               style={styles.formInput}
                 placeholder='Note name'
-                placeholderTextColor='#C4B0B8'
+                placeholderTextColor='#A5C8D5'
               value={noteName}
               onChangeText={setNoteName}
               autoFocus
@@ -67,7 +67,7 @@ export function MenuScreen() {
             <TextInput
               style={styles.joinInput}
                 placeholder='Paste invite code'
-                placeholderTextColor='#C4B0B8'
+                placeholderTextColor='#A5C8D5'
               value={noteCode}
               onChangeText={setNoteCode}
               autoCapitalize='none'
@@ -89,7 +89,7 @@ export function MenuScreen() {
             if (granted) { setScanning(true); scanningRef.current = true }
             else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
           }}>
-            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#FF6B9D' />
+            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7DC4DF' />
           </TouchableOpacity>
         </View>
 
@@ -97,14 +97,10 @@ export function MenuScreen() {
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Your Notes</Text>
             <View style={styles.historyList}>
-              {noteHistory.map(entry => {
-                const colors = ['#F9B2D7', '#CFECF3', '#DAF9DE', '#F6FFDC']
-                let h = 0
-                for (let i = 0; i < entry.id.length; i++) h = entry.id.charCodeAt(i) + ((h << 5) - h)
-                const bgColor = colors[Math.abs(h) % colors.length]
-                let h2 = 0
-                for (let i = 0; i < entry.id.length; i++) h2 = entry.id.charCodeAt(i) + ((h2 << 7) - h2)
-                const rotate = `${(Math.abs(h2) % 5) - 2}deg`
+              {noteHistory.map((entry, index) => {
+                const colors = ['#F9B2D7', '#DAF9DE', '#F6FFDC', '#F9DFDF']
+                const bgColor = colors[index % colors.length]
+                const rotate = `${((index * 7 + 3) % 5) - 2}deg`
                 return (
                   <View key={entry.id} style={[styles.historyItem, { backgroundColor: bgColor, transform: [{ rotate }] }]}>
                     <View style={styles.stickyPin} />

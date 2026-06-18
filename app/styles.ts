@@ -3,7 +3,7 @@ import { StyleSheet, Platform, StatusBar } from 'react-native'
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF5F6',
+    backgroundColor: '#F8FAFC',
     padding: 20,
     paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0) + 20,
     paddingBottom: Platform.OS === 'android' ? 60 : 20
@@ -11,24 +11,24 @@ export const styles = StyleSheet.create({
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF6B9D',
+    color: '#7DC4DF',
     textAlign: 'center',
     marginTop: 5
   },
   titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF6B9D',
+    color: '#7DC4DF',
     textAlign: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#FF6B9D',
+    borderBottomColor: '#7DC4DF',
     paddingVertical: 2,
     marginHorizontal: 40,
     marginTop: 10
   },
   subtitle: {
     fontSize: 14,
-    color: '#B8A0B0',
+    color: '#90B8C8',
     textAlign: 'center',
     marginTop: 5,
     marginBottom: 25
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     marginTop: 20
   },
   historyTitle: {
-    color: '#B8A0B0',
+    color: '#90B8C8',
     fontSize: 14,
     marginBottom: 8
   },
@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4
   },
   historyItemSub: {
-    color: '#B8A0B0',
+    color: '#90B8C8',
     fontSize: 11,
     textAlign: 'center'
   },
@@ -113,22 +113,22 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.08)'
   },
   bigButton: {
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     alignItems: 'center'
   },
   buttonDisabled: {
     opacity: 0.5,
-    borderColor: '#C4B0B8'
+    borderColor: '#A5C8D5'
   },
   bigButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF6B9D'
+    color: '#7DC4DF'
   },
   divider: {
     flexDirection: 'row',
@@ -138,10 +138,10 @@ export const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#FFD9E2'
+    backgroundColor: '#D0E6F0'
   },
   dividerText: {
-    color: '#C4B0B8',
+    color: '#A5C8D5',
     paddingHorizontal: 10,
     fontSize: 14
   },
@@ -152,10 +152,10 @@ export const styles = StyleSheet.create({
   joinInputGroup: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     overflow: 'hidden'
   },
   joinInput: {
@@ -169,13 +169,13 @@ export const styles = StyleSheet.create({
     width: 46,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FF6B9D'
+    backgroundColor: '#7DC4DF'
   },
   qrScanBtn: {
     width: 46,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -193,13 +193,13 @@ export const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#D0C0C8'
+    backgroundColor: '#C0D4DE'
   },
   statusDotOn: {
-    backgroundColor: '#FF6B9D'
+    backgroundColor: '#7DC4DF'
   },
   statusText: {
-    color: '#B8A0B0',
+    color: '#90B8C8',
     fontSize: 14
   },
   deleteListBtn: {
@@ -209,15 +209,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F0E0E4',
+    backgroundColor: '#D8E6EC',
     borderWidth: 1,
-    borderColor: '#C8909A',
+    borderColor: '#88AEC0',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   deleteListBtnText: {
-    color: '#C8909A',
+    color: '#88AEC0',
     fontSize: 14,
     fontWeight: 'bold',
     lineHeight: 16
@@ -229,15 +229,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     borderWidth: 1,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   backBtnText: {
-    color: '#FF6B9D',
+    color: '#7DC4DF',
     fontSize: 22,
     lineHeight: 24,
     fontWeight: 'bold'
@@ -248,10 +248,10 @@ export const styles = StyleSheet.create({
     gap: 8
   },
   codeRow: {
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFB3C3',
+    borderColor: '#BCDEEA',
     paddingHorizontal: 16,
     paddingVertical: 10
   },
@@ -269,7 +269,7 @@ export const styles = StyleSheet.create({
   copyBtn: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#7DC4DF',
     borderRadius: 8,
     alignItems: 'center'
   },
@@ -281,7 +281,7 @@ export const styles = StyleSheet.create({
   qrBtn: {
     width: 42,
     borderRadius: 8,
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#7DC4DF',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -299,15 +299,15 @@ export const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 3,
-    borderColor: '#FFE8EC',
-    borderTopColor: '#FF6B9D'
+    borderColor: '#E2F3F8',
+    borderTopColor: '#7DC4DF'
   },
   loadingText: {
-    color: '#B8A0B0',
+    color: '#90B8C8',
     fontSize: 15
   },
   emptyText: {
-    color: '#C4B0B8',
+    color: '#A5C8D5',
     textAlign: 'center',
     marginTop: 60,
     fontSize: 16
@@ -315,12 +315,12 @@ export const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     padding: 14,
     marginVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFB3C3'
+    borderColor: '#BCDEEA'
   },
   itemInfo: {
     flex: 1
@@ -334,40 +334,40 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F0E0E4',
+    backgroundColor: '#D8E6EC',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10
   },
   deleteBtnText: {
-    color: '#C8909A',
+    color: '#88AEC0',
     fontSize: 14,
     fontWeight: 'bold'
   },
   nameForm: {
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     gap: 10
   },
   addForm: {
-    backgroundColor: '#FFE8EC',
+    backgroundColor: '#E2F3F8',
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#FF6B9D',
+    borderColor: '#7DC4DF',
     gap: 10
   },
   formInput: {
     height: 44,
-    borderColor: '#FFB3C3',
+    borderColor: '#BCDEEA',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     color: '#4A3F44',
-    backgroundColor: '#FFF0F2'
+    backgroundColor: '#EEF7FA'
   },
   formActions: {
     flexDirection: 'row',
@@ -381,11 +381,11 @@ export const styles = StyleSheet.create({
     borderRadius: 8
   },
   cancelBtnText: {
-    color: '#B8A0B0',
+    color: '#90B8C8',
     fontSize: 15
   },
   addBtn: {
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#7DC4DF',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8
@@ -414,7 +414,7 @@ export const styles = StyleSheet.create({
     color: '#4A3F44'
   },
   qrCloseBtn: {
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#7DC4DF',
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8
@@ -431,7 +431,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 60
   },
   scannerCloseBtn: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#7DC4DF',
     padding: 14,
     borderRadius: 10,
     alignItems: 'center'
@@ -448,7 +448,7 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#7DC4DF',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5

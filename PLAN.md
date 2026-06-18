@@ -169,6 +169,18 @@ Sync messages over Hyperswarm are newline-delimited JSON:
 | Pairing | Simple numeric key (e.g. `"1234"`) for v1 | Easy to type/test; upgrade to secure random keys later |
 | Sync | Full list on connect, diffs on change | Always consistent |
 | UI framework | Existing React Native / Expo | No rewrite needed |
+| Main app colors | #F9B2D7, #CFECF3, #DAF9DE, #F6FFDC, #F9DFDF | |
+#4A3F44
+#7DC4DF
+#88AEC0
+#90B8C8
+#A5C8D5
+#BCDEEA
+#C0D4DE
+#D0E6F0
+#D8E6EC
+#020202
+
 
 ---
 

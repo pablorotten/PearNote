@@ -118,7 +118,7 @@ export function ListScreen() {
               <TextInput
                 style={styles.formInput}
                 placeholder='Title'
-                placeholderTextColor='#C4B0B8'
+                placeholderTextColor='#A5C8D5'
                 value={title}
                 onChangeText={setTitle}
                 autoFocus
