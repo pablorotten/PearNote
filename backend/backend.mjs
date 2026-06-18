@@ -181,7 +181,11 @@ async function notifyUI() {
     const items = []
     const stream = pass.list()
     for await (const record of stream) {
-      items.push({ key: record.key, value: JSON.parse(record.value) })
+      try {
+        items.push({ key: record.key, value: JSON.parse(record.value) })
+      } catch (_) {
+        diag('Skipping corrupt record: ' + record.key)
+      }
     }
     try { rpc.request(RPC_RESET).send(JSON.stringify(items)) } catch (_) {}
   } catch (err) {
