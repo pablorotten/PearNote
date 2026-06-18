@@ -10,48 +10,24 @@ import {
   StatusBar
 } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useKollection } from '../hooks/KollectionContext'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { QRCodeModal } from '../components/QRCodeModal'
 import { styles } from '../styles'
-import { Item } from '../types'
 
-type ListScreenProps = {
-  items: Item[]
-  myCode: string
-  connected: boolean
-  loading: boolean
-  title: string
-  setTitle: (v: string) => void
-  showAdd: boolean
-  setShowAdd: (v: boolean) => void
-  currentKollectionName: string
-  editingTitle: boolean
-  setEditingTitle: (v: boolean) => void
-  editTitleValue: string
-  setEditTitleValue: (v: string) => void
-  showQR: boolean
-  setShowQR: (v: boolean) => void
-  keyExpanded: boolean
-  setKeyExpanded: (v: boolean) => void
-  handleAddItem: () => void
-  handleRemoveItem: (key: string) => void
-  handleLeave: () => void
-  handleDeleteKollection: () => void
-  handleRenameKollection: (name: string) => void
-  copyCode: () => void
-}
+export function ListScreen() {
+  const {
+    items, myCode, connected, loading,
+    title, setTitle, showAdd, setShowAdd,
+    currentKollectionName,
+    editingTitle, setEditingTitle,
+    editTitleValue, setEditTitleValue,
+    showQR, setShowQR,
+    keyExpanded, setKeyExpanded,
+    handleAddItem, handleRemoveItem,
+    handleLeave, handleDeleteKollection, handleRenameKollection, copyCode
+  } = useKollection()
 
-export function ListScreen({
-  items, myCode, connected, loading,
-  title, setTitle, showAdd, setShowAdd,
-  currentKollectionName,
-  editingTitle, setEditingTitle,
-  editTitleValue, setEditTitleValue,
-  showQR, setShowQR,
-  keyExpanded, setKeyExpanded,
-  handleAddItem, handleRemoveItem,
-  handleLeave, handleDeleteKollection, handleRenameKollection, copyCode
-}: ListScreenProps) {
   return (
     <KeyboardAvoidingView
       style={styles.container}

@@ -20,7 +20,7 @@ import {
 } from '../../rpc-commands.mjs'
 import { Item, KollectionEntry } from '../types'
 
-export function useKollection() {
+export function useKollectionLogic() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
   const [items, setItems] = useState<Item[]>([])
   const [kollectionCode, setKollectionCode] = useState('')

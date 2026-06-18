@@ -2,33 +2,20 @@ import React from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Camera, CameraView } from 'expo-camera'
+import { useKollection } from '../hooks/KollectionContext'
 import { styles } from '../styles'
-import { KollectionEntry } from '../types'
 
-type MenuScreenProps = {
-  showCreateForm: boolean
-  setShowCreateForm: (v: boolean) => void
-  kollectionName: string
-  setKollectionName: (v: string) => void
-  kollectionCode: string
-  setKollectionCode: (v: string) => void
-  kollectionHistory: KollectionEntry[]
-  scanning: boolean
-  setScanning: (v: boolean) => void
-  scanningRef: React.MutableRefObject<boolean>
-  startWorklet: (mode: 'create' | 'join' | 'rejoin', code?: string, name?: string) => void
-  removeFromHistory: (id: string) => void
-}
+export function MenuScreen() {
+  const {
+    showCreateForm, setShowCreateForm,
+    kollectionName, setKollectionName,
+    kollectionCode, setKollectionCode,
+    kollectionHistory,
+    scanning, setScanning,
+    scanningRef,
+    startWorklet, removeFromHistory
+  } = useKollection()
 
-export function MenuScreen({
-  showCreateForm, setShowCreateForm,
-  kollectionName, setKollectionName,
-  kollectionCode, setKollectionCode,
-  kollectionHistory,
-  scanning, setScanning,
-  scanningRef,
-  startWorklet, removeFromHistory
-}: MenuScreenProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>P2P Kollections</Text>
