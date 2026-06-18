@@ -423,3 +423,216 @@ Pair on WiFi first. After the initial pairing succeeds and the base key is store
 3. **Retry with exponential backoff** — increase the timeout significantly (e.g., 3-5 minutes) and retry the pairing. Some CGNATs have temporary port mappings that expire quickly, so retries with different DHT entry points might work.
 
 4. **Hybrid approach** — use a simple HTTP server as a bootstrap node. Both peers POST their public keys to the server, which forwards them to each other. Once they have each other's keys, they can attempt direct DHT connection.
+
+---
+
+## Q: How is backend.mjs used? Who calls those functions?
+
+`backend.mjs` is a **Bare JavaScript module** — it runs in a separate JS engine (Bare), not in React Native. It is **not imported directly** by any React code. Instead:
+
+1. `backend.mjs` is **bundled** into `app/app.bundle.mjs` via `bare-pack`:
+   ```
+   npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
+   ```
+2. `app/hooks/useKollection.ts` imports that bundle as a string:
+   ```ts
+   import bundle from '../app.bundle.mjs'
+   ```
+3. When the user taps "Create Kollection" or "Join Kollection", `startWorklet()` creates a new `Worklet` and passes the bundle to it:
+   ```ts
+   const worklet = new Worklet()
+   worklet.start('/app.bundle', bundle, args)
+   ```
+4. The Worklet runs `backend.mjs` (plus all its Holepunch dependencies) in its own thread.
+
+So `backend.mjs` is called by the Bare runtime when the Worklet starts. It's never called directly from React code.
+
+## Q: What is `rpc.request(RPC_REMOVE)` in useKollection.ts?
+
+This is one of several **frontend→backend RPC calls**. The full set is defined in `backend.mjs`:
+
+```js
+const rpc = new RPC(IPC, (req, error) => {
+  if (req.command === RPC_ADD)       → addItem(item)
+  if (req.command === RPC_REMOVE)    → removeItem(key)
+  if (req.command === RPC_CLEAR)     → clearAll()
+  if (req.command === RPC_SET_NAME)  → setListName(name)
+})
+```
+
+So `rpc.request(RPC_REMOVE).send(key)` in the frontend tells the backend to call `pass.remove(key)` in the Autopass store.
+
+The full round trip for a remove:
+
+1. **User taps ✕** → `handleRemoveItem(key)` in the hook
+2. **Frontend sends** `rpc.request(RPC_REMOVE).send(key)` over IPC to the Worklet
+3. **Backend receives** `RPC_REMOVE` → calls `removeItem(key)` → `pass.remove(key)`
+4. **Autopass detects change** → fires `pass.on('update')` → calls `notifyUI()` → reads full list
+5. **Backend pushes** `rpc.request(RPC_RESET).send(JSON.stringify(items))` back to frontend
+6. **Frontend receives** `RPC_RESET` → `setItems(data)` → UI re-renders
+
+The UI updates on step 6, not step 2. `handleRemoveItem` fires and forgets.
+
+## Q: What are all the interactions between frontend and backend?
+
+There are two sets of RPC commands — one for each direction:
+
+**Frontend→Backend** (handled in `backend.mjs:26-43`):
+
+| Command | What the backend does |
+|---|---|
+| `RPC_ADD` | `pass.add(key, JSON.stringify(item))` |
+| `RPC_REMOVE` | `pass.remove(key)` |
+| `RPC_CLEAR` | `pass.list()` + remove each key |
+| `RPC_SET_NAME` | `pass.add('_kollection_name', JSON.stringify(['_name', name]))` |
+
+**Backend→Frontend** (handled in `useKollection.ts:128-181`):
+
+| Command | What the frontend does |
+|---|---|
+| `RPC_MY_INVITE` | Shows invite code, saves to history, shows Alert |
+| `RPC_RESET` | `setItems(data)` — replaces the full item list |
+| `RPC_PEER_JOINED` | `setConnected(true)` — green dot on |
+| `RPC_PEER_LEFT` | `setConnected(false)` — green dot off |
+| `RPC_DIAG` | `console.log()` — diagnostic logging |
+| `RPC_ERROR` | `Alert.alert()` — shows error to user |
+
+## Q: Can you show an example of the backend calling the frontend?
+
+`backend.mjs:104` — when a kollection is created or rejoined, the backend pushes the invite code:
+
+```js
+rpc.request(RPC_MY_INVITE).send(sessionId + '|' + invite)
+```
+
+The frontend catches it at `useKollection.ts:128`:
+
+```ts
+if (req.command === RPC_MY_INVITE) {
+  const data = b4a.toString(req.data)
+  const [storageId, invite] = data.split('|')
+  setMyCode(invite)
+  Alert.alert('Kollection Created!', `Share this code:\n${invite}`)
+}
+```
+
+Another example — `backend.mjs:151` when a peer connects:
+
+```js
+rpc.request(RPC_PEER_JOINED).send('connected')
+```
+
+Frontend turns the green dot on (`useKollection.ts:164`):
+
+```ts
+if (req.command === RPC_PEER_JOINED) {
+  setConnected(true)
+}
+```
+
+And `backend.mjs:185` — after any data change, the backend pushes the full list:
+
+```js
+rpc.request(RPC_RESET).send(JSON.stringify(items))
+```
+
+Frontend replaces the item list (`useKollection.ts:153`):
+
+```ts
+if (req.command === RPC_RESET) {
+  setItems(data.filter((d: any) => d.key !== '_kollection_name'))
+}
+```
+
+Same pattern every time: the backend calls `rpc.request(COMMAND).send(data)`, and the frontend has a matching `if (req.command === COMMAND)` handler.
+
+## Q: What is `rpcInstance` on the frontend?
+
+```ts
+const rpcInstance = new RPC(IPC, (req) => {
+  // 🔽 LISTENS for messages from the backend
+  if (req.command === RPC_RESET) setItems(...)
+  if (req.command === RPC_PEER_JOINED) setConnected(true)
+})
+
+// 🔼 SENDS messages to the backend
+rpcInstance.request(RPC_SET_NAME).send(name)
+```
+
+`rpcInstance` is a single RPC object that does **both** listening and sending:
+- The callback `(req) => { ... }` handles incoming messages from the backend
+- `rpcInstance.request(COMMAND).send(data)` sends outgoing messages to the backend
+
+It's saved as `rpc` state (`setRpc(rpcInstance)`) so other functions like `handleAddItem` and `handleRemoveItem` can use it to send commands later.
+
+## Q: When is the RPC instance created? Is it always running?
+
+Not on app open. The RPC instance is created **only when `startWorklet()` runs**, which happens when you tap "Create Kollection" or "Join Kollection". Before that, there's no backend at all — no Worklet, no RPC, no network connections.
+
+Once started, both sides can initiate communication freely:
+
+```
+┌─ React Native thread ─────────────┐   ┌─ Bare Worklet thread ────────────┐
+│                                    │   │                                  │
+│  handleAddItem()                   │   │  init()                          │
+│    rpc.request(RPC_ADD) ─────────IPC────>  addItem() → pass.add()         │
+│                                    │   │                                  │
+│                                    │   │  pass.on('update') → notifyUI() │
+│  rpc callback fires  <───────IPC──────  rpc.request(RPC_RESET)            │
+│    setItems(data)                  │   │                                  │
+└────────────────────────────────────┘   └──────────────────────────────────┘
+```
+
+**Can it receive requests from the internet?** Yes, but through the Worklet, not through the frontend's RPC. The backend's `autopass` library uses Hyperswarm (P2P networking), so when another peer adds an item on their phone, `pass.on('update')` fires in the Worklet, which pushes the change to the frontend via `RPC_RESET`. The frontend never talks to the network directly — all P2P communication stays inside the Worklet thread.
+
+## Q: What is the Worklet? Where does it run?
+
+The Worklet is a **separate JavaScript engine** (`react-native-bare-kit`) that runs on a **different thread** inside your app process — it's not the main React Native JS thread, and not the native UI thread.
+
+On your phone:
+
+```
+┌─────────────────────────────────────┐
+│         App Process                 │
+│                                     │
+│  ┌─ UI Thread ──────────────┐       │
+│  │  Native Android/iOS      │       │
+│  │  (rendering, touches)    │       │
+│  └──────────────────────────┘       │
+│                                     │
+│  ┌─ React Native JS Thread ───────┐ │
+│  │  index.tsx → MenuScreen        │ │
+│  │  Facebook's Hermes engine      │ │
+│  └────────────────────────────────┘ │
+│                                     │
+│  ┌─ Bare Worklet Thread ──────────┐ │
+│  │  backend.mjs                   │ │
+│  │  Bare's JavaScript engine      │ │
+│  │  - Corestore (local DB)        │ │
+│  │  - Autopass (sync layer)       │ │
+│  │  - Hyperswarm (networking)     │ │
+│  └────────────────────────────────┘ │
+└─────────────────────────────────────┘
+```
+
+**Hyperswarm runs inside the Worklet thread** — it opens UDP/TCP sockets directly from there to other peers over the internet. The React Native thread never touches the network; it just sends/receives JSON messages over IPC to the Worklet.
+
+The Worklet thread is a full Bare JavaScript runtime that runs `backend.mjs` plus all the Holepunch libraries (`autopass`, `corestore`, `hyperswarm`, `b4a`, `bare-rpc`, `bare-path`, etc.) as if it were a Node.js environment — but on your phone.
+
+The React Native thread only imports the compiled bundle (`app.bundle.mjs`) as a string and hands it to the Worklet. It never runs those Holepunch libraries itself.
+
+## Q: Is the backend like an API layer between the Holepunch libraries and the frontend?
+
+Yes. The backend is the API gateway — it translates between two worlds:
+
+| Frontend sends | Backend does | Holepunch library used |
+|---|---|---|
+| `RPC_ADD` | `pass.add(key, value)` | **autopass** (P2P key-value store) |
+| `RPC_REMOVE` | `pass.remove(key)` | **autopass** |
+| `RPC_CLEAR` | `pass.list()` + `pass.remove()` | **autopass** |
+| `RPC_SET_NAME` | `pass.add('_kollection_name', ...)` | **autopass** |
+| *(peer joined)* | `pass.swarm.on('connection')` | **hyperswarm** (P2P networking) |
+| *(data changed)* | `pass.on('update')` → `notifyUI()` | **autopass** |
+| *(invite code)* | `pass.createInvite()` | **autopass** |
+
+The frontend never imports `autopass`, `corestore`, or `hyperswarm`. It only talks to `backend.mjs` over IPC. The backend is a thin adapter: the frontend sends high-level commands like "add this item", and the backend translates them into Holepunch operations, then pushes results back.
