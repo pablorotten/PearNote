@@ -2,49 +2,49 @@ import React from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Camera, CameraView } from 'expo-camera'
-import { useKollection } from '../hooks/KollectionContext'
+import { useNote } from '../hooks/NoteContext'
 import { styles } from '../styles'
 
 export function MenuScreen() {
   const {
     showCreateForm, setShowCreateForm,
-    kollectionName, setKollectionName,
-    kollectionCode, setKollectionCode,
-    kollectionHistory,
+    noteName, setNoteName,
+    noteCode, setNoteCode,
+    noteHistory,
     scanning, setScanning,
     scanningRef,
     startWorklet, removeFromHistory
-  } = useKollection()
+  } = useNote()
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>P2P Kollections</Text>
-      <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
+      <Text style={styles.heading}>PearNote</Text>
+      <Text style={styles.subtitle}>Synced. Private.</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
         {showCreateForm ? (
           <View style={styles.nameForm}>
             <TextInput
               style={styles.formInput}
-                placeholder='Kollection name'
+                placeholder='Note name'
                 placeholderTextColor='#C4B0B8'
-              value={kollectionName}
-              onChangeText={setKollectionName}
+              value={noteName}
+              onChangeText={setNoteName}
               autoFocus
             />
             <View style={styles.formActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setKollectionName('') }}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setNoteName('') }}>
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.addBtn, !kollectionName.trim() && styles.buttonDisabled]}
+                style={[styles.addBtn, !noteName.trim() && styles.buttonDisabled]}
                 onPress={() => {
-                  if (!kollectionName.trim()) return
+                  if (!noteName.trim()) return
                   setShowCreateForm(false)
-                  startWorklet('create', undefined, kollectionName.trim())
-                  setKollectionName('')
+                  startWorklet('create', undefined, noteName.trim())
+                  setNoteName('')
                 }}
-                disabled={!kollectionName.trim()}
+                disabled={!noteName.trim()}
               >
                 <Text style={styles.addBtnText}>Create</Text>
               </TouchableOpacity>
@@ -52,7 +52,7 @@ export function MenuScreen() {
           </View>
         ) : (
           <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
-            <Text style={styles.bigButtonText}>Create Kollection</Text>
+            <Text style={styles.bigButtonText}>Create Note</Text>
           </TouchableOpacity>
         )}
 
@@ -68,18 +68,18 @@ export function MenuScreen() {
               style={styles.joinInput}
                 placeholder='Paste invite code'
                 placeholderTextColor='#C4B0B8'
-              value={kollectionCode}
-              onChangeText={setKollectionCode}
+              value={noteCode}
+              onChangeText={setNoteCode}
               autoCapitalize='none'
               autoCorrect={false}
             />
             <TouchableOpacity
-              style={[styles.joinSubmitBtn, !kollectionCode && styles.buttonDisabled]}
+              style={[styles.joinSubmitBtn, !noteCode && styles.buttonDisabled]}
               onPress={() => {
-                if (!kollectionCode) return
+                if (!noteCode) return
                 startWorklet('join')
               }}
-              disabled={!kollectionCode}
+              disabled={!noteCode}
             >
               <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#FFFFFF' />
             </TouchableOpacity>
@@ -93,11 +93,11 @@ export function MenuScreen() {
           </TouchableOpacity>
         </View>
 
-        {kollectionHistory.length > 0 && (
+        {noteHistory.length > 0 && (
           <View style={styles.historySection}>
-            <Text style={styles.historyTitle}>Your Kollections</Text>
+            <Text style={styles.historyTitle}>Your Notes</Text>
             <View style={styles.historyList}>
-              {kollectionHistory.map(entry => {
+              {noteHistory.map(entry => {
                 const colors = ['#F9B2D7', '#CFECF3', '#DAF9DE', '#F6FFDC']
                 let h = 0
                 for (let i = 0; i < entry.id.length; i++) h = entry.id.charCodeAt(i) + ((h << 5) - h)
@@ -119,7 +119,7 @@ export function MenuScreen() {
                       style={styles.historyDeleteBtn}
                       onPress={() => {
                       Alert.alert(
-                        'Remove Kollection',
+                        'Remove Note',
                         `Remove "${entry.name}" from history?`,
                         [
                           { text: 'Cancel', style: 'cancel' },

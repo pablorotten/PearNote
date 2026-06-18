@@ -3,7 +3,7 @@ export type Item = {
   value: [string, string]
 }
 
-export type KollectionEntry = {
+export type NoteEntry = {
   id: string
   name: string
 }

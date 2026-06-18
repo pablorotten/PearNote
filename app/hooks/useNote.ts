@@ -19,37 +19,37 @@ import {
   RPC_ERROR,
   RPC_SET_NAME
 } from '../../rpc-commands.mjs'
-import { Item, KollectionEntry } from '../types'
+import { Item, NoteEntry } from '../types'
 
-export function useKollectionLogic() {
+export function useNoteLogic() {
   const [phase, setPhase] = useState<'menu' | 'list'>('menu')
   const [items, setItems] = useState<Item[]>([])
-  const [kollectionCode, setKollectionCode] = useState('')
+  const [noteCode, setNoteCode] = useState('')
   const [myCode, setMyCode] = useState('')
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [rpc, setRpc] = useState<RPC | null>(null)
   const [loading, setLoading] = useState(false)
-  const [kollectionHistory, setKollectionHistory] = useState<KollectionEntry[]>([])
-  const [kollectionName, setKollectionName] = useState('')
+  const [noteHistory, setNoteHistory] = useState<NoteEntry[]>([])
+  const [noteName, setNoteName] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
   const [editTitleValue, setEditTitleValue] = useState('')
-  const [currentKollectionName, setCurrentKollectionName] = useState('')
+  const [currentNoteName, setCurrentNoteName] = useState('')
   const [showQR, setShowQR] = useState(false)
   const [keyExpanded, setKeyExpanded] = useState(false)
   const [scanning, setScanning] = useState(false)
   const scanningRef = useRef(false)
   const workletRef = useRef<Worklet | null>(null)
   const savedCodes = useRef<Set<string>>(new Set())
-  const historyPath = documentDirectory + '/kollection-history.json'
-  const kollectionHistoryRef = useRef(kollectionHistory)
+  const historyPath = documentDirectory + '/note-history.json'
+  const noteHistoryRef = useRef(noteHistory)
   const sessionStorageIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    kollectionHistoryRef.current = kollectionHistory
-  }, [kollectionHistory])
+    noteHistoryRef.current = noteHistory
+  }, [noteHistory])
 
   useEffect(() => {
     ;(async () => {
@@ -57,13 +57,13 @@ export function useKollectionLogic() {
         const data = await readAsStringAsync(historyPath)
         const parsed = JSON.parse(data)
         if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-          const entries: KollectionEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed Kollection' }))
+          const entries: NoteEntry[] = parsed.map((id: string) => ({ id, name: 'Unnamed Note' }))
           entries.forEach(e => savedCodes.current.add(e.id))
-          setKollectionHistory(entries)
+          setNoteHistory(entries)
         } else {
-          const entries: KollectionEntry[] = parsed
+          const entries: NoteEntry[] = parsed
           entries.forEach(e => savedCodes.current.add(e.id))
-          setKollectionHistory(entries)
+          setNoteHistory(entries)
         }
       } catch (_) {}
     })()
@@ -72,32 +72,32 @@ export function useKollectionLogic() {
   async function saveToHistory(id: string, name: string) {
     if (savedCodes.current.has(id)) return
     savedCodes.current.add(id)
-    const entry: KollectionEntry = { id, name }
-    const current = kollectionHistoryRef.current
+    const entry: NoteEntry = { id, name }
+    const current = noteHistoryRef.current
     const updated = [entry, ...current]
-    setKollectionHistory(updated)
-    kollectionHistoryRef.current = updated
+    setNoteHistory(updated)
+    noteHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function removeFromHistory(id: string) {
     savedCodes.current.delete(id)
-    const current = kollectionHistoryRef.current
+    const current = noteHistoryRef.current
     const updated = current.filter(e => e.id !== id)
-    setKollectionHistory(updated)
-    kollectionHistoryRef.current = updated
+    setNoteHistory(updated)
+    noteHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function updateHistoryName(id: string, syncedName: string) {
-    const current = kollectionHistoryRef.current
+    const current = noteHistoryRef.current
     const idx = current.findIndex(e => e.id === id)
     if (idx === -1) return
     const entry = current[idx]
     if (entry.name === syncedName) return
     const updated = current.map((e, i) => i === idx ? { ...e, name: syncedName } : e)
-    setKollectionHistory(updated)
-    kollectionHistoryRef.current = updated
+    setNoteHistory(updated)
+    noteHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -110,9 +110,9 @@ export function useKollectionLogic() {
     setTitle('')
     setShowAdd(false)
     setRpc(null)
-    setKollectionCode('')
+    setNoteCode('')
     setLoading(false)
-    setCurrentKollectionName('')
+    setCurrentNoteName('')
   }
 
   useEffect(() => {
@@ -126,14 +126,14 @@ export function useKollectionLogic() {
   }, [phase])
 
   function startWorklet(mode: 'create' | 'join' | 'rejoin', code?: string, name?: string) {
-    const kollectionId = code || (mode === 'join' ? kollectionCode : '')
-    if (name) setCurrentKollectionName(name)
+    const noteId = code || (mode === 'join' ? noteCode : '')
+    if (name) setCurrentNoteName(name)
     const worklet = new Worklet()
     workletRef.current = worklet
 
     const args = mode === 'create'
       ? [String(documentDirectory), 'create']
-      : [String(documentDirectory), mode, kollectionId]
+      : [String(documentDirectory), mode, noteId]
 
     worklet.start('/app.bundle', bundle, args)
     const { IPC } = worklet
@@ -147,20 +147,20 @@ export function useKollectionLogic() {
         sessionStorageIdRef.current = storageId
         setMyCode(invite)
         if (mode === 'create' && name) {
-          setCurrentKollectionName(name)
+          setCurrentNoteName(name)
           saveToHistory(storageId, name)
           const nameReq = rpcInstance.request(RPC_SET_NAME)
           nameReq.send(name)
         } else if (mode === 'rejoin') {
-          const existing = kollectionHistoryRef.current.find(e => e.id === storageId)
-          setCurrentKollectionName(existing ? existing.name : storageId)
+          const existing = noteHistoryRef.current.find(e => e.id === storageId)
+          setCurrentNoteName(existing ? existing.name : storageId)
           saveToHistory(storageId, existing ? existing.name : storageId)
         } else {
-          setCurrentKollectionName(storageId)
+          setCurrentNoteName(storageId)
           saveToHistory(storageId, storageId)
         }
         if (mode === 'create') {
-          Alert.alert('Kollection Created!', `Share this code:\n${invite}`, [
+          Alert.alert('Note Created!', `Share this code:\n${invite}`, [
             { text: 'Copy Code', onPress: () => Clipboard.setString(invite) }
           ])
         }
@@ -168,12 +168,12 @@ export function useKollectionLogic() {
 
       if (req.command === RPC_RESET) {
         const data: Item[] = JSON.parse(b4a.toString(req.data))
-        const nameEntry = data.find((d) => d.key === '_kollection_name')
+        const nameEntry = data.find((d) => d.key === '_note_name')
         if (nameEntry && sessionStorageIdRef.current) {
-          setCurrentKollectionName(nameEntry.value[1])
+          setCurrentNoteName(nameEntry.value[1])
           updateHistoryName(sessionStorageIdRef.current, nameEntry.value[1])
         }
-        setItems(data.filter((d) => d.key !== '_kollection_name'))
+        setItems(data.filter((d) => d.key !== '_note_name'))
         setLoading(false)
       }
 
@@ -223,11 +223,11 @@ export function useKollectionLogic() {
     }
   }
 
-  function handleDeleteKollection() {
+  function handleDeleteNote() {
     if (!myCode) return
     Alert.alert(
-      'Delete Kollection',
-      `Are you sure you want to leave the kollection ${myCode}?`,
+      'Delete Note',
+      `Are you sure you want to delete the note ${myCode}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -246,7 +246,7 @@ export function useKollectionLogic() {
     )
   }
 
-  function handleRenameKollection(name: string) {
+  function handleRenameNote(name: string) {
     if (rpc) {
       const req = rpc.request(RPC_SET_NAME)
       req.send(name)
@@ -263,8 +263,8 @@ export function useKollectionLogic() {
   return {
     phase,
     items,
-    kollectionCode,
-    setKollectionCode,
+    noteCode,
+    setNoteCode,
     myCode,
     connected,
     title,
@@ -272,16 +272,16 @@ export function useKollectionLogic() {
     showAdd,
     setShowAdd,
     loading,
-    kollectionHistory,
-    kollectionName,
-    setKollectionName,
+    noteHistory,
+    noteName,
+    setNoteName,
     showCreateForm,
     setShowCreateForm,
     editingTitle,
     setEditingTitle,
     editTitleValue,
     setEditTitleValue,
-    currentKollectionName,
+    currentNoteName,
     showQR,
     setShowQR,
     keyExpanded,
@@ -293,8 +293,8 @@ export function useKollectionLogic() {
     handleAddItem,
     handleRemoveItem,
     handleLeave,
-    handleDeleteKollection,
-    handleRenameKollection,
+    handleDeleteNote,
+    handleRenameNote,
     copyCode,
     removeFromHistory
   }
