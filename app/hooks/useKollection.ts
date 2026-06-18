@@ -44,6 +44,7 @@ export function useKollectionLogic() {
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/kollection-history.json'
   const kollectionHistoryRef = useRef(kollectionHistory)
+  const sessionStorageIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     kollectionHistoryRef.current = kollectionHistory
@@ -87,11 +88,13 @@ export function useKollectionLogic() {
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
-  async function updateHistoryName(syncedName: string) {
+  async function updateHistoryName(id: string, syncedName: string) {
     const current = kollectionHistoryRef.current
-    const lastEntry = current[0]
-    if (!lastEntry || lastEntry.name === syncedName) return
-    const updated = [{ ...lastEntry, name: syncedName }, ...current.slice(1)]
+    const idx = current.findIndex(e => e.id === id)
+    if (idx === -1) return
+    const entry = current[idx]
+    if (entry.name === syncedName) return
+    const updated = current.map((e, i) => i === idx ? { ...e, name: syncedName } : e)
     setKollectionHistory(updated)
     kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
@@ -140,6 +143,7 @@ export function useKollectionLogic() {
       if (req.command === RPC_MY_INVITE) {
         const data = b4a.toString(req.data)
         const [storageId, invite] = data.split('|')
+        sessionStorageIdRef.current = storageId
         setMyCode(invite)
         if (mode === 'create' && name) {
           setCurrentKollectionName(name)
@@ -164,9 +168,9 @@ export function useKollectionLogic() {
       if (req.command === RPC_RESET) {
         const data = JSON.parse(b4a.toString(req.data))
         const nameEntry = data.find((d: any) => d.key === '_kollection_name')
-        if (nameEntry) {
+        if (nameEntry && sessionStorageIdRef.current) {
           setCurrentKollectionName(nameEntry.value[1])
-          updateHistoryName(nameEntry.value[1])
+          updateHistoryName(sessionStorageIdRef.current, nameEntry.value[1])
         }
         setItems(data.filter((d: any) => d.key !== '_kollection_name'))
         setLoading(false)
