@@ -238,7 +238,8 @@ export function useKollectionLogic() {
               const req = rpc.request(RPC_CLEAR)
               req.send('')
             }
-            setLoading(true)
+            removeFromHistory(myCode)
+            handleLeave()
           }
         }
       ]
