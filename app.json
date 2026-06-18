@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FEF7EE"
+      "backgroundColor": "#FFF5F6"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FEF7EE"
+        "backgroundColor": "#FFF5F6"
       },
       "package": "com.p2pkollections.app"
     },

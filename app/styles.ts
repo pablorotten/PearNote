@@ -209,15 +209,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#4A2020',
+    backgroundColor: '#F0E0E4',
     borderWidth: 1,
-    borderColor: '#FF6B6B',
+    borderColor: '#C8909A',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   deleteListBtnText: {
-    color: '#FF6B6B',
+    color: '#C8909A',
     fontSize: 14,
     fontWeight: 'bold',
     lineHeight: 16
@@ -334,13 +334,13 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#4A2020',
+    backgroundColor: '#F0E0E4',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10
   },
   deleteBtnText: {
-    color: '#FF6B6B',
+    color: '#C8909A',
     fontSize: 14,
     fontWeight: 'bold'
   },
