@@ -9,3 +9,4 @@ export const RPC_CLEAR = 7
 export const RPC_ERROR = 8
 export const RPC_EXIT = 9
 export const RPC_SET_NAME = 10
+export const RPC_CLEAR_DONE = 11

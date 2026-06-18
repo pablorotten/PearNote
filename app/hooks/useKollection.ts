@@ -14,6 +14,7 @@ import {
   RPC_PEER_JOINED,
   RPC_PEER_LEFT,
   RPC_CLEAR,
+  RPC_CLEAR_DONE,
   RPC_DIAG,
   RPC_ERROR,
   RPC_SET_NAME
@@ -194,6 +195,10 @@ export function useKollectionLogic() {
         setLoading(false)
         Alert.alert('Error', msg)
       }
+
+      if (req.command === RPC_CLEAR_DONE) {
+        handleLeave()
+      }
     })
 
     setRpc(rpcInstance)
@@ -233,7 +238,7 @@ export function useKollectionLogic() {
               const req = rpc.request(RPC_CLEAR)
               req.send('')
             }
-            handleLeave()
+            setLoading(true)
           }
         }
       ]

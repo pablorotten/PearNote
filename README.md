@@ -59,8 +59,15 @@ adb -s e017a252 uninstall com.p2pkollections.app
 adb -s 6ae4c054c2b8 uninstall com.p2pkollections.app; adb -s e017a252 uninstall com.p2pkollections.app
 ```
 
-## 🪵 Logs
+💥 Restart adb
+```sh
+# gentle
+adb kill-server; adb start-server
+# hard
+taskkill /F /IM adb.exe 2>$null; Start-Sleep -Seconds 2; adb start-server
+```
 
+## 🪵 Logs
 Clear logs:
 ```sh
 adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c
