@@ -26,8 +26,8 @@ export function MenuScreen() {
           <View style={styles.nameForm}>
             <TextInput
               style={styles.formInput}
-              placeholder='Kollection name'
-              placeholderTextColor='#666'
+                placeholder='Kollection name'
+                placeholderTextColor='#C4B0B8'
               value={kollectionName}
               onChangeText={setKollectionName}
               autoFocus
@@ -66,8 +66,8 @@ export function MenuScreen() {
           <View style={styles.joinInputGroup}>
             <TextInput
               style={styles.joinInput}
-              placeholder='Paste invite code'
-              placeholderTextColor='#666'
+                placeholder='Paste invite code'
+                placeholderTextColor='#C4B0B8'
               value={kollectionCode}
               onChangeText={setKollectionCode}
               autoCapitalize='none'
@@ -81,7 +81,7 @@ export function MenuScreen() {
               }}
               disabled={!kollectionCode}
             >
-              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#011501' />
+              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#FFFFFF' />
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
@@ -89,7 +89,7 @@ export function MenuScreen() {
             if (granted) { setScanning(true); scanningRef.current = true }
             else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
           }}>
-            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7a9e2d' />
+            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#FF6B9D' />
           </TouchableOpacity>
         </View>
 
@@ -97,18 +97,27 @@ export function MenuScreen() {
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Your Kollections</Text>
             <View style={styles.historyList}>
-              {kollectionHistory.map(entry => (
-                <View key={entry.id} style={styles.historyItem}>
-                  <TouchableOpacity
-                    style={styles.historyItemContent}
-                    onPress={() => startWorklet('rejoin', entry.id, entry.name)}
-                  >
-                    <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
-                    <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.historyDeleteBtn}
-                    onPress={() => {
+              {kollectionHistory.map(entry => {
+                const colors = ['#F9B2D7', '#CFECF3', '#DAF9DE', '#F6FFDC']
+                let h = 0
+                for (let i = 0; i < entry.id.length; i++) h = entry.id.charCodeAt(i) + ((h << 5) - h)
+                const bgColor = colors[Math.abs(h) % colors.length]
+                let h2 = 0
+                for (let i = 0; i < entry.id.length; i++) h2 = entry.id.charCodeAt(i) + ((h2 << 7) - h2)
+                const rotate = `${(Math.abs(h2) % 5) - 2}deg`
+                return (
+                  <View key={entry.id} style={[styles.historyItem, { backgroundColor: bgColor, transform: [{ rotate }] }]}>
+                    <View style={styles.stickyPin} />
+                    <TouchableOpacity
+                      style={styles.historyItemContent}
+                      onPress={() => startWorklet('rejoin', entry.id, entry.name)}
+                    >
+                      <Text style={styles.historyItemText} numberOfLines={3}>{entry.name}</Text>
+                      <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.historyDeleteBtn}
+                      onPress={() => {
                       Alert.alert(
                         'Remove Kollection',
                         `Remove "${entry.name}" from history?`,
@@ -122,7 +131,7 @@ export function MenuScreen() {
                     <Text style={styles.historyDeleteBtnText}>✕</Text>
                   </TouchableOpacity>
                 </View>
-              ))}
+              )})}
             </View>
           </View>
         )}

@@ -6,11 +6,11 @@
     "newArchEnabled": true,
     "orientation": "portrait",
     "scheme": "p2pkollections",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#011501"
+      "backgroundColor": "#FEF7EE"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#011501"
+        "backgroundColor": "#FEF7EE"
       },
       "package": "com.p2pkollections.app"
     },

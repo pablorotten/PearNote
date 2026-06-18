@@ -9,7 +9,7 @@ export function QRCodeModal({ visible, code, onClose }: { visible: boolean, code
       <View style={styles.qrOverlay}>
         <View style={styles.qrContainer}>
           <Text style={styles.qrTitle}>Scan to join</Text>
-          <QRCode value={code} size={220} backgroundColor='#fff' color='#000' />
+          <QRCode value={code} size={220} backgroundColor='#FFF5F7' color='#4A3F44' />
           <TouchableOpacity style={styles.qrCloseBtn} onPress={onClose}>
             <Text style={styles.qrCloseBtnText}>Close</Text>
           </TouchableOpacity>
