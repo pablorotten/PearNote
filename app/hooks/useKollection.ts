@@ -43,6 +43,11 @@ export function useKollectionLogic() {
   const workletRef = useRef<any>(null)
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/kollection-history.json'
+  const kollectionHistoryRef = useRef(kollectionHistory)
+
+  useEffect(() => {
+    kollectionHistoryRef.current = kollectionHistory
+  }, [kollectionHistory])
 
   useEffect(() => {
     ;(async () => {
@@ -66,23 +71,29 @@ export function useKollectionLogic() {
     if (savedCodes.current.has(id)) return
     savedCodes.current.add(id)
     const entry: KollectionEntry = { id, name }
-    const updated = [entry, ...kollectionHistory]
+    const current = kollectionHistoryRef.current
+    const updated = [entry, ...current]
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function removeFromHistory(id: string) {
     savedCodes.current.delete(id)
-    const updated = kollectionHistory.filter(e => e.id !== id)
+    const current = kollectionHistoryRef.current
+    const updated = current.filter(e => e.id !== id)
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
   async function updateHistoryName(syncedName: string) {
-    const lastEntry = kollectionHistory[0]
+    const current = kollectionHistoryRef.current
+    const lastEntry = current[0]
     if (!lastEntry || lastEntry.name === syncedName) return
-    const updated = [{ ...lastEntry, name: syncedName }, ...kollectionHistory.slice(1)]
+    const updated = [{ ...lastEntry, name: syncedName }, ...current.slice(1)]
     setKollectionHistory(updated)
+    kollectionHistoryRef.current = updated
     await writeAsStringAsync(historyPath, JSON.stringify(updated))
   }
 
@@ -136,7 +147,7 @@ export function useKollectionLogic() {
           const nameReq = rpcInstance.request(RPC_SET_NAME)
           nameReq.send(name)
         } else if (mode === 'rejoin') {
-          const existing = kollectionHistory.find(e => e.id === storageId)
+          const existing = kollectionHistoryRef.current.find(e => e.id === storageId)
           setCurrentKollectionName(existing ? existing.name : storageId)
           saveToHistory(storageId, existing ? existing.name : storageId)
         } else {
