@@ -29,7 +29,7 @@ export function useKollectionLogic() {
   const [connected, setConnected] = useState(false)
   const [title, setTitle] = useState('')
   const [showAdd, setShowAdd] = useState(false)
-  const [rpc, setRpc] = useState<any>(null)
+  const [rpc, setRpc] = useState<RPC | null>(null)
   const [loading, setLoading] = useState(false)
   const [kollectionHistory, setKollectionHistory] = useState<KollectionEntry[]>([])
   const [kollectionName, setKollectionName] = useState('')
@@ -41,7 +41,7 @@ export function useKollectionLogic() {
   const [keyExpanded, setKeyExpanded] = useState(false)
   const [scanning, setScanning] = useState(false)
   const scanningRef = useRef(false)
-  const workletRef = useRef<any>(null)
+  const workletRef = useRef<Worklet | null>(null)
   const savedCodes = useRef<Set<string>>(new Set())
   const historyPath = documentDirectory + '/kollection-history.json'
   const kollectionHistoryRef = useRef(kollectionHistory)
@@ -167,13 +167,13 @@ export function useKollectionLogic() {
       }
 
       if (req.command === RPC_RESET) {
-        const data = JSON.parse(b4a.toString(req.data))
-        const nameEntry = data.find((d: any) => d.key === '_kollection_name')
+        const data: Item[] = JSON.parse(b4a.toString(req.data))
+        const nameEntry = data.find((d) => d.key === '_kollection_name')
         if (nameEntry && sessionStorageIdRef.current) {
           setCurrentKollectionName(nameEntry.value[1])
           updateHistoryName(sessionStorageIdRef.current, nameEntry.value[1])
         }
-        setItems(data.filter((d: any) => d.key !== '_kollection_name'))
+        setItems(data.filter((d) => d.key !== '_kollection_name'))
         setLoading(false)
       }
 
