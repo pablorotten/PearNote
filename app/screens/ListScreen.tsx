@@ -54,7 +54,7 @@ export function ListScreen() {
           />
         ) : (
           <TouchableOpacity onLongPress={() => { setEditTitleValue(currentNoteName); setEditingTitle(true) }}>
-            <Text style={styles.heading}>{currentNoteName || 'PearNote'}</Text>
+            <Text style={styles.heading}>{currentNoteName || <Text><Text style={{ color: '#B0D944' }}>Pear</Text>Note</Text>}</Text>
           </TouchableOpacity>
         )}
         <View style={styles.statusRow}>

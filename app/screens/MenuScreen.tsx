@@ -1,5 +1,14 @@
 import React from 'react'
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  Image
+} from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Camera, CameraView } from 'expo-camera'
 import { useNote } from '../hooks/NoteContext'
@@ -7,18 +16,28 @@ import { styles } from '../styles'
 
 export function MenuScreen() {
   const {
-    showCreateForm, setShowCreateForm,
-    noteName, setNoteName,
-    noteCode, setNoteCode,
+    showCreateForm,
+    setShowCreateForm,
+    noteName,
+    setNoteName,
+    noteCode,
+    setNoteCode,
     noteHistory,
-    scanning, setScanning,
+    scanning,
+    setScanning,
     scanningRef,
-    startWorklet, removeFromHistory
+    startWorklet,
+    removeFromHistory
   } = useNote()
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>🍐 PearNote</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+        <Image source={require('../../assets/images/icon.png')} style={{ width: 80, height: 80 }} />
+        <Text style={styles.heading}>
+          <Text style={{ color: '#B0D944' }}>Pear</Text>Note
+        </Text>
+      </View>
       <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
@@ -26,14 +45,20 @@ export function MenuScreen() {
           <View style={styles.nameForm}>
             <TextInput
               style={styles.formInput}
-                placeholder='Note name'
-                placeholderTextColor='#90B8C8'
+              placeholder='Note name'
+              placeholderTextColor='#90B8C8'
               value={noteName}
               onChangeText={setNoteName}
               autoFocus
             />
             <View style={styles.formActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setNoteName('') }}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setShowCreateForm(false)
+                  setNoteName('')
+                }}
+              >
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -66,8 +91,8 @@ export function MenuScreen() {
           <View style={styles.joinInputGroup}>
             <TextInput
               style={styles.joinInput}
-                placeholder='Paste invite code'
-                placeholderTextColor='#90B8C8'
+              placeholder='Paste invite code'
+              placeholderTextColor='#90B8C8'
               value={noteCode}
               onChangeText={setNoteCode}
               autoCapitalize='none'
@@ -84,11 +109,20 @@ export function MenuScreen() {
               <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#1A1A1A' />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
-            const { granted } = await Camera.requestCameraPermissionsAsync()
-            if (granted) { setScanning(true); scanningRef.current = true }
-            else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
-          }}>
+          <TouchableOpacity
+            style={styles.qrScanBtn}
+            onPress={async () => {
+              const { granted } = await Camera.requestCameraPermissionsAsync()
+              if (granted) {
+                setScanning(true)
+                scanningRef.current = true
+              } else
+                Alert.alert(
+                  'Camera Permission Needed',
+                  'Grant camera access in Settings to scan QR codes.'
+                )
+            }}
+          >
             <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7DC4DF' />
           </TouchableOpacity>
         </View>
@@ -102,32 +136,41 @@ export function MenuScreen() {
                 const bgColor = colors[index % colors.length]
                 const rotate = `${((index * 7 + 3) % 5) - 2}deg`
                 return (
-                  <View key={entry.id} style={[styles.historyItem, { backgroundColor: bgColor, transform: [{ rotate }] }]}>
+                  <View
+                    key={entry.id}
+                    style={[
+                      styles.historyItem,
+                      { backgroundColor: bgColor, transform: [{ rotate }] }
+                    ]}
+                  >
                     <View style={styles.stickyPin} />
                     <TouchableOpacity
                       style={styles.historyItemContent}
                       onPress={() => startWorklet('rejoin', entry.id, entry.name)}
                     >
-                      <Text style={styles.historyItemText} numberOfLines={3}>{entry.name}</Text>
+                      <Text style={styles.historyItemText} numberOfLines={3}>
+                        {entry.name}
+                      </Text>
                       <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.historyDeleteBtn}
                       onPress={() => {
-                      Alert.alert(
-                        'Remove Note',
-                        `Remove "${entry.name}" from history?`,
-                        [
+                        Alert.alert('Remove Note', `Remove "${entry.name}" from history?`, [
                           { text: 'Cancel', style: 'cancel' },
-                          { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
-                        ]
-                      )
-                    }}
-                  >
-                    <Text style={styles.historyDeleteBtnText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-              )})}
+                          {
+                            text: 'Remove',
+                            style: 'destructive',
+                            onPress: () => removeFromHistory(entry.id)
+                          }
+                        ])
+                      }}
+                    >
+                      <Text style={styles.historyDeleteBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                )
+              })}
             </View>
           </View>
         )}
@@ -145,7 +188,13 @@ export function MenuScreen() {
             }}
           />
           <View style={styles.scannerOverlay}>
-            <TouchableOpacity style={styles.scannerCloseBtn} onPress={() => { scanningRef.current = false; setScanning(false) }}>
+            <TouchableOpacity
+              style={styles.scannerCloseBtn}
+              onPress={() => {
+                scanningRef.current = false
+                setScanning(false)
+              }}
+            >
               <Text style={styles.scannerCloseBtnText}>Cancel</Text>
             </TouchableOpacity>
           </View>
