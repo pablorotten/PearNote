@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "scheme": "pearnote",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pearnote.app"
@@ -37,6 +32,15 @@
           "android": {
             "minSdkVersion": 29
           }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain",
+          "imageWidth": 200
         }
       ]
     ]
