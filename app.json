@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F5FAFD"
+      "backgroundColor": "#FFFFFF"
       },
       "package": "com.pearnote.app"
     },
