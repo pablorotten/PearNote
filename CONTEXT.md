@@ -1,4 +1,4 @@
-# P2PKollections Project Plan
+# PearNote Project Plan
 
 ## 🎯 Project Goal
 
@@ -52,7 +52,7 @@ npm run android
 ```
 
 > [!WARNING]
-> VERY IMPORTANT: The starting project connects a phone to a desktop worker (phone is a "client" and desktop is the "server"). For P2PKollections, we want **phone-to-phone P2P** with no desktop. This means both phones must run the same Bare worklet code and pair with each other as equals (multi-writer). The tutorial's single-worker pattern won't work for our use case.
+> VERY IMPORTANT: The starting project connects a phone to a desktop worker (phone is a "client" and desktop is the "server"). For PearNote, we want **phone-to-phone P2P** with no desktop. This means both phones must run the same Bare worklet code and pair with each other as equals (multi-writer). The tutorial's single-worker pattern won't work for our use case.
 
 ### Tech Stack
 
@@ -89,11 +89,11 @@ MEmu emulator installs its own ADB (v40) which conflicts with SDK ADB (v41). Uni
 6. Autopass version compatibility
 Both sides must use the same `autopass` major version. The tutorial uses 2.x but npm installs 3.x. The mobile app in this project uses `autopass@^3.4.1`.
 
-### Architecture for P2PKollections (P2P Phone ↔ Phone)
+### Architecture for PearNote (P2P Phone ↔ Phone)
 
 #### Directory structure
 ```
-p2pkollections/
+PearNote/
 ├── app/
 │   ├── index.tsx          # UI
 │   └── app.bundle.mjs     # generated bundle
@@ -105,7 +105,7 @@ p2pkollections/
 
 #### `backend/backend.mjs` — multi-writer, NO `rmSync`
 ```
-- Create Corestore at `documentDirectory/p2pkollections/`
+- Create Corestore at `documentDirectory/PearNote/`
 - Create Autopass from existing store (don't delete!)
 - If an invite is provided → pair with it (Autopass.pair)
 - Generate own invite → send to UI via RPC
@@ -149,7 +149,7 @@ Phone A restarts WITH Phone B's invite
 ```
 
 #### Persistence
-Each phone stores its own Corestore at `documentDirectory/p2pkollections/`.
+Each phone stores its own Corestore at `documentDirectory/PearNote/`.
 Data survives app restarts. Reconnect later to sync missed changes.
 
 ### Key files from this repo to reference

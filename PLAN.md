@@ -1,4 +1,4 @@
-# P2PKollections — Implementation Plan
+# PearNote — Implementation Plan
 
 ## Goal
 
@@ -55,7 +55,7 @@ Phone A                          Phone B
 ```
 
 Each phone:
-- Stores data locally in **Corestore + Hyperbee** at `documentDirectory/p2pkollections/`
+- Stores data locally in **Corestore + Hyperbee** at `documentDirectory/PearNote/`
 - Joins a **Hyperswarm** list identified by a shared discovery key
 - On connection, replicates its hyperbee to the peer
 - On local change (add/remove), broadcasts the diff to connected peers
@@ -115,11 +115,11 @@ React Native UI with two phases:
 
 ### Step 4 — Update `app.json`
 
-- `name`: `"P2PKollections"`
-- `slug`: `"p2pkollections"`
-- `android.package`: `"com.p2pkollections.app"`
-- `ios.bundleIdentifier`: `"com.p2pkollections.app"`
-- `scheme`: `"p2pkollections"`
+- `name`: `"PearNote"`
+- `slug`: `"pearnote"`
+- `android.package`: `"com.pearnote.app"`
+- `ios.bundleIdentifier`: `"com.pearnote.app"`
+- `scheme`: `"pearnote"`
 
 ### Step 5 — Build Bundle
 
