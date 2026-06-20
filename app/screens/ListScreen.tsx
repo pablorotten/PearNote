@@ -77,7 +77,7 @@ export function ListScreen() {
                 <Text style={styles.copyBtnText}>Copy key</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setShowQR(true)} style={styles.qrBtn}>
-                <MaterialCommunityIcons name='qrcode' size={20} color='#FFFFFF' />
+                <MaterialCommunityIcons name='qrcode' size={20} color='#1A1A1A' />
               </TouchableOpacity>
             </View>
           </View>
@@ -118,7 +118,7 @@ export function ListScreen() {
               <TextInput
                 style={styles.formInput}
                 placeholder='Title'
-                placeholderTextColor='#A5C8D5'
+                placeholderTextColor='#90B8C8'
                 value={title}
                 onChangeText={setTitle}
                 autoFocus

@@ -1,9 +1,16 @@
 import { StyleSheet, Platform, StatusBar } from 'react-native'
 
+const BG = '#1A1A1A'
+const TEXT = '#F8FAFC'
+const ACCENT = '#7DC4DF'
+const SURFACE = '#333333'
+const MUTED = '#90B8C8'
+const DARK = '#1A1A1A'
+
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: BG,
     padding: 20,
     paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0) + 20,
     paddingBottom: Platform.OS === 'android' ? 60 : 20
@@ -11,24 +18,24 @@ export const styles = StyleSheet.create({
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#7DC4DF',
+    color: TEXT,
     textAlign: 'center',
     marginTop: 5
   },
   titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#7DC4DF',
+    color: TEXT,
     textAlign: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#7DC4DF',
+    borderBottomColor: ACCENT,
     paddingVertical: 2,
     marginHorizontal: 40,
     marginTop: 10
   },
   subtitle: {
     fontSize: 14,
-    color: '#90B8C8',
+    color: MUTED,
     textAlign: 'center',
     marginTop: 5,
     marginBottom: 25
@@ -44,7 +51,7 @@ export const styles = StyleSheet.create({
     marginTop: 20
   },
   historyTitle: {
-    color: '#90B8C8',
+    color: MUTED,
     fontSize: 14,
     marginBottom: 8
   },
@@ -113,12 +120,12 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.08)'
   },
   bigButton: {
-    backgroundColor: '#E2F3F8',
+    backgroundColor: ACCENT,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     alignItems: 'center'
   },
   buttonDisabled: {
@@ -128,7 +135,7 @@ export const styles = StyleSheet.create({
   bigButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7DC4DF'
+    color: DARK
   },
   divider: {
     flexDirection: 'row',
@@ -138,10 +145,10 @@ export const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#D0E6F0'
+    backgroundColor: SURFACE
   },
   dividerText: {
-    color: '#A5C8D5',
+    color: MUTED,
     paddingHorizontal: 10,
     fontSize: 14
   },
@@ -152,30 +159,30 @@ export const styles = StyleSheet.create({
   joinInputGroup: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     overflow: 'hidden'
   },
   joinInput: {
     flex: 1,
     height: 46,
     paddingHorizontal: 14,
-    color: '#4A3F44',
+    color: TEXT,
     fontSize: 15
   },
   joinSubmitBtn: {
     width: 46,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#7DC4DF'
+    backgroundColor: ACCENT
   },
   qrScanBtn: {
     width: 46,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -193,13 +200,13 @@ export const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#C0D4DE'
+    backgroundColor: SURFACE
   },
   statusDotOn: {
-    backgroundColor: '#7DC4DF'
+    backgroundColor: ACCENT
   },
   statusText: {
-    color: '#90B8C8',
+    color: MUTED,
     fontSize: 14
   },
   deleteListBtn: {
@@ -209,7 +216,7 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#D8E6EC',
+    backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: '#88AEC0',
     justifyContent: 'center',
@@ -229,15 +236,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   backBtnText: {
-    color: '#7DC4DF',
+    color: ACCENT,
     fontSize: 22,
     lineHeight: 24,
     fontWeight: 'bold'
@@ -248,15 +255,15 @@ export const styles = StyleSheet.create({
     gap: 8
   },
   codeRow: {
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#BCDEEA',
+    borderColor: ACCENT,
     paddingHorizontal: 16,
     paddingVertical: 10
   },
   codeValue: {
-    color: '#4A3F44',
+    color: TEXT,
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -269,19 +276,19 @@ export const styles = StyleSheet.create({
   copyBtn: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     borderRadius: 8,
     alignItems: 'center'
   },
   copyBtnText: {
-    color: '#FFFFFF',
+    color: DARK,
     fontSize: 14,
     fontWeight: 'bold'
   },
   qrBtn: {
     width: 42,
     borderRadius: 8,
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -299,15 +306,15 @@ export const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 3,
-    borderColor: '#E2F3F8',
-    borderTopColor: '#7DC4DF'
+    borderColor: SURFACE,
+    borderTopColor: ACCENT
   },
   loadingText: {
-    color: '#90B8C8',
+    color: MUTED,
     fontSize: 15
   },
   emptyText: {
-    color: '#A5C8D5',
+    color: MUTED,
     textAlign: 'center',
     marginTop: 60,
     fontSize: 16
@@ -315,12 +322,12 @@ export const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     padding: 14,
     marginVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#BCDEEA'
+    borderColor: ACCENT
   },
   itemInfo: {
     flex: 1
@@ -328,7 +335,7 @@ export const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#4A3F44'
+    color: TEXT
   },
   deleteBtn: {
     width: 32,
@@ -345,29 +352,29 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   nameForm: {
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     gap: 10
   },
   addForm: {
-    backgroundColor: '#E2F3F8',
+    backgroundColor: SURFACE,
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#7DC4DF',
+    borderColor: ACCENT,
     gap: 10
   },
   formInput: {
     height: 44,
-    borderColor: '#BCDEEA',
+    borderColor: ACCENT,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    color: '#4A3F44',
-    backgroundColor: '#EEF7FA'
+    color: TEXT,
+    backgroundColor: BG
   },
   formActions: {
     flexDirection: 'row',
@@ -381,17 +388,17 @@ export const styles = StyleSheet.create({
     borderRadius: 8
   },
   cancelBtnText: {
-    color: '#90B8C8',
+    color: MUTED,
     fontSize: 15
   },
   addBtn: {
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8
   },
   addBtnText: {
-    color: '#FFFFFF',
+    color: DARK,
     fontWeight: 'bold',
     fontSize: 15
   },
@@ -402,7 +409,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center'
   },
   qrContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
@@ -411,16 +418,16 @@ export const styles = StyleSheet.create({
   qrTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4A3F44'
+    color: TEXT
   },
   qrCloseBtn: {
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8
   },
   qrCloseBtnText: {
-    color: '#FFFFFF',
+    color: DARK,
     fontWeight: 'bold',
     fontSize: 15
   },
@@ -431,13 +438,13 @@ export const styles = StyleSheet.create({
     paddingBottom: 60
   },
   scannerCloseBtn: {
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center'
   },
   scannerCloseBtnText: {
-    color: '#FFFFFF',
+    color: DARK,
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -448,13 +455,13 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#7DC4DF',
+    backgroundColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5
   },
   fabText: {
-    color: '#FFFFFF',
+    color: DARK,
     fontSize: 28,
     fontWeight: 'bold',
     lineHeight: 30

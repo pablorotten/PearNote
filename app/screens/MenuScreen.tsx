@@ -27,7 +27,7 @@ export function MenuScreen() {
             <TextInput
               style={styles.formInput}
                 placeholder='Note name'
-                placeholderTextColor='#A5C8D5'
+                placeholderTextColor='#90B8C8'
               value={noteName}
               onChangeText={setNoteName}
               autoFocus
@@ -67,7 +67,7 @@ export function MenuScreen() {
             <TextInput
               style={styles.joinInput}
                 placeholder='Paste invite code'
-                placeholderTextColor='#A5C8D5'
+                placeholderTextColor='#90B8C8'
               value={noteCode}
               onChangeText={setNoteCode}
               autoCapitalize='none'
@@ -81,7 +81,7 @@ export function MenuScreen() {
               }}
               disabled={!noteCode}
             >
-              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#FFFFFF' />
+              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#1A1A1A' />
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
