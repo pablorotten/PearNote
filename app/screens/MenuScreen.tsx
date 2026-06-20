@@ -132,9 +132,10 @@ export function MenuScreen() {
             <Text style={styles.historyTitle}>Your Notes</Text>
             <View style={styles.historyList}>
               {noteHistory.map((entry, index) => {
-                const colors = ['#F9B2D7', '#DAF9DE', '#F6FFDC', '#F9DFDF']
-                const bgColor = colors[index % colors.length]
-                const rotate = `${((index * 7 + 3) % 5) - 2}deg`
+                const colors = ['#F9B2D7', '#DAF9DE', '#F6FFDC', '#F9DFDF', '#C3B1E1', '#FAC898']
+                const hash = entry.id.slice(0, 8).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 5381)
+                const bgColor = colors[Math.abs(hash) % colors.length]
+                const rotate = `${((Math.abs(hash) * 7 + 3) % 5) - 2}deg`
                 return (
                   <View
                     key={entry.id}
