@@ -22,7 +22,7 @@ export function LoadingSpinner() {
   return (
     <View style={styles.loadingContainer}>
       <Animated.View style={[styles.spinner, { transform: [{ rotate }] }]} />
-      <Text style={styles.loadingText}>Loading kollection...</Text>
+      <Text style={styles.loadingText}>Loading note...</Text>
     </View>
   )
 }

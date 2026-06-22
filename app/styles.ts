@@ -1,9 +1,16 @@
 import { StyleSheet, Platform, StatusBar } from 'react-native'
 
+const BG = '#1A1A1A'
+const TEXT = '#F8FAFC'
+const ACCENT = '#7DC4DF'
+const SURFACE = '#333333'
+const MUTED = '#90B8C8'
+const DARK = '#1A1A1A'
+
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#011501',
+    backgroundColor: BG,
     padding: 20,
     paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0) + 20,
     paddingBottom: Platform.OS === 'android' ? 60 : 20
@@ -11,24 +18,24 @@ export const styles = StyleSheet.create({
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#b0d943',
+    color: TEXT,
     textAlign: 'center',
     marginTop: 5
   },
   titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#b0d943',
+    color: TEXT,
     textAlign: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#b0d943',
+    borderBottomColor: ACCENT,
     paddingVertical: 2,
     marginHorizontal: 40,
     marginTop: 10
   },
   subtitle: {
     fontSize: 14,
-    color: '#7a9e2d',
+    color: MUTED,
     textAlign: 'center',
     marginTop: 5,
     marginBottom: 25
@@ -44,67 +51,91 @@ export const styles = StyleSheet.create({
     marginTop: 20
   },
   historyTitle: {
-    color: '#7a9e2d',
+    color: MUTED,
     fontSize: 14,
     marginBottom: 8
   },
   historyList: {
-    gap: 6
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10
   },
   historyItem: {
-    flexDirection: 'row',
+    width: '47%',
+    minHeight: 130,
+    padding: 14,
+    paddingTop: 22,
+    borderRadius: 3,
     alignItems: 'center',
-    backgroundColor: '#1a3d0a',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#2a5a0a'
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3
   },
   historyItemContent: {
-    flex: 1,
-    paddingLeft: 14,
-    paddingVertical: 4
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1
   },
   historyItemText: {
-    color: '#b0d943',
+    color: '#4A3F44',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 4
   },
   historyItemSub: {
-    color: '#7a9e2d',
-    fontSize: 12,
-    marginTop: 2
+    color: '#90B8C8',
+    fontSize: 11,
+    textAlign: 'center'
   },
   historyDeleteBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#3a0a0a',
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.06)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 10
   },
   historyDeleteBtnText: {
-    color: '#d94b4b',
-    fontSize: 14,
+    color: '#4A3F44',
+    fontSize: 11,
     fontWeight: 'bold',
-    lineHeight: 16
+    lineHeight: 13
+  },
+  stickyPin: {
+    position: 'absolute',
+    top: 5,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)'
   },
   bigButton: {
-    backgroundColor: '#1a3d0a',
+    backgroundColor: ACCENT,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     alignItems: 'center'
   },
   buttonDisabled: {
     opacity: 0.5,
-    borderColor: '#555'
+    borderColor: '#A5C8D5'
   },
   bigButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#b0d943'
+    color: DARK
   },
   divider: {
     flexDirection: 'row',
@@ -114,10 +145,10 @@ export const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#333'
+    backgroundColor: SURFACE
   },
   dividerText: {
-    color: '#666',
+    color: MUTED,
     paddingHorizontal: 10,
     fontSize: 14
   },
@@ -128,30 +159,30 @@ export const styles = StyleSheet.create({
   joinInputGroup: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     overflow: 'hidden'
   },
   joinInput: {
     flex: 1,
     height: 46,
     paddingHorizontal: 14,
-    color: '#b0d943',
+    color: TEXT,
     fontSize: 15
   },
   joinSubmitBtn: {
     width: 46,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#b0d943'
+    backgroundColor: ACCENT
   },
   qrScanBtn: {
     width: 46,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#7a9e2d',
+    borderColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -169,13 +200,13 @@ export const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#555'
+    backgroundColor: SURFACE
   },
   statusDotOn: {
-    backgroundColor: '#b0d943'
+    backgroundColor: ACCENT
   },
   statusText: {
-    color: '#7a9e2d',
+    color: MUTED,
     fontSize: 14
   },
   deleteListBtn: {
@@ -185,15 +216,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#3a0a0a',
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: '#d94b4b',
+    borderColor: '#88AEC0',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   deleteListBtnText: {
-    color: '#d94b4b',
+    color: '#88AEC0',
     fontSize: 14,
     fontWeight: 'bold',
     lineHeight: 16
@@ -205,15 +236,15 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10
   },
   backBtnText: {
-    color: '#b0d943',
+    color: ACCENT,
     fontSize: 22,
     lineHeight: 24,
     fontWeight: 'bold'
@@ -224,15 +255,15 @@ export const styles = StyleSheet.create({
     gap: 8
   },
   codeRow: {
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     paddingHorizontal: 16,
     paddingVertical: 10
   },
   codeValue: {
-    color: '#b0d943',
+    color: TEXT,
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -245,19 +276,19 @@ export const styles = StyleSheet.create({
   copyBtn: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: '#b0d943',
+    backgroundColor: ACCENT,
     borderRadius: 8,
     alignItems: 'center'
   },
   copyBtnText: {
-    color: '#011501',
+    color: DARK,
     fontSize: 14,
     fontWeight: 'bold'
   },
   qrBtn: {
     width: 42,
     borderRadius: 8,
-    backgroundColor: '#b0d943',
+    backgroundColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -275,15 +306,15 @@ export const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 3,
-    borderColor: '#1a3d0a',
-    borderTopColor: '#b0d943'
+    borderColor: SURFACE,
+    borderTopColor: ACCENT
   },
   loadingText: {
-    color: '#7a9e2d',
+    color: MUTED,
     fontSize: 15
   },
   emptyText: {
-    color: '#555',
+    color: MUTED,
     textAlign: 'center',
     marginTop: 60,
     fontSize: 16
@@ -291,12 +322,12 @@ export const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     padding: 14,
     marginVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#2a5a0a'
+    borderColor: ACCENT
   },
   itemInfo: {
     flex: 1
@@ -304,46 +335,46 @@ export const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#b0d943'
+    color: TEXT
   },
   deleteBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#3a0a0a',
+    backgroundColor: '#D8E6EC',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10
   },
   deleteBtnText: {
-    color: '#d94b4b',
+    color: '#88AEC0',
     fontSize: 14,
     fontWeight: 'bold'
   },
   nameForm: {
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     gap: 10
   },
   addForm: {
-    backgroundColor: '#1a3d0a',
+    backgroundColor: SURFACE,
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     gap: 10
   },
   formInput: {
     height: 44,
-    borderColor: '#b0d943',
+    borderColor: ACCENT,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    color: '#b0d943',
-    backgroundColor: '#0f2a05'
+    color: TEXT,
+    backgroundColor: BG
   },
   formActions: {
     flexDirection: 'row',
@@ -357,28 +388,28 @@ export const styles = StyleSheet.create({
     borderRadius: 8
   },
   cancelBtnText: {
-    color: '#7a9e2d',
+    color: MUTED,
     fontSize: 15
   },
   addBtn: {
-    backgroundColor: '#b0d943',
+    backgroundColor: ACCENT,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8
   },
   addBtnText: {
-    color: '#011501',
+    color: DARK,
     fontWeight: 'bold',
     fontSize: 15
   },
   qrOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center'
   },
   qrContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
@@ -387,16 +418,16 @@ export const styles = StyleSheet.create({
   qrTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#011501'
+    color: '#333333'
   },
   qrCloseBtn: {
-    backgroundColor: '#b0d943',
+    backgroundColor: ACCENT,
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8
   },
   qrCloseBtnText: {
-    color: '#011501',
+    color: DARK,
     fontWeight: 'bold',
     fontSize: 15
   },
@@ -407,13 +438,13 @@ export const styles = StyleSheet.create({
     paddingBottom: 60
   },
   scannerCloseBtn: {
-    backgroundColor: '#d94b4b',
+    backgroundColor: ACCENT,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center'
   },
   scannerCloseBtnText: {
-    color: '#fff',
+    color: DARK,
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -424,13 +455,13 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#b0d943',
+    backgroundColor: ACCENT,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5
   },
   fabText: {
-    color: '#011501',
+    color: DARK,
     fontSize: 28,
     fontWeight: 'bold',
     lineHeight: 30

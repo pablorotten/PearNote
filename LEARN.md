@@ -1,4 +1,4 @@
-# Learnings from P2PKollections
+# Learnings from PearNote
 
 ## Q: What does 🟢 Connected mean inside a list?
 
@@ -82,7 +82,7 @@ For 2-3 lists it's nothing. For 30 lists on mobile it becomes heavy:
 
 At that scale you'd want a different architecture — a single daemon multiplexing all lists, or a desktop seed relay.
 
-For P2PKollections as a demo: sync happens only when two users are **both in the same list at the same time**. If one leaves, the list goes offline until they return.
+For PearNote as a demo: sync happens only when two users are **both in the same list at the same time**. If one leaves, the list goes offline until they return.
 
 ## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
 
@@ -230,7 +230,7 @@ The root cause: Hyperbee stores **current state** (key-value pairs), not **event
 | **Sync** | Custom broadcast messages | Built-in replication |
 | **Deletions** | Lost on stale peer reconnect | Preserved as events, always applied |
 | **Offline edits** | Problematic (merge conflicts) | Works correctly (CRDT merge) |
-| **Invite codes** | Custom 4-digit kollection codes | Cryptographic z32 strings (BlindPairing) |
+| **Invite codes** | Custom 4-digit note codes | Cryptographic z32 strings (BlindPairing) |
 | **Peer discovery** | Manual Hyperswarm topic join | BlindPairing handles authentication |
 
 ## Q: How does Autopass pairing work?
@@ -247,7 +247,7 @@ Joiner (Device B):
   1. Autopass.pair(store, inviteCode) → connects via DHT
   2. BlindPairing handshake with Device A
   3. pair.finished() → returns paired Autopass instance
-  4. Device B now has the base key and can write to the shared kollection
+  4. Device B now has the base key and can write to the shared note
 
 After pairing:
   - Both devices can do new Autopass(store) to reconnect
@@ -265,12 +265,12 @@ This was one of our biggest challenges. The key insight:
 
 ```
 Session 1 (Create):
-  storagePath = /p2pkollections/abc123
+  storagePath = /PearNote/abc123
   pass = new Autopass(store) → creates new base
   pass.key = 0x1234...  (stored in Corestore)
 
 Session 2 (Rejoin):
-  storagePath = /p2pkollections/abc123  ← SAME PATH!
+  storagePath = /PearNote/abc123  ← SAME PATH!
   pass = new Autopass(store) → loads existing base
   pass.key = 0x1234...  (same as before)
   Items are still there!
@@ -284,26 +284,26 @@ Session 2 (Rejoin):
 // Args: [documentDirectory, mode, storageId?]
 
 mode = 'create'
-  // Create new kollection with unique storage path
+  // Create new note with unique storage path
   // storageId = timestamp (e.g., "mqham920")
   // Returns: storageId|invite
 
 mode = 'join'  
-  // Join someone else's kollection using their invite code
+  // Join someone else's note using their invite code
   // storageId = invite code from other device
   // Creates new storage path, pairs via BlindPairing
   // Returns: storageId|invite
 
 mode = 'rejoin'
-  // Rejoin a kollection you've been in before
+  // Rejoin a note you've been in before
   // storageId = folder name from history (e.g., "mqham920")
   // Uses SAME storage path → loads existing Autobase
   // Returns: storageId|invite
 ```
 
-## Q: Why can't you join your own kollection with the invite code?
+## Q: Why can't you join your own note with the invite code?
 
-If you create a kollection, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
+If you create a note, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
 
 **Why:** `Autopass.pair()` needs to complete a BlindPairing handshake with the HOST. When you leave, the host worklet is terminated. No host = no one to complete the handshake = `pair.finished()` times out.
 
@@ -321,7 +321,7 @@ If you create a kollection, leave (terminate worklet), then try to JOIN with you
 
 ### Challenge 3: Corestore file lock after crash
 **Problem:** If the worklet crashed or was terminated abruptly, Corestore might leave locks.
-**Solution:** Each kollection uses its own storage folder. If corrupted, delete and recreate.
+**Solution:** Each note uses its own storage folder. If corrupted, delete and recreate.
 
 ### Challenge 4: `pair.finished()` hangs forever
 **Problem:** No built-in timeout — if host is offline, it hangs.
@@ -341,7 +341,7 @@ If you create a kollection, leave (terminate worklet), then try to JOIN with you
 ┌─────────────────────────────────────────────────────────────┐
 │                      React Native UI                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │ Create Kollection │  │ Join Kollection   │  │ Your Kollections  │          │
+│  │ Create Note │  │ Join Note   │  │ Your Notes  │          │
 │  │  (mode:     │  │  (mode:     │  │  (mode:     │          │
 │  │   create)   │  │   join)     │  │   rejoin)   │          │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
@@ -367,8 +367,8 @@ If you create a kollection, leave (terminate worklet), then try to JOIN with you
 │                           │                                   │
 │  ┌────────────────────────▼────────────────────────────────┐ │
 │  │                    Corestore                             │ │
-│  │  /p2pkollections/abc123/  ← List 1 data                │ │
-│  │  /p2pkollections/def456/  ← List 2 data                │ │
+│  │  /PearNote/abc123/  ← List 1 data                │ │
+│  │  /PearNote/def456/  ← List 2 data                │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -380,7 +380,7 @@ If you create a kollection, leave (terminate worklet), then try to JOIN with you
 4. On `pass.on('update')` → read `pass.list()` → send to UI via RPC
 5. UI updates the list
 
-**Key invariant:** Same `storageId` = same storage path = same Autobase = same kollection data.
+**Key invariant:** Same `storageId` = same storage path = same Autobase = same note data.
 
 ---
 
@@ -434,11 +434,11 @@ Pair on WiFi first. After the initial pairing succeeds and the base key is store
    ```
    npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
    ```
-2. `app/hooks/useKollection.ts` imports that bundle as a string:
+2. `app/hooks/useNote.ts` imports that bundle as a string:
    ```ts
    import bundle from '../app.bundle.mjs'
    ```
-3. When the user taps "Create Kollection" or "Join Kollection", `startWorklet()` creates a new `Worklet` and passes the bundle to it:
+3. When the user taps "Create Note" or "Join Note", `startWorklet()` creates a new `Worklet` and passes the bundle to it:
    ```ts
    const worklet = new Worklet()
    worklet.start('/app.bundle', bundle, args)
@@ -447,7 +447,7 @@ Pair on WiFi first. After the initial pairing succeeds and the base key is store
 
 So `backend.mjs` is called by the Bare runtime when the Worklet starts. It's never called directly from React code.
 
-## Q: What is `rpc.request(RPC_REMOVE)` in useKollection.ts?
+## Q: What is `rpc.request(RPC_REMOVE)` in useNote.ts?
 
 This is one of several **frontend→backend RPC calls**. The full set is defined in `backend.mjs`:
 
@@ -484,9 +484,9 @@ There are two sets of RPC commands — one for each direction:
 | `RPC_ADD` | `pass.add(key, JSON.stringify(item))` |
 | `RPC_REMOVE` | `pass.remove(key)` |
 | `RPC_CLEAR` | `pass.list()` + remove each key |
-| `RPC_SET_NAME` | `pass.add('_kollection_name', JSON.stringify(['_name', name]))` |
+| `RPC_SET_NAME` | `pass.add('_note_name', JSON.stringify(['_name', name]))` |
 
-**Backend→Frontend** (handled in `useKollection.ts:128-181`):
+**Backend→Frontend** (handled in `useNote.ts:128-181`):
 
 | Command | What the frontend does |
 |---|---|
@@ -499,20 +499,20 @@ There are two sets of RPC commands — one for each direction:
 
 ## Q: Can you show an example of the backend calling the frontend?
 
-`backend.mjs:104` — when a kollection is created or rejoined, the backend pushes the invite code:
+`backend.mjs:104` — when a note is created or rejoined, the backend pushes the invite code:
 
 ```js
 rpc.request(RPC_MY_INVITE).send(sessionId + '|' + invite)
 ```
 
-The frontend catches it at `useKollection.ts:128`:
+The frontend catches it at `useNote.ts:128`:
 
 ```ts
 if (req.command === RPC_MY_INVITE) {
   const data = b4a.toString(req.data)
   const [storageId, invite] = data.split('|')
   setMyCode(invite)
-  Alert.alert('Kollection Created!', `Share this code:\n${invite}`)
+  Alert.alert('Note Created!', `Share this code:\n${invite}`)
 }
 ```
 
@@ -522,7 +522,7 @@ Another example — `backend.mjs:151` when a peer connects:
 rpc.request(RPC_PEER_JOINED).send('connected')
 ```
 
-Frontend turns the green dot on (`useKollection.ts:164`):
+Frontend turns the green dot on (`useNote.ts:164`):
 
 ```ts
 if (req.command === RPC_PEER_JOINED) {
@@ -536,11 +536,11 @@ And `backend.mjs:185` — after any data change, the backend pushes the full lis
 rpc.request(RPC_RESET).send(JSON.stringify(items))
 ```
 
-Frontend replaces the item list (`useKollection.ts:153`):
+Frontend replaces the item list (`useNote.ts:153`):
 
 ```ts
 if (req.command === RPC_RESET) {
-  setItems(data.filter((d: any) => d.key !== '_kollection_name'))
+  setItems(data.filter((d: any) => d.key !== '_note_name'))
 }
 ```
 
@@ -567,7 +567,7 @@ It's saved as `rpc` state (`setRpc(rpcInstance)`) so other functions like `handl
 
 ## Q: When is the RPC instance created? Is it always running?
 
-Not on app open. The RPC instance is created **only when `startWorklet()` runs**, which happens when you tap "Create Kollection" or "Join Kollection". Before that, there's no backend at all — no Worklet, no RPC, no network connections.
+Not on app open. The RPC instance is created **only when `startWorklet()` runs**, which happens when you tap "Create Note" or "Join Note". Before that, there's no backend at all — no Worklet, no RPC, no network connections.
 
 Once started, both sides can initiate communication freely:
 
@@ -630,7 +630,7 @@ Yes. The backend is the API gateway — it translates between two worlds:
 | `RPC_ADD` | `pass.add(key, value)` | **autopass** (P2P key-value store) |
 | `RPC_REMOVE` | `pass.remove(key)` | **autopass** |
 | `RPC_CLEAR` | `pass.list()` + `pass.remove()` | **autopass** |
-| `RPC_SET_NAME` | `pass.add('_kollection_name', ...)` | **autopass** |
+| `RPC_SET_NAME` | `pass.add('_note_name', ...)` | **autopass** |
 | *(peer joined)* | `pass.swarm.on('connection')` | **hyperswarm** (P2P networking) |
 | *(data changed)* | `pass.on('update')` → `notifyUI()` | **autopass** |
 | *(invite code)* | `pass.createInvite()` | **autopass** |
@@ -641,17 +641,17 @@ The frontend never imports `autopass`, `corestore`, or `hyperswarm`. It only tal
 
 ## Q: What is Corestore? What is the "file lock"?
 
-Corestore is the **local database** on your phone's filesystem. Every kollection creates its own storage folder:
+Corestore is the **local database** on your phone's filesystem. Every note creates its own storage folder:
 
 ```
-p2pkollections/mqham920/
+PearNote/mqham920/
 ├── corestore.db
 ├── corestore.wal
 └── bits/
 ```
 
 It stores:
-- The **Autobase keys** (needed to rejoin a kollection without pairing again)
+- The **Autobase keys** (needed to rejoin a note without pairing again)
 - The **Hypercore append-only logs** (all add/remove events)
 - The **current data** (items you see in the list)
 
@@ -659,9 +659,9 @@ It stores:
 
 When the Worklet opens a Corestore, it places a **lock file** in that folder — like an "occupied" sign on a bathroom. This prevents two processes from writing to the same database at the same time, which would corrupt the data.
 
-When you **leave** a kollection normally (tap ‹ back button), `handleLeave()` calls `worklet.terminate()`, which kills the Worklet thread **instantly** — like pulling the power cord. The lock file stays on disk.
+When you **leave** a note normally (tap ‹ back button), `handleLeave()` calls `worklet.terminate()`, which kills the Worklet thread **instantly** — like pulling the power cord. The lock file stays on disk.
 
-Next time you try to open that same kollection, Corestore sees the stale lock and refuses, thinking another process is still using it.
+Next time you try to open that same note, Corestore sees the stale lock and refuses, thinking another process is still using it.
 
 ### What's the proper shutdown?
 
@@ -677,6 +677,6 @@ Currently, `worklet.terminate()` skips this entirely — the lock is abandoned.
 
 ### Is the lock a real problem in practice?
 
-In the current app, every session uses a **unique timestamp-based folder** (`p2pkollections/mqham920`, `p2pkollections/abc123`, etc.). So a stale lock in one folder doesn't affect a different session. The lock only matters if you try to **rejoin** the same kollection later — if the previous session left a stale lock, the rejoin could fail.
+In the current app, every session uses a **unique timestamp-based folder** (`PearNote/mqham920`, `PearNote/abc123`, etc.). So a stale lock in one folder doesn't affect a different session. The lock only matters if you try to **rejoin** the same note later — if the previous session left a stale lock, the rejoin could fail.
 
 This is a known issue tracked in the AGENTS.md but not yet fixed. Each session creates a new folder, which avoids the lock problem but also means old session folders accumulate on disk.

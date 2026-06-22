@@ -1,24 +1,43 @@
 import React from 'react'
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  Image
+} from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Camera, CameraView } from 'expo-camera'
-import { useKollection } from '../hooks/KollectionContext'
+import { useNote } from '../hooks/NoteContext'
 import { styles } from '../styles'
 
 export function MenuScreen() {
   const {
-    showCreateForm, setShowCreateForm,
-    kollectionName, setKollectionName,
-    kollectionCode, setKollectionCode,
-    kollectionHistory,
-    scanning, setScanning,
+    showCreateForm,
+    setShowCreateForm,
+    noteName,
+    setNoteName,
+    noteCode,
+    setNoteCode,
+    noteHistory,
+    scanning,
+    setScanning,
     scanningRef,
-    startWorklet, removeFromHistory
-  } = useKollection()
+    startWorklet,
+    removeFromHistory
+  } = useNote()
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>P2P Kollections</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+        <Image source={require('../../assets/images/icon.png')} style={{ width: 80, height: 80 }} />
+        <Text style={styles.heading}>
+          <Text style={{ color: '#B0D944' }}>Pear</Text>Note
+        </Text>
+      </View>
       <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
@@ -26,25 +45,31 @@ export function MenuScreen() {
           <View style={styles.nameForm}>
             <TextInput
               style={styles.formInput}
-              placeholder='Kollection name'
-              placeholderTextColor='#666'
-              value={kollectionName}
-              onChangeText={setKollectionName}
+              placeholder='Note name'
+              placeholderTextColor='#90B8C8'
+              value={noteName}
+              onChangeText={setNoteName}
               autoFocus
             />
             <View style={styles.formActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowCreateForm(false); setKollectionName('') }}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setShowCreateForm(false)
+                  setNoteName('')
+                }}
+              >
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.addBtn, !kollectionName.trim() && styles.buttonDisabled]}
+                style={[styles.addBtn, !noteName.trim() && styles.buttonDisabled]}
                 onPress={() => {
-                  if (!kollectionName.trim()) return
+                  if (!noteName.trim()) return
                   setShowCreateForm(false)
-                  startWorklet('create', undefined, kollectionName.trim())
-                  setKollectionName('')
+                  startWorklet('create', undefined, noteName.trim())
+                  setNoteName('')
                 }}
-                disabled={!kollectionName.trim()}
+                disabled={!noteName.trim()}
               >
                 <Text style={styles.addBtnText}>Create</Text>
               </TouchableOpacity>
@@ -52,7 +77,7 @@ export function MenuScreen() {
           </View>
         ) : (
           <TouchableOpacity style={styles.bigButton} onPress={() => setShowCreateForm(true)}>
-            <Text style={styles.bigButtonText}>Create Kollection</Text>
+            <Text style={styles.bigButtonText}>Create Note</Text>
           </TouchableOpacity>
         )}
 
@@ -67,62 +92,86 @@ export function MenuScreen() {
             <TextInput
               style={styles.joinInput}
               placeholder='Paste invite code'
-              placeholderTextColor='#666'
-              value={kollectionCode}
-              onChangeText={setKollectionCode}
+              placeholderTextColor='#90B8C8'
+              value={noteCode}
+              onChangeText={setNoteCode}
               autoCapitalize='none'
               autoCorrect={false}
             />
             <TouchableOpacity
-              style={[styles.joinSubmitBtn, !kollectionCode && styles.buttonDisabled]}
+              style={[styles.joinSubmitBtn, !noteCode && styles.buttonDisabled]}
               onPress={() => {
-                if (!kollectionCode) return
+                if (!noteCode) return
                 startWorklet('join')
               }}
-              disabled={!kollectionCode}
+              disabled={!noteCode}
             >
-              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#011501' />
+              <MaterialCommunityIcons name='arrow-right-bold' size={22} color='#1A1A1A' />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.qrScanBtn} onPress={async () => {
-            const { granted } = await Camera.requestCameraPermissionsAsync()
-            if (granted) { setScanning(true); scanningRef.current = true }
-            else Alert.alert('Camera Permission Needed', 'Grant camera access in Settings to scan QR codes.')
-          }}>
-            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7a9e2d' />
+          <TouchableOpacity
+            style={styles.qrScanBtn}
+            onPress={async () => {
+              const { granted } = await Camera.requestCameraPermissionsAsync()
+              if (granted) {
+                setScanning(true)
+                scanningRef.current = true
+              } else
+                Alert.alert(
+                  'Camera Permission Needed',
+                  'Grant camera access in Settings to scan QR codes.'
+                )
+            }}
+          >
+            <MaterialCommunityIcons name='qrcode-scan' size={24} color='#7DC4DF' />
           </TouchableOpacity>
         </View>
 
-        {kollectionHistory.length > 0 && (
+        {noteHistory.length > 0 && (
           <View style={styles.historySection}>
-            <Text style={styles.historyTitle}>Your Kollections</Text>
+            <Text style={styles.historyTitle}>Your Notes</Text>
             <View style={styles.historyList}>
-              {kollectionHistory.map(entry => (
-                <View key={entry.id} style={styles.historyItem}>
-                  <TouchableOpacity
-                    style={styles.historyItemContent}
-                    onPress={() => startWorklet('rejoin', entry.id, entry.name)}
+              {noteHistory.map((entry, index) => {
+                const colors = ['#F9B2D7', '#DAF9DE', '#F6FFDC', '#F9DFDF', '#C3B1E1', '#FAC898']
+                const hash = entry.id.slice(0, 8).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 5381)
+                const bgColor = colors[Math.abs(hash) % colors.length]
+                const rotate = `${((Math.abs(hash) * 7 + 3) % 5) - 2}deg`
+                return (
+                  <View
+                    key={entry.id}
+                    style={[
+                      styles.historyItem,
+                      { backgroundColor: bgColor, transform: [{ rotate }] }
+                    ]}
                   >
-                    <Text style={styles.historyItemText} numberOfLines={1}>{entry.name}</Text>
-                    <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.historyDeleteBtn}
-                    onPress={() => {
-                      Alert.alert(
-                        'Remove Kollection',
-                        `Remove "${entry.name}" from history?`,
-                        [
+                    <View style={styles.stickyPin} />
+                    <TouchableOpacity
+                      style={styles.historyItemContent}
+                      onPress={() => startWorklet('rejoin', entry.id, entry.name)}
+                    >
+                      <Text style={styles.historyItemText} numberOfLines={3}>
+                        {entry.name}
+                      </Text>
+                      <Text style={styles.historyItemSub}>{entry.id.slice(0, 8)}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.historyDeleteBtn}
+                      onPress={() => {
+                        Alert.alert('Remove Note', `Remove "${entry.name}" from history?`, [
                           { text: 'Cancel', style: 'cancel' },
-                          { text: 'Remove', style: 'destructive', onPress: () => removeFromHistory(entry.id) }
-                        ]
-                      )
-                    }}
-                  >
-                    <Text style={styles.historyDeleteBtnText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+                          {
+                            text: 'Remove',
+                            style: 'destructive',
+                            onPress: () => removeFromHistory(entry.id)
+                          }
+                        ])
+                      }}
+                    >
+                      <Text style={styles.historyDeleteBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                )
+              })}
             </View>
           </View>
         )}
@@ -140,7 +189,13 @@ export function MenuScreen() {
             }}
           />
           <View style={styles.scannerOverlay}>
-            <TouchableOpacity style={styles.scannerCloseBtn} onPress={() => { scanningRef.current = false; setScanning(false) }}>
+            <TouchableOpacity
+              style={styles.scannerCloseBtn}
+              onPress={() => {
+                scanningRef.current = false
+                setScanning(false)
+              }}
+            >
               <Text style={styles.scannerCloseBtnText}>Cancel</Text>
             </TouchableOpacity>
           </View>

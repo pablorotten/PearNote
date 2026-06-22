@@ -1,4 +1,4 @@
-# AGENTS.md — P2PKollections
+# AGENTS.md — PearNote
 
 ## Logcat commands (filtered to app only)
 
@@ -39,11 +39,11 @@ Then rebuild APK: `npm run android`
 
 ## Test flow
 
-1. **Create kollection** (Phone A): open app → tap "Create Kollection" → wait for loading spinner → verify "Kollection Created!" alert with invite code appears → verify items appear on screen
-2. **Join** (Phone B): open app → paste invite code from A → tap "Join Kollection" → wait for loading → verify both phones show same list
+1. **Create note** (Phone A): open app → tap "Create Note" → wait for loading spinner → verify "Note Created!" alert with invite code appears → verify items appear on screen
+2. **Join** (Phone B): open app → paste invite code from A → tap "Join Note" → wait for loading → verify both phones show same list
 3. **Add item**: type title on A → tap + → verify item appears on both phones within seconds
 4. **Remove item**: tap X on an item → verify it disappears on both phones
-5. **Leave and re-enter**: tap ← on Phone A → tap the kollection in "Your Kollections" history → should rejoin with same items
+5. **Leave and re-enter**: tap ← on Phone A → tap the note in "Your Notes" history → should rejoin with same items
 
 ## Known issues
 
@@ -51,5 +51,5 @@ Then rebuild APK: `npm run android`
 - `bareKit.terminate()` kills the worklet abruptly → lock never released
 - `pair.finished()` has no built-in timeout → 30s wrapper timeout added
 - `pass.add(key, value)` requires value to be a **string** (not array), or it crashes with `uint must be positive`
-- History items store old invite codes; tapping them now COPIES the code instead of trying to JOIN a dead kollection. Always use **Create Kollection** for new sessions.
-- Each kollection session now uses a unique timestamp-based storage path (`p2pkollections/<sessionId>`) to prevent Corestore state corruption between sessions. Old session dirs accumulate but are harmless.
+- History items store old invite codes; tapping them now COPIES the code instead of trying to JOIN a dead note. Always use **Create Note** for new sessions.
+- Each note session now uses a unique timestamp-based storage path (`PearNote/<sessionId>`) to prevent Corestore state corruption between sessions. Old session dirs accumulate but are harmless.

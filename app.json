@@ -1,34 +1,29 @@
 {
   "expo": {
-    "name": "P2P Kollections",
-    "slug": "p2pkollections",
+    "name": "PearNote",
+    "slug": "pearnote",
     "version": "1.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
-    "scheme": "p2pkollections",
-    "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#011501"
-    },
+    "scheme": "pearnote",
+    "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.p2pkollections.app"
+      "bundleIdentifier": "com.pearnote.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#011501"
+      "backgroundColor": "#FFFFFF"
       },
-      "package": "com.p2pkollections.app"
+      "package": "com.pearnote.app"
     },
     "plugins": [
       ["expo-router"],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow P2P Kollections to access your camera to scan QR codes."
+          "cameraPermission": "Allow PearNote to access your camera to scan QR codes."
         }
       ],
       [
@@ -37,6 +32,15 @@
           "android": {
             "minSdkVersion": 29
           }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain",
+          "imageWidth": 200
         }
       ]
     ]

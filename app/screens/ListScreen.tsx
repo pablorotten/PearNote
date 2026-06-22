@@ -10,7 +10,7 @@ import {
   StatusBar
 } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useKollection } from '../hooks/KollectionContext'
+import { useNote } from '../hooks/NoteContext'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { QRCodeModal } from '../components/QRCodeModal'
 import { styles } from '../styles'
@@ -19,14 +19,14 @@ export function ListScreen() {
   const {
     items, myCode, connected, loading,
     title, setTitle, showAdd, setShowAdd,
-    currentKollectionName,
+    currentNoteName,
     editingTitle, setEditingTitle,
     editTitleValue, setEditTitleValue,
     showQR, setShowQR,
     keyExpanded, setKeyExpanded,
     handleAddItem, handleRemoveItem,
-    handleLeave, handleDeleteKollection, handleRenameKollection, copyCode
-  } = useKollection()
+    handleLeave, handleDeleteNote, handleRenameNote, copyCode
+  } = useNote()
 
   return (
     <KeyboardAvoidingView
@@ -45,7 +45,7 @@ export function ListScreen() {
             onChangeText={setEditTitleValue}
             onSubmitEditing={() => {
               const val = editTitleValue.trim()
-              if (val) handleRenameKollection(val)
+              if (val) handleRenameNote(val)
               setEditingTitle(false)
             }}
             onBlur={() => setEditingTitle(false)}
@@ -53,8 +53,8 @@ export function ListScreen() {
             selectTextOnFocus
           />
         ) : (
-          <TouchableOpacity onLongPress={() => { setEditTitleValue(currentKollectionName); setEditingTitle(true) }}>
-            <Text style={styles.heading}>{currentKollectionName || 'P2P Kollections'}</Text>
+          <TouchableOpacity onLongPress={() => { setEditTitleValue(currentNoteName); setEditingTitle(true) }}>
+            <Text style={styles.heading}>{currentNoteName || <Text><Text style={{ color: '#B0D944' }}>Pear</Text>Note</Text>}</Text>
           </TouchableOpacity>
         )}
         <View style={styles.statusRow}>
@@ -77,12 +77,12 @@ export function ListScreen() {
                 <Text style={styles.copyBtnText}>Copy key</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setShowQR(true)} style={styles.qrBtn}>
-                <MaterialCommunityIcons name='qrcode' size={20} color='#011501' />
+                <MaterialCommunityIcons name='qrcode' size={20} color='#1A1A1A' />
               </TouchableOpacity>
             </View>
           </View>
         ) : null}
-        <TouchableOpacity onPress={handleDeleteKollection} style={styles.deleteListBtn}>
+        <TouchableOpacity onPress={handleDeleteNote} style={styles.deleteListBtn}>
           <Text style={styles.deleteListBtnText}>✕</Text>
         </TouchableOpacity>
       </View>
@@ -118,7 +118,7 @@ export function ListScreen() {
               <TextInput
                 style={styles.formInput}
                 placeholder='Title'
-                placeholderTextColor='#666'
+                placeholderTextColor='#90B8C8'
                 value={title}
                 onChangeText={setTitle}
                 autoFocus

@@ -1,17 +1,17 @@
 import React from 'react'
-import { KollectionProvider, useKollection } from './hooks/KollectionContext'
+import { NoteProvider, useNote } from './hooks/NoteContext'
 import { MenuScreen } from './screens/MenuScreen'
 import { ListScreen } from './screens/ListScreen'
 
 function AppContent() {
-  const { phase } = useKollection()
+  const { phase } = useNote()
   return phase === 'menu' ? <MenuScreen /> : <ListScreen />
 }
 
 export default function App() {
   return (
-    <KollectionProvider>
+    <NoteProvider>
       <AppContent />
-    </KollectionProvider>
+    </NoteProvider>
   )
 }

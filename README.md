@@ -1,4 +1,4 @@
-# P2PKollections
+# PearNote
 
 ## Commands
 
@@ -23,13 +23,13 @@ adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk;
 # Reverse port for Metro
 adb -s e017a252 reverse tcp:8081 tcp:8081; 
 # Start the app
-adb -s e017a252 shell am start -n com.p2pkollections.app/.MainActivity 
+adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity 
 
 # Single command on e017a252
-adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s e017a252 reverse tcp:8081 tcp:8081; adb -s e017a252 shell am start -n com.p2pkollections.app/.MainActivity
+adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s e017a252 reverse tcp:8081 tcp:8081; adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
 
 # On 6ae4c054c2b8 device
-adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081; adb -s 6ae4c054c2b8 shell am start -n com.p2pkollections.app/.MainActivity 
+adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081; adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity 
 ```
 
 > [!WARNING]
@@ -42,21 +42,27 @@ adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk
 
 
 **📦 Genereate release apk**: generate, install and launch non-debug metro-independent APK
+```sh
 npx expo run:android --variant release
 adb -s e017a252 install -r android/app/build/outputs/apk/release/app-release.apk
-adb -s e017a252 shell am start -n com.p2pkollections.app/.MainActivity
+adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
 ```
 
 > [!NOTE]
 > This APK will work without Metro (you can unplug the phone)
 
 
+Regenerate icon and splash screen assets:
+```sh
+npx expo prebuild && npm run android
+```
+
 ❌ Uninstall the app:
 ```sh
-adb -s 6ae4c054c2b8 uninstall com.p2pkollections.app
-adb -s e017a252 uninstall com.p2pkollections.app
+adb -s 6ae4c054c2b8 uninstall com.pearnote.app
+adb -s e017a252 uninstall com.pearnote.app
 
-adb -s 6ae4c054c2b8 uninstall com.p2pkollections.app; adb -s e017a252 uninstall com.p2pkollections.app
+adb -s 6ae4c054c2b8 uninstall com.pearnote.app; adb -s e017a252 uninstall com.pearnote.app
 ```
 
 💥 Restart adb
