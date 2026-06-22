@@ -409,7 +409,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center'
   },
   qrContainer: {
-    backgroundColor: SURFACE,
+    backgroundColor: '#FFFFFF',
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
@@ -418,7 +418,7 @@ export const styles = StyleSheet.create({
   qrTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: TEXT
+    color: '#333333'
   },
   qrCloseBtn: {
     backgroundColor: ACCENT,
