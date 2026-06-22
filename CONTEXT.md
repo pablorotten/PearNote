@@ -260,6 +260,19 @@ Phone A: Taps note in history → rejoin mode
 | `expo-file-system` | Local file persistence (history) |
 | `react-native-qrcode-svg` | QR code generation |
 
+### Test Flow
+
+1. **Create note** (Phone A): open app → tap "Create Note" → wait for loading spinner → verify "Note Created!" alert with invite code appears → verify items appear on screen
+2. **Join** (Phone B): open app → paste invite code from A → tap "Join Note" → wait for loading → verify both phones show same list
+3. **Add item**: type title on A → tap + → verify item appears on both phones within seconds
+4. **Remove item**: tap X on an item → verify it disappears on both phones
+5. **Leave and re-enter**: tap ← on Phone A → tap the note in "Your Notes" history → should rejoin with same items
+
+### Known Issues
+
+- History items store old invite codes; tapping them now **copies** the code instead of trying to join a dead note. Always use **Create Note** for new sessions.
+- Each note session uses a unique timestamp-based storage path (`pearnote/<sessionId>`). Old session dirs accumulate but are harmless.
+
 ### What NOT to do
 - Don't use `pear run` (deprecated)
 - Don't use `--target` flag (use `--host`)
