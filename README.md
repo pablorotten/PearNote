@@ -1,103 +1,46 @@
-# PearNote
+<p align="center">
+  <img src="design/splash.png" width="350" alt="PearNote">
+</p>
 
-## Commands
+<h1 align="center">PearNote</h1>
 
-- 📱phone1: 6ae4c054c2b8
-- 📱phone2: e017a252
+<p align="center">
+  P2P note sharing for Android. No servers. No accounts. Just two phones.<br/>
+  Built with <a href="https://holepunch.to">Holepunch</a> — Autopass, Corestore, Hyperswarm.
+</p>
 
-Install dependencies and build the backend bundle:
-```sh
-npm install
-npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
-```
+---
 
-Build and run the debug APK with Metro bundler:
-```sh
-npm run android
-```
+## What is it?
 
-Install  the debug APK in specific device
-```sh
-# Install APK
-adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk;
-# Reverse port for Metro
-adb -s e017a252 reverse tcp:8081 tcp:8081; 
-# Start the app
-adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity 
+PearNote lets two phones share a note in real-time over a peer-to-peer connection. One phone creates a note and gets an invite code. The other phone joins with that code. From that moment, both phones see the same list — items added on one appear on the other instantly.
 
-# Single command on e017a252
-adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s e017a252 reverse tcp:8081 tcp:8081; adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
+No cloud. No login. Data lives only on the phones.
 
-# On 6ae4c054c2b8 device
-adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081; adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity 
-```
+## How it works
 
-> [!WARNING]
-> `npm run android` builds a debug APK. In debug mode, the React Native JavaScript bundle (your UI code in app/index.tsx) is not included in the APK. Instead, the app downloads it live from Metro (a dev server on your computer) over USB and If there's a change on `app/`, Metro will automatically reload the app.
-> 
-> `Unplug = Metro disappears → app can't fetch the JS bundle → crash`
+1. **Create** a note → get an invite code
+2. **Share** the code (copy-paste or QR)
+3. **Join** from another phone
+4. **Sync** happens automatically over P2P
 
-> [!NOTE]
-> If there's a change on `backend/`, you need to run `npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs` and then manually reload the app.
+Changes merge deterministically using a CRDT (Autopass/Autobase), so even offline edits resolve correctly when peers reconnect.
 
+## Download
 
-**📦 Genereate release apk**: generate, install and launch non-debug metro-independent APK
-```sh
-npx expo run:android --variant release
-adb -s e017a252 install -r android/app/build/outputs/apk/release/app-release.apk
-adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
-```
+Grab the latest APK from [**Releases**](../../releases).
 
-> [!NOTE]
-> This APK will work without Metro (you can unplug the phone)
+## Tech Stack
 
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Expo SDK 55 + Bare |
+| P2P Sync | Autopass (Autobase + BlindPairing) |
+| Storage | Corestore (Hypercore) |
+| Networking | Hyperswarm (DHT) |
+| UI | React Native |
+| RPC | bare-rpc (IPC) |
 
-Regenerate icon and splash screen assets:
-```sh
-npx expo prebuild && npm run android
-```
+## License
 
-❌ Uninstall the app:
-```sh
-adb -s 6ae4c054c2b8 uninstall com.pearnote.app
-adb -s e017a252 uninstall com.pearnote.app
-
-adb -s 6ae4c054c2b8 uninstall com.pearnote.app; adb -s e017a252 uninstall com.pearnote.app
-```
-
-💥 Restart adb
-```sh
-# gentle
-adb kill-server; adb start-server
-# hard
-taskkill /F /IM adb.exe 2>$null; Start-Sleep -Seconds 2; adb start-server
-```
-
-## 🪵 Logs
-Clear logs:
-```sh
-adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c
-```
-
-Log specific device only Warning and above:
-```sh
-adb -s 6ae4c054c2b8 logcat -c
-adb -s 6ae4c054c2b8 logcat *:W -d > logs/6ae4c054c2b8.log
-adb -s 6ae4c054c2b8 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/6ae4c054c2b8.log
-
-adb -s e017a252 logcat -c
-adb -s e017a252 logcat *:W -d > logs/e017a252.log
-adb -s e017a252 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/e017a252.log
-```
-
-Log specific app messages, for example in th app you have `console.log('DIAG:', msg)`
-```sh
-adb -s 6ae4c054c2b8 logcat -d | findstr "DIAG"
-adb -s e017a252 logcat -d | findstr "DIAG"
-```
-
-Single command to clear logs, get Warning and above, and filter "DIAG" messages in both devices:
-```sh
-adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c;
-adb -s e017a252 logcat -d > e017a252.log;adb -s 6ae4c054c2b8 logcat -d > 6ae4c054c2b8.log;adb -s 6ae4c054c2b8 logcat -d | findstr "DIAG";adb -s e017a252 logcat -d | findstr "DIAG"
-```
+MIT

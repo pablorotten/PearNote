@@ -1,12 +1,196 @@
 # Learnings from PearNote
 
-## Q: What does 🟢 Connected mean inside a list?
+- [Learnings from PearNote](#learnings-from-pearnote)
+  - [Useful commands](#useful-commands)
+    - [Devices](#devices)
+    - [Setup](#setup)
+    - [Development](#development)
+    - [Install on Specific Device](#install-on-specific-device)
+    - [Release APK](#release-apk)
+    - [Regenerate Native Project](#regenerate-native-project)
+    - [Uninstall](#uninstall)
+    - [ADB Utilities](#adb-utilities)
+    - [Logs](#logs)
+  - [Q\&A](#qa)
+    - [Q: What does 🟢 Connected mean inside a list?](#q-what-does--connected-mean-inside-a-list)
+    - [Q: How many states does the connection logic have?](#q-how-many-states-does-the-connection-logic-have)
+    - [Q: This "searching" is periodic? Does it re-search from time to time?](#q-this-searching-is-periodic-does-it-re-search-from-time-to-time)
+    - [Q: So it's like WebSocket? Bidirectional communication?](#q-so-its-like-websocket-bidirectional-communication)
+    - [Q: Does the loading spinner wait for peer sync?](#q-does-the-loading-spinner-wait-for-peer-sync)
+    - [Q: If all peers leave a list, is the data lost? Can a peer sync later?](#q-if-all-peers-leave-a-list-is-the-data-lost-can-a-peer-sync-later)
+    - [Q: Can't one device seed multiple lists at the same time?](#q-cant-one-device-seed-multiple-lists-at-the-same-time)
+    - [Q: What happens when peers desync? Can deletions get re-introduced by stale peers?](#q-what-happens-when-peers-desync-can-deletions-get-re-introduced-by-stale-peers)
+    - [Q: How does a developer need to think about this architecture?](#q-how-does-a-developer-need-to-think-about-this-architecture)
+    - [Q: How does Autopass change the architecture?](#q-how-does-autopass-change-the-architecture)
+    - [Q: Why did we switch from Hyperbee to Autopass?](#q-why-did-we-switch-from-hyperbee-to-autopass)
+    - [Q: What are the key differences between Hyperbee and Autopass?](#q-what-are-the-key-differences-between-hyperbee-and-autopass)
+    - [Q: How does Autopass pairing work?](#q-how-does-autopass-pairing-work)
+    - [Q: How do you rejoin a list after leaving?](#q-how-do-you-rejoin-a-list-after-leaving)
+    - [Q: What are the three modes in the backend?](#q-what-are-the-three-modes-in-the-backend)
+    - [Q: Why can't you join your own note with the invite code?](#q-why-cant-you-join-your-own-note-with-the-invite-code)
+    - [Q: What challenges did we face implementing Autopass?](#q-what-challenges-did-we-face-implementing-autopass)
+      - [Challenge 1: Storage path consistency](#challenge-1-storage-path-consistency)
+      - [Challenge 2: `pass.add()` value must be a string](#challenge-2-passadd-value-must-be-a-string)
+      - [Challenge 3: Corestore file lock after crash](#challenge-3-corestore-file-lock-after-crash)
+      - [Challenge 4: `pair.finished()` hangs forever](#challenge-4-pairfinished-hangs-forever)
+      - [Challenge 5: `process.exit()` crashes the app](#challenge-5-processexit-crashes-the-app)
+      - [Challenge 6: Logs not appearing in logcat](#challenge-6-logs-not-appearing-in-logcat)
+    - [Q: What's the final architecture?](#q-whats-the-final-architecture)
+    - [Q: Why doesn't pairing work on cellular (4G/5G)?](#q-why-doesnt-pairing-work-on-cellular-4g5g)
+      - [The problem](#the-problem)
+      - [Why rejoin works on cellular](#why-rejoin-works-on-cellular)
+      - [Current behavior](#current-behavior)
+      - [Workaround](#workaround)
+      - [Possible fixes](#possible-fixes)
+    - [Q: How is backend.mjs used? Who calls those functions?](#q-how-is-backendmjs-used-who-calls-those-functions)
+    - [Q: What is `rpc.request(RPC_REMOVE)` in useNote.ts?](#q-what-is-rpcrequestrpc_remove-in-usenotets)
+    - [Q: What are all the interactions between frontend and backend?](#q-what-are-all-the-interactions-between-frontend-and-backend)
+    - [Q: Can you show an example of the backend calling the frontend?](#q-can-you-show-an-example-of-the-backend-calling-the-frontend)
+    - [Q: What is `rpcInstance` on the frontend?](#q-what-is-rpcinstance-on-the-frontend)
+    - [Q: When is the RPC instance created? Is it always running?](#q-when-is-the-rpc-instance-created-is-it-always-running)
+    - [Q: What is the Worklet? Where does it run?](#q-what-is-the-worklet-where-does-it-run)
+    - [Q: Is the backend like an API layer between the Holepunch libraries and the frontend?](#q-is-the-backend-like-an-api-layer-between-the-holepunch-libraries-and-the-frontend)
+    - [Q: What is Corestore? What is the "file lock"?](#q-what-is-corestore-what-is-the-file-lock)
+    - [Q: What is the file lock?](#q-what-is-the-file-lock)
+    - [Q: What's the proper shutdown?](#q-whats-the-proper-shutdown)
+    - [Q: Is the lock a real problem in practice?](#q-is-the-lock-a-real-problem-in-practice)
+  - [Problems Found During Development](#problems-found-during-development)
+    - [`swarm.peers.length` — Map has no `.length`](#swarmpeerslength--map-has-no-length)
+    - [`process is not defined` — Bare runtime crash](#process-is-not-defined--bare-runtime-crash)
+    - [Guest misses connection event — handler registered too late](#guest-misses-connection-event--handler-registered-too-late)
+    - [Android bottom nav bar overlap](#android-bottom-nav-bar-overlap)
+    - [Stale experiment files cleanup](#stale-experiment-files-cleanup)
+    - [`pass.add()` value must be a string](#passadd-value-must-be-a-string)
+    - [`pair.finished()` hangs forever](#pairfinished-hangs-forever)
+    - [`process.exit()` crashes the app](#processexit-crashes-the-app)
+    - [Corestore file lock after crash](#corestore-file-lock-after-crash)
+    - [`swarm.peers` is a Map](#swarmpeers-is-a-map)
+    - [Misc build and tooling issues](#misc-build-and-tooling-issues)
+
+
+## Useful commands
+
+### Devices
+
+- 📱 Phone A: `6ae4c054c2b8`
+- 📱 Phone B: `e017a252`
+
+### Setup
+
+```sh
+npm install
+npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
+```
+
+### Development
+
+```sh
+npm run android
+```
+
+> [!WARNING]
+> `npm run android` builds a debug APK. The JS bundle is NOT inside the APK — it's downloaded live from Metro over USB. Changes to `app/` hot-reload automatically.
+>
+> `Unplug = Metro disappears → app can't fetch the JS bundle → crash`
+
+> [!NOTE]
+> If you change `backend/`, rebuild the bundle first:
+> ```sh
+> npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
+> ```
+
+### Install on Specific Device
+
+```sh
+# Phone B (e017a252)
+adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb -s e017a252 reverse tcp:8081 tcp:8081
+adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
+
+# Phone A (6ae4c054c2b8)
+adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081
+adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity
+
+# One-liner Phone B
+adb -s e017a252 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s e017a252 reverse tcp:8081 tcp:8081; adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
+
+# One-liner Phone A
+adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/debug/app-debug.apk; adb -s 6ae4c054c2b8 reverse tcp:8081 tcp:8081; adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity
+```
+
+### Release APK
+
+Generate, install and launch a standalone APK (no Metro needed):
+
+```sh
+npx expo run:android --variant release
+adb -s e017a252 install -r android/app/build/outputs/apk/release/app-release.apk
+adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
+```
+
+### Regenerate Native Project
+
+After changing icons, splash, or `app.json`:
+
+```sh
+npx expo prebuild && npm run android
+```
+
+### Uninstall
+
+```sh
+adb -s 6ae4c054c2b8 uninstall com.pearnote.app
+adb -s e017a252 uninstall com.pearnote.app
+
+# Both at once
+adb -s 6ae4c054c2b8 uninstall com.pearnote.app; adb -s e017a252 uninstall com.pearnote.app
+```
+
+### ADB Utilities
+
+```sh
+# Restart adb (gentle)
+adb kill-server; adb start-server
+
+# Restart adb (hard)
+taskkill /F /IM adb.exe 2>$null; Start-Sleep -Seconds 2; adb start-server
+```
+
+### Logs
+
+```sh
+# Clear logs on both devices
+adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c
+
+# Dump filtered logs (ReactNativeJS + Bare) to files
+adb -s 6ae4c054c2b8 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/6ae4c054c2b8.log
+adb -s e017a252 logcat -s "ReactNativeJS:D" "to.holepunch.bare.expo:D" "*:S" -d > logs/e017a252.log
+
+# Dump warnings and above
+adb -s 6ae4c054c2b8 logcat *:W -d > logs/6ae4c054c2b8.log
+adb -s e017a252 logcat *:W -d > logs/e017a252.log
+
+# Filter DIAG messages only
+adb -s 6ae4c054c2b8 logcat -d | findstr "DIAG"
+adb -s e017a252 logcat -d | findstr "DIAG"
+
+# All-in-one: clear, dump warnings, dump DIAG
+adb -s 6ae4c054c2b8 logcat -c; adb -s e017a252 logcat -c;
+adb -s e017a252 logcat -d > e017a252.log; adb -s 6ae4c054c2b8 logcat -d > 6ae4c054c2b8.log;
+adb -s 6ae4c054c2b8 logcat -d | findstr "DIAG"; adb -s e017a252 logcat -d | findstr "DIAG"
+```
+
+
+## Q&A
+
+### Q: What does 🟢 Connected mean inside a list?
 
 When the backend receives a Hyperswarm connection — `swarm.on('connection', ...)` fires, which sends `RPC_PEER_JOINED` to the UI.
 
 It means **at least one other peer is directly connected** via the P2P swarm. If you're alone in the list, it shows disconnected. If another phone is in the same list and the swarm connected, it turns green.
 
-## Q: How many states does the connection logic have?
+### Q: How many states does the connection logic have?
 
 After loading completes (spinner disappears), there are 2 states:
 
@@ -26,7 +210,7 @@ Loading → Disconnected (swarm searching in background) → Connected 🟢 (pee
                                                           → Disconnected (peer left)
 ```
 
-## Q: This "searching" is periodic? Does it re-search from time to time?
+### Q: This "searching" is periodic? Does it re-search from time to time?
 
 Hyperswarm uses a **DHT (distributed hash table)** under the hood. When you call `swarm.join()`, it:
 
@@ -37,13 +221,13 @@ The DHT announcements have a **time-to-live (TTL)**, so Hyperswarm automatically
 
 When a new peer joins the same topic later, the DHT notifies both sides and Hyperswarm creates a direct connection. No polling or re-joining needed — it's all event-driven.
 
-## Q: So it's like WebSocket? Bidirectional communication?
+### Q: So it's like WebSocket? Bidirectional communication?
 
 Exactly. Hyperswarm connections are **persistent TCP links** — both sides can send data anytime, like WebSocket. Once a peer connects, data flows both ways until someone disconnects.
 
 Unlike HTTP where you poll, the DHT announces your availability and peers connect when they see you. It's event-driven, not request-response.
 
-## Q: Does the loading spinner wait for peer sync?
+### Q: Does the loading spinner wait for peer sync?
 
 No. The spinner waits for the backend startup sequence:
 
@@ -55,7 +239,7 @@ It does **not** wait for peer sync. The spinner disappears as soon as local data
 
 Waiting for sync would be bad: if no peers are online, the user would be stuck on the spinner forever. Show local data instantly, sync arrives when peers connect.
 
-## Q: If all peers leave a list, is the data lost? Can a peer sync later?
+### Q: If all peers leave a list, is the data lost? Can a peer sync later?
 
 Yes, if you're the only peer in a list and you leave, your data is still saved **locally** on your device (in Corestore on the filesystem). It's not lost — it's just not reachable over the network.
 
@@ -65,7 +249,7 @@ When you re-enter the same list:
 
 The only way another peer can see your data is if **both of you are in the list at the same time**. If you have the data and the other peer doesn't, they sync from you when they connect.
 
-## Q: Can't one device seed multiple lists at the same time?
+### Q: Can't one device seed multiple lists at the same time?
 
 Technically yes. Each list is a separate `Worklet` instance (a Bare runtime process) with its own Corestore + Hyperswarm swarm. You could spawn multiple worklets in parallel and keep them running in the background.
 
@@ -84,7 +268,7 @@ At that scale you'd want a different architecture — a single daemon multiplexi
 
 For PearNote as a demo: sync happens only when two users are **both in the same list at the same time**. If one leaves, the list goes offline until they return.
 
-## Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
+### Q: What happens when peers desync? Can deletions get re-introduced by stale peers?
 
 Yes, this is a real problem in the current implementation. Scenario:
 
@@ -123,7 +307,7 @@ No — it's a design choice in this specific implementation. Here are ways to so
 
 The current code uses Hyperbee (key-value store built on Hypercore) and treats deletions as "remove the key" — losing the event history. Hypercore's append-only log naturally preserves every change, which is the right tool for this problem.
 
-## Q: How does a developer need to think about this architecture?
+### Q: How does a developer need to think about this architecture?
 
 Forget about servers. Think of each device as a node that holds its own piece of data.
 
@@ -153,7 +337,7 @@ Both devices run identical code. There's no client/server, no master/slave. Each
 
 This is the pure P2P trade-off: no servers to maintain, but no guarantees either.
 
-## Q: How does Autopass change the architecture?
+### Q: How does Autopass change the architecture?
 
 We replaced Hyperbee (key-value store) + custom broadcast messages with **Autopass**.
 
@@ -204,7 +388,7 @@ Autopass wraps **Autobase** (multi-writer Hypercore). Each peer writes to their 
 
 ---
 
-## Q: Why did we switch from Hyperbee to Autopass?
+### Q: Why did we switch from Hyperbee to Autopass?
 
 **The Problem:** With the original Hyperbee + Hyperswarm implementation, we had a critical sync bug:
 
@@ -221,7 +405,7 @@ The root cause: Hyperbee stores **current state** (key-value pairs), not **event
 
 **The Solution:** Autopass uses **Autobase** under the hood, which stores **events** (add/remove operations) in append-only Hypercores. Each peer has their own Hypercore, and Autobase merges all events deterministically. Since deletions are events too, they're never lost — replaying all events in order always produces the correct final state.
 
-## Q: What are the key differences between Hyperbee and Autopass?
+### Q: What are the key differences between Hyperbee and Autopass?
 
 | Aspect | Hyperbee (before) | Autopass (after) |
 |--------|------------------|------------------|
@@ -233,7 +417,7 @@ The root cause: Hyperbee stores **current state** (key-value pairs), not **event
 | **Invite codes** | Custom 4-digit note codes | Cryptographic z32 strings (BlindPairing) |
 | **Peer discovery** | Manual Hyperswarm topic join | BlindPairing handles authentication |
 
-## Q: How does Autopass pairing work?
+### Q: How does Autopass pairing work?
 
 Autopass uses **BlindPairing** for secure peer discovery:
 
@@ -257,7 +441,7 @@ After pairing:
 
 **Important:** `pair.finished()` requires the **host to be online**. If Device A terminates its worklet (leaves the list), Device B cannot pair. The invite code is for initial pairing only, not for reconnection.
 
-## Q: How do you rejoin a list after leaving?
+### Q: How do you rejoin a list after leaving?
 
 This was one of our biggest challenges. The key insight:
 
@@ -278,7 +462,7 @@ Session 2 (Rejoin):
 
 **The mistake we made initially:** We used a unique timestamp-based storage path for EVERY session. This meant each session created a NEW Autobase instead of loading the existing one. The fix was to save the `storageId` (folder name) and reuse it when rejoining.
 
-## Q: What are the three modes in the backend?
+### Q: What are the three modes in the backend?
 
 ```javascript
 // Args: [documentDirectory, mode, storageId?]
@@ -301,7 +485,7 @@ mode = 'rejoin'
   // Returns: storageId|invite
 ```
 
-## Q: Why can't you join your own note with the invite code?
+### Q: Why can't you join your own note with the invite code?
 
 If you create a note, leave (terminate worklet), then try to JOIN with your own invite code — it fails with timeout.
 
@@ -309,33 +493,33 @@ If you create a note, leave (terminate worklet), then try to JOIN with your own 
 
 **The fix:** Don't use `join` mode for your own lists. Use `rejoin` mode with the same storage path. The invite code is ONLY for other devices to join while you're hosting.
 
-## Q: What challenges did we face implementing Autopass?
+### Q: What challenges did we face implementing Autopass?
 
-### Challenge 1: Storage path consistency
+#### Challenge 1: Storage path consistency
 **Problem:** Using unique paths per session meant each session created a new Autobase.
 **Solution:** Save `storageId` (folder name) to history, reuse it for rejoin.
 
-### Challenge 2: `pass.add()` value must be a string
+#### Challenge 2: `pass.add()` value must be a string
 **Problem:** Passing arrays like `['item', title]` crashed with `uint must be positive`.
 **Solution:** `JSON.stringify()` the value, `JSON.parse()` when reading.
 
-### Challenge 3: Corestore file lock after crash
+#### Challenge 3: Corestore file lock after crash
 **Problem:** If the worklet crashed or was terminated abruptly, Corestore might leave locks.
 **Solution:** Each note uses its own storage folder. If corrupted, delete and recreate.
 
-### Challenge 4: `pair.finished()` hangs forever
+#### Challenge 4: `pair.finished()` hangs forever
 **Problem:** No built-in timeout — if host is offline, it hangs.
 **Solution:** Wrap with `Promise.race()` and a 30-second timeout.
 
-### Challenge 5: `process.exit()` crashes the app
+#### Challenge 5: `process.exit()` crashes the app
 **Problem:** Calling `process.exit()` in the worklet crashed the React Native app.
 **Solution:** Just call `pass.suspend()` and let the UI call `worklet.terminate()`.
 
-### Challenge 6: Logs not appearing in logcat
+#### Challenge 6: Logs not appearing in logcat
 **Problem:** Bare worklet's `console.log` didn't show in Android logcat with expected tags.
 **Solution:** Forward logs via RPC to React Native, which logs with `ReactNativeJS` tag.
 
-## Q: What's the final architecture?
+### Q: What's the final architecture?
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -384,9 +568,9 @@ If you create a note, leave (terminate worklet), then try to JOIN with your own 
 
 ---
 
-## Q: Why doesn't pairing work on cellular (4G/5G)?
+### Q: Why doesn't pairing work on cellular (4G/5G)?
 
-### The problem
+#### The problem
 
 BlindPairing requires a bidirectional DHT handshake between peers. Cellular networks (4G/5G) use **Carrier-Grade NAT (CGNAT)** which blocks inbound connections. The result:
 
@@ -396,11 +580,11 @@ BlindPairing requires a bidirectional DHT handshake between peers. Cellular netw
 
 This is because `Autopass.pair()` (the initial handshake) needs *both* peers to be reachable via the DHT. CGNAT on cellular prevents the inbound half of the handshake. It's not a timeout issue — the connection never establishes at all.
 
-### Why rejoin works on cellular
+#### Why rejoin works on cellular
 
 After the initial pairing, the base key is stored in Corestore. When rejoining, `new Autopass(store)` loads the existing base without needing a DHT handshake. Hyperswarm then connects via **outbound TCP** from the cellular side, which works fine because outbound connections traverse CGNAT without issues.
 
-### Current behavior
+#### Current behavior
 
 | Scenario | Outcome |
 |---|---|
@@ -410,11 +594,11 @@ After the initial pairing, the base key is stored in Corestore. When rejoining, 
 | Both on cellular (1st time) | Fails |
 | Both on cellular (rejoin) | Works |
 
-### Workaround
+#### Workaround
 
 Pair on WiFi first. After the initial pairing succeeds and the base key is stored in Corestore, switch back to cellular. Subsequent joins/rejoins will work.
 
-### Possible fixes
+#### Possible fixes
 
 1. **Relay server** — add a lightweight signaling server that relays the initial handshake. Both peers connect outbound to the relay, which forwards messages between them. This breaks pure P2P but enables cellular pairing.
 
@@ -426,7 +610,7 @@ Pair on WiFi first. After the initial pairing succeeds and the base key is store
 
 ---
 
-## Q: How is backend.mjs used? Who calls those functions?
+### Q: How is backend.mjs used? Who calls those functions?
 
 `backend.mjs` is a **Bare JavaScript module** — it runs in a separate JS engine (Bare), not in React Native. It is **not imported directly** by any React code. Instead:
 
@@ -447,7 +631,7 @@ Pair on WiFi first. After the initial pairing succeeds and the base key is store
 
 So `backend.mjs` is called by the Bare runtime when the Worklet starts. It's never called directly from React code.
 
-## Q: What is `rpc.request(RPC_REMOVE)` in useNote.ts?
+### Q: What is `rpc.request(RPC_REMOVE)` in useNote.ts?
 
 This is one of several **frontend→backend RPC calls**. The full set is defined in `backend.mjs`:
 
@@ -473,7 +657,7 @@ The full round trip for a remove:
 
 The UI updates on step 6, not step 2. `handleRemoveItem` fires and forgets.
 
-## Q: What are all the interactions between frontend and backend?
+### Q: What are all the interactions between frontend and backend?
 
 There are two sets of RPC commands — one for each direction:
 
@@ -497,7 +681,7 @@ There are two sets of RPC commands — one for each direction:
 | `RPC_DIAG` | `console.log()` — diagnostic logging |
 | `RPC_ERROR` | `Alert.alert()` — shows error to user |
 
-## Q: Can you show an example of the backend calling the frontend?
+### Q: Can you show an example of the backend calling the frontend?
 
 `backend.mjs:104` — when a note is created or rejoined, the backend pushes the invite code:
 
@@ -546,7 +730,7 @@ if (req.command === RPC_RESET) {
 
 Same pattern every time: the backend calls `rpc.request(COMMAND).send(data)`, and the frontend has a matching `if (req.command === COMMAND)` handler.
 
-## Q: What is `rpcInstance` on the frontend?
+### Q: What is `rpcInstance` on the frontend?
 
 ```ts
 const rpcInstance = new RPC(IPC, (req) => {
@@ -565,7 +749,7 @@ rpcInstance.request(RPC_SET_NAME).send(name)
 
 It's saved as `rpc` state (`setRpc(rpcInstance)`) so other functions like `handleAddItem` and `handleRemoveItem` can use it to send commands later.
 
-## Q: When is the RPC instance created? Is it always running?
+### Q: When is the RPC instance created? Is it always running?
 
 Not on app open. The RPC instance is created **only when `startWorklet()` runs**, which happens when you tap "Create Note" or "Join Note". Before that, there's no backend at all — no Worklet, no RPC, no network connections.
 
@@ -585,7 +769,7 @@ Once started, both sides can initiate communication freely:
 
 **Can it receive requests from the internet?** Yes, but through the Worklet, not through the frontend's RPC. The backend's `autopass` library uses Hyperswarm (P2P networking), so when another peer adds an item on their phone, `pass.on('update')` fires in the Worklet, which pushes the change to the frontend via `RPC_RESET`. The frontend never talks to the network directly — all P2P communication stays inside the Worklet thread.
 
-## Q: What is the Worklet? Where does it run?
+### Q: What is the Worklet? Where does it run?
 
 The Worklet is a **separate JavaScript engine** (`react-native-bare-kit`) that runs on a **different thread** inside your app process — it's not the main React Native JS thread, and not the native UI thread.
 
@@ -621,7 +805,7 @@ The Worklet thread is a full Bare JavaScript runtime that runs `backend.mjs` plu
 
 The React Native thread only imports the compiled bundle (`app.bundle.mjs`) as a string and hands it to the Worklet. It never runs those Holepunch libraries itself.
 
-## Q: Is the backend like an API layer between the Holepunch libraries and the frontend?
+### Q: Is the backend like an API layer between the Holepunch libraries and the frontend?
 
 Yes. The backend is the API gateway — it translates between two worlds:
 
@@ -639,7 +823,7 @@ The frontend never imports `autopass`, `corestore`, or `hyperswarm`. It only tal
 
 ---
 
-## Q: What is Corestore? What is the "file lock"?
+### Q: What is Corestore? What is the "file lock"?
 
 Corestore is the **local database** on your phone's filesystem. Every note creates its own storage folder:
 
@@ -655,7 +839,7 @@ It stores:
 - The **Hypercore append-only logs** (all add/remove events)
 - The **current data** (items you see in the list)
 
-### What is the file lock?
+### Q: What is the file lock?
 
 When the Worklet opens a Corestore, it places a **lock file** in that folder — like an "occupied" sign on a bathroom. This prevents two processes from writing to the same database at the same time, which would corrupt the data.
 
@@ -663,7 +847,7 @@ When you **leave** a note normally (tap ‹ back button), `handleLeave()` calls 
 
 Next time you try to open that same note, Corestore sees the stale lock and refuses, thinking another process is still using it.
 
-### What's the proper shutdown?
+### Q: What's the proper shutdown?
 
 The AGENTS.md describes the correct sequence but it's never implemented:
 
@@ -675,8 +859,124 @@ process.exit(0)       // then exit
 
 Currently, `worklet.terminate()` skips this entirely — the lock is abandoned.
 
-### Is the lock a real problem in practice?
+### Q: Is the lock a real problem in practice?
 
 In the current app, every session uses a **unique timestamp-based folder** (`PearNote/mqham920`, `PearNote/abc123`, etc.). So a stale lock in one folder doesn't affect a different session. The lock only matters if you try to **rejoin** the same note later — if the previous session left a stale lock, the rejoin could fail.
 
 This is a known issue tracked in the AGENTS.md but not yet fixed. Each session creates a new folder, which avoids the lock problem but also means old session folders accumulate on disk.
+
+---
+
+## Problems Found During Development
+
+### `swarm.peers.length` — Map has no `.length`
+
+**Problem**: `swarm.peers` is a `Map`, not an array. Accessing `.length` returned `undefined` and in some cases caused the connection handler to throw silently, preventing `peers.add(conn)` from executing.
+
+**Fix**: Replaced `swarm.peers.length` with `peers.size` (using our own `Set` to track connections). Also wrapped the entire connection handler in `try/catch` and moved `peers.add(conn)` to the first line of the handler so the peer is always tracked even if later code fails.
+
+---
+
+### `process is not defined` — Bare runtime crash
+
+**Problem**: After rebuilding the bundle with `bare-pack`, the backend worklet crashed on startup with `Uncaught ReferenceError: process is not defined`. The Bare V8 runtime does not provide a `process` global like Node.js does. A transitive dependency (in the Hyperbee/Corestore chain) references `process` at the top level without a `typeof` guard.
+
+**Symptoms**: Both phones showed the same error in `adb logcat`. The app had worked previously because the old cached `app.bundle.mjs` was from a build that predated the problematic dependency version.
+
+**Fix**: Added `import process from 'bare-process'` and `globalThis.process = process` at the top of `backend/backend.mjs`, before all other imports. The `bare-process` package (already a transitive dependency) provides a Node.js-compatible `process` object for Bare.
+
+```js
+import process from 'bare-process'
+globalThis.process = process
+```
+
+---
+
+### Guest misses connection event — handler registered too late
+
+**Problem**: The guest phone showed "SWARM connection event FIRED" but never "Connection established". The guest's `peers` Set stayed empty, so `broadcast()` sent to 0 peers. One-way sync: host saw the guest, but guest didn't see the host.
+
+**Root cause**: The main `swarm.on('connection')` handler was registered **after** `await discovery.flushed()`. On the guest, Hyperswarm discovers the host during the DHT lookup and initiates a TCP connection. The `connection` event can fire **before** `flushed()` resolves — at which point the handler isn't registered yet. The host wasn't affected because its connection event arrives later (it's the server side accepting the inbound connection).
+
+**Timeline from guest logs**:
+```
+22:33:24.347  SWARM connection event FIRED    ← event fires (only early handler catches it)
+22:33:25.342  Swarm join flushed              ← flushed() resolves
+             (main handler registered here)   ← too late, event already gone
+```
+
+**Fix**: Moved `const peers = new Set()` and the entire `swarm.on('connection', ...)` handler to **before** `swarm.join()`, so the handler is always registered before any connection can possibly arrive.
+
+```
+Before:  swarm.join() → await flushed() → register handler  (guest misses event)
+After:   register handler → swarm.join() → await flushed()   (always catches event)
+```
+
+---
+
+### Android bottom nav bar overlap
+
+**Problem**: The FAB (floating action button) and list items were hidden behind the Android system navigation bar.
+
+**Fix**: Added `paddingBottom: 60` to the main container on Android, and positioned the FAB at `bottom: 70`.
+
+---
+
+### Stale experiment files cleanup
+
+**Problem**: Old experiment files (`app/index-p2p.tsx`, `backend/backend-p2p.mjs`) and leftover files from the password manager tutorial were cluttering the repo.
+
+**Fix**: Removed all stale experiment files, untracked `crash.log` from git.
+
+---
+
+### `pass.add()` value must be a string
+
+**Problem**: Passing arrays like `['item', title]` crashed with `uint must be positive`.
+
+**Fix**: `JSON.stringify()` the value, `JSON.parse()` when reading.
+
+---
+
+### `pair.finished()` hangs forever
+
+**Problem**: No built-in timeout — if host is offline, it hangs.
+
+**Fix**: Wrap with `Promise.race()` and a 30-second timeout.
+
+---
+
+### `process.exit()` crashes the app
+
+**Problem**: Calling `process.exit()` in the worklet crashed the React Native app.
+
+**Fix**: Just call `pass.suspend()` and let the UI call `worklet.terminate()`.
+
+---
+
+### Corestore file lock after crash
+
+**Problem**: If the worklet crashed or was terminated abruptly, Corestore might leave locks. Rejoining the same note fails.
+
+**Fix**: Each note uses its own storage folder. If corrupted, delete and recreate. Proper shutdown needs `pass.suspend()` + `goodbye.run()` before exit (not yet implemented).
+
+---
+
+### `swarm.peers` is a Map
+
+**Problem**: `swarm.peers` is a `Map`, not an array. Accessing `.length` returned `undefined`.
+
+**Fix**: Used our own `Set` to track connections and `peers.size` for count.
+
+---
+
+### Misc build and tooling issues
+
+| Issue | Fix |
+|-------|-----|
+| `bare-pack --target` flag removed | Use `--host` instead (renamed in bare-pack v2) |
+| `documentDirectory` import moved in Expo SDK 55 | Import from `'expo-file-system/legacy'` |
+| `android/local.properties` missing | Must be created manually with `sdk.dir=...` |
+| ADB version conflicts (MEmu emulator) | Copy SDK `adb.exe` over MEmu's; reboot if zombie process |
+| Autopass version mismatch | Both sides must use same major version; project uses `^3.4.1` |
+| `bareKit.terminate()` kills worklet abruptly | Lock never released — need `pass.suspend()` first |
