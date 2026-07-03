@@ -68,6 +68,7 @@ pearnote/mqs4hqur/
 Our code:    pass.add('item:1718901234567', '["item","Milk"]')
                 ↓
 Autopass creates an Autobase entry pointing to the local writer's Hypercore
+Key is the `Date.now()` timestamp `1718901234567`. Value is a JSON string of the entry data `["item","Milk"]`.
                 ↓
 Hypercore appends a node: { data: ..., seq: 0, merkle: ... }
     ├─ Updates Merkle tree (adds node0 as leaf)
@@ -81,10 +82,12 @@ RocksDB flushes to .log / .sst files
 **Merkle tree after 1 entry:**
 ```
 Level 0:    [node0]  ← signed root
-              "Milk"
+            "Milk"
 ```
 
-The root hash and its signature are stored alongside the entries in RocksDB. Individual entries are not separately signed — the Merkle tree lets you verify any entry against the signed root.
+* The root hash and its signature are stored in RocksDB. 
+* Individual entries are not separately signed.
+* Merkle tree lets you verify any entry against the signed root.
 
 ---
 
