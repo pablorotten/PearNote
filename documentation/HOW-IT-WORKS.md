@@ -25,6 +25,9 @@ RocksDB      ← embedded key-value engine, persists bytes to .sst/.log files
 | **Hypercore** | Append-only log + Merkle tree + key pair signing | ❌ No — Autopass/Autobase use it internally |
 | **Corestore** | Creates/manages the on-disk storage for a collection of Hypercores | ✅ One line: `new Corestore(path)` — then passed to Autopass |
 | **RocksDB** | Dumb key-value storage engine — writes bytes to `.sst`/`.log` files | ❌ No — Corestore talks to it internally |
+| **Hyperswarm** | P2P networking layer — connects peers via DHT, replicates Hypercores | ❌ No — Autopass starts it internally |
+| **Hyperbee** | Key-value index built on top of Autobase — lets you query the merged log | ❌ No — Autopass uses it internally |
+| **BlindPairing** | Invite code system — lets a peer discover another peer via DHT | ❌ No — Autopass uses it internally |
 
 ---
 
@@ -37,37 +40,17 @@ The actual init order in our code (`backend.mjs:84-105`):
 ```js
 const sessionId = Date.now().toString(36)        // e.g. "mqs4hqur"
 const storagePath = join(baseDir, 'pearnote', sessionId)
-const store = new Corestore(storagePath)         // 1. Creates folder + initializes RocksDB
-pass = new Autopass(store)                       // 2. Wraps store — internally creates Autobase + Hypercore(s)
-await pass.ready()                               // 3. Opens Hypercore logs, starts Hyperswarm, generates key pair
-const invite = await pass.createInvite()         // 4. BlindPairing invite for sharing
+const store = new Corestore(storagePath)  // 1. Corestore creates folder + initializes storage engine
+pass = new Autopass(store)                // 2. Autopass internally creates Autobase + Hypercore(s)
+await pass.ready()                        // 3. Opens Hypercore logs, starts Hyperswarm, generates and stores key pair
+const invite = await pass.createInvite()  // 4. Autopass generates a invite token via BlindPairing and stores it in Hypercore
 ```
-
-**Key corrections to the original draft:**
-
-Public key = invite string | ❌ The invite is a BlindPairing token, not the public key |
-The Hypercore's public/private key pair is stored **inside** RocksDB, not in the folder name or a separate file.
-
-
-**Folder structure that results:**
-
-```
-pearnote/mqs4hqur/
-├── CORESTORE           ← Corestore metadata (platform, inode, created timestamp)
-└── db/                 ← RocksDB storage directory
-    ├── 000009.sst      ← SST table (compacted data)
-    ├── 000010.log      ← WAL (recent writes not yet flushed)
-    ├── 000009.blob     ← blob file (larg
-```
-
 ---
 
 ### 1. First entry ("Milk")
 
-```
-Our code:    pass.add('item:1718901234567', '["item","Milk"]')
-                ↓
-Autopass creates an Autobase entry pointing to the local writer's Hypercore
+```js
+pass.add('item:1718901234567', '["item","Milk"]') // Autopass creates an Autobase entry pointing to the local writer's Hypercore
 Key is the `Date.now()` timestamp `1718901234567`. Value is a JSON string of the entry data `["item","Milk"]`.
                 ↓
 Hypercore appends a node: { data: ..., seq: 0, merkle: ... }
@@ -148,7 +131,7 @@ Hypercore appends node3
 **Merkle tree:**
 ```
 Level 2:           [       root       ]  ← signed root
-                   /                    \
+                   /                  \
 Level 1:     [node0+1]            [node2+3]
              /        \           /        \
 Level 0: [node0]    [node1]   [node2]    [node3]
@@ -158,6 +141,90 @@ Level 0: [node0]    [node1]   [node2]    [node3]
 The Merkle tree forms a balanced binary tree as entries are appended. The root hash is signed, and any leaf can be verified against it.
 
 ---
+
+### 5. Another user joins the note
+
+From **my point of view:**
+
+```
+I share the invite code (BlindPairing token) with Peer B.
+Peer B enters the code on their phone.
+                ↓
+My Hyperswarm was already listening on the DHT (since step 0).
+Peer B's BlindPairing finds me via the invite code.
+                ↓
+BlindPairing handshake completes on both sides.
+                ↓
+My Autopass adds Peer B as a writer via Autobase:
+    this.addWriter({ key: peerBKey, name: null, readOnly: false })
+                ↓
+Hyperswarm starts replicating Peer B's Hypercore to my phone.
+Now my Corestore stores BOTH Hypercores:
+
+    My Corestore on disk:
+    ├── Hypercore A (mine)
+    │   └── [Milk] [Eggs] [Bread]
+    └── Hypercore B (Peer B)  ← new, stored on MY phone
+        └── (empty, Peer B hasn't added anything yet)
+                ↓
+Autobase reads both Hypercores and rebuilds the Hyperbee index
+(persisted to disk via Corestore → RocksDB).
+                ↓
+pass.on('update') fires on my side.
+notifyUI() sends the merged list to the frontend.
+My screen still shows [Milk, Eggs, Bread] (nothing changed yet).
+```
+
+Key takeaway: **Peer B's Hypercore is now stored on my phone's disk.** I have a full local copy of their log, even if they haven't added anything yet. This is what makes offline and rejoin work — all data is local.
+
+---
+
+### 6. Another user adds an element
+
+Peer B adds "Butter" to the list. From **my point of view:**
+
+```
+Peer B calls pass.add('item:ts', '["item","Butter"]')
+    ↓ (on Peer B's phone)
+Hyperswarm replicates Peer B's new Hypercore node to my phone.
+    ↓
+My Corestore stores the new entry in Peer B's Hypercore:
+
+    My Corestore on disk:
+    ├── Hypercore A (mine):   [Milk] [Eggs] [Bread]
+    └── Hypercore B (Peer B): [Butter]  ← new, persisted on MY disk
+    ↓
+Autobase detects the new node in Peer B's Hypercore.
+Runs _apply() which merges the entry into the Hyperbee index.
+    ↓
+The Hyperbee index (cached merged result) is now:
+    { key: "item:123", value: ["item","Milk"] }
+    { key: "item:456", value: ["item","Eggs"] }
+    { key: "item:789", value: ["item","Bread"] }
+    { key: "item:012", value: ["item","Butter"] }  ← new
+    ↓
+pass.on('update') fires
+    ↓
+notifyUI() → RPC_RESET → setItems() → screen re-renders
+    ↓
+I see: [Milk, Eggs, Bread, Butter]
+```
+
+I never fetched "Butter" from a server. It arrived via Hyperswarm replication of Peer B's Hypercore, was saved to my local RocksDB, and Autobase merged it into my view.
+
+```
+My perspective:
+  My Hypercore:                [Milk] [Eggs] [Bread]
+  Peer B's Hypercore (local):  [Butter]
+                  ↓
+  Autobase merges on my phone: [Milk] [Eggs] [Bread] [Butter]
+                  ↓
+  pass.list() returns:         [Milk, Eggs, Bread, Butter]
+```
+
+If I close the app, enable airplane mode, and reopen — I still see all 4 items. Because **both Hypercores are saved on my phone's disk**. Autobase reads them, rebuilds the Hyperbee index, and I'm back where I was.
+
+--- 
 
 ### Summary of corrections to entry workflow
 
@@ -281,17 +348,28 @@ Remote peer's Autopass receives update → merges via Autobase
 pass.on('update') → notifyUI() → RPC_RESET → setItems() → screen re-renders
 ```
 
-## Multi-writer scenario
+## Multi-writer scenario summary
 
-Two peers, two Hypercores, one Autobase:
+Two peers, two Hypercores, one Autobase — all on **my phone's disk**:
 
 ```
-Peer A's Hypercore:   [Milk]  [Eggs]  [Bread]
-Peer B's Hypercore:   [Butter]  [Cheese]
-                          ↓
-Autobase merges:      [Milk] [Eggs] [Butter] [Bread] [Cheese]  ← deterministic order via Autobase clock
-                          ↓
-pass.list() returns:  [Milk, Eggs, Butter, Bread, Cheese]
+My phone's Corestore (local disk):
+├── Hypercore A (mine):   [add Milk] [add Eggs] [add Bread]
+└── Hypercore B (Peer B): [add Butter] [add Cheese]
+                            ↓
+Autobase reads both, merges deterministically via logical clock
+                            ↓
+Autopass reads Hyperbee index → pass.list() → ["Milk", "Eggs", "Butter", "Bread", "Cheese"]
 ```
 
-Corestore stores both Hypercores in the same RocksDB store. Autobase is the algorithm that interleaves them. Autopass gives us `pass.list()` which returns the merged result.
+No network needed to see the merged result. Everything is local.
+
+
+## Most interesting component
+
+Hypercore is the most impressive to me. It's deceptively simple — an append-only log — but the Merkle tree design gives it superpowers:
+- Sparse sync: verify one entry without downloading the entire log. On mobile, this is huge — you don't download 10 years of history to see today's note.
+- Cryptographic identity: the public key is the log. You can verify every entry against the first root hash.
+- Replication protocol: two peers can figure out exactly which nodes the other is missing and sync only those.
+Everything else (Autobase, Autopass, Hyperbee) is built on top of this single primitive. It's the foundation that makes the entire stack work.
+Autobase is a close second — solving multi-writer CRDT merge deterministically is a genuinely hard problem, and Autobase's approach (logical clocks + append-only forks) is elegant.

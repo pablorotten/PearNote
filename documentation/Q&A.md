@@ -43,6 +43,7 @@
   - [Q: What is the file lock?](#q-what-is-the-file-lock)
   - [Q: What's the proper shutdown?](#q-whats-the-proper-shutdown)
   - [Q: Is the lock a real problem in practice?](#q-is-the-lock-a-real-problem-in-practice)
+  - [Q: Where is the data actually stored?](#q-where-is-the-data-actually-stored)
   - [Problems Found During Development](#problems-found-during-development)
   - [`swarm.peers.length` — Map has no `.length`](#swarmpeerslength--map-has-no-length)
   - [`process is not defined` — Bare runtime crash](#process-is-not-defined--bare-runtime-crash)
@@ -677,6 +678,30 @@ The Worklet thread is a full Bare JavaScript runtime that runs `backend.mjs` plu
 
 The React Native thread only imports the compiled bundle (`app.bundle.mjs`) as a string and hands it to the Worklet. It never runs those Holepunch libraries itself.
 
+## Q: Why did Holepunch create Bare instead of using existing solutions?
+
+Existing options all had problems for P2P mobile apps:
+
+| Option | Problem |
+|---|---|
+| **Node.js** | Can't run on Android/iOS natively |
+| **Node.js Mobile** | Abandoned, shipped a huge Node.js binary (~50MB+) |
+| **React Native's JS thread** | Tied to UI lifecycle — blocks rendering if you run persistent networking |
+| **Hermes** (RN's engine) | Optimized for rendering, not I/O or native addons |
+| **JavaScriptCore / V8 standalone** | Just engines — no OS integration (no filesystem, sockets, threads) |
+
+Bare is a purpose-built minimal JavaScript runtime designed for:
+
+- **Running C++ native addons** — Hypercore, Corestore, Hyperswarm are all native C++ modules that need specific bindings
+- **Raw sockets and threading** — needed for P2P networking (DHT, TCP, UDP hole-punching)
+- **Embeddability** — designed to run inside another app (React Native) via `react-native-bare-kit`
+- **Worklet isolation** — first-class support for spawning isolated threads with built-in IPC (`bare-rpc`)
+- **Small footprint** — includes only the I/O primitives the Holepunch stack needs, not a full Node.js
+
+So Bare is the runtime that makes it possible to run the complete P2P stack on mobile. Without it, PearNote couldn't exist on a phone.
+
+---
+
 ## Q: Is the backend like an API layer between the Holepunch libraries and the frontend?
 
 Yes. The backend is the API gateway — it translates between two worlds:
@@ -736,6 +761,33 @@ Currently, `worklet.terminate()` skips this entirely — the lock is abandoned.
 In the current app, every session uses a **unique timestamp-based folder** (`PearNote/mqham920`, `PearNote/abc123`, etc.). So a stale lock in one folder doesn't affect a different session. The lock only matters if you try to **rejoin** the same note later — if the previous session left a stale lock, the rejoin could fail.
 
 This is a known issue tracked in the AGENTS.md but not yet fixed. Each session creates a new folder, which avoids the lock problem but also means old session folders accumulate on disk.
+
+
+## Q: Where is the data actually stored?
+
+Key insight: **where we conceptually store data is not the same as where the bytes land.**
+
+| Layer | Role |
+|---|---|
+| `pass.add(key, val)` | **Conceptual** — we're storing in the Autopass key-value store |
+| `this.base.append(...)` | **Conceptual** — we're appending to the Autobase log |
+| `hypercore.append(...)` | **Conceptual** — we're appending to a Hypercore log |
+| `corestore.write(key, val)` | **Bridge** — Corestore maps Hypercore ops to a storage engine |
+| `rocksdb.put(key, val)` | **Physical** — bytes written to `.sst` / `.log` files |
+
+Every write goes through the full call chain. Example with `createInvite()`:
+
+```
+pass.createInvite()            ← Autopass (what we call)
+    → this.base.append()       ← Autobase (conceptual log)
+        → hypercore.append()   ← Hypercore (conceptual log)
+            → corestore.write() ← Corestore (bridge API)
+                → rocksdb.put() ← implementation detail (could be anything)
+```
+
+RocksDB is just Corestore's **current storage backend**. It could be swapped for SQLite, LevelDB, or a plain file without changing anything above the Corestore line. The whole stack treats storage as an abstraction — you never write "to RocksDB", you write "to Autopass" and bytes happen to end up in RocksDB.
+
+**When in doubt, say "we store in Hypercore / Autobase" — that's the conceptual layer. RocksDB is the mechanic.**
 
 ---
 
@@ -852,3 +904,5 @@ After:   register handler → swarm.join() → await flushed()   (always catches
 | ADB version conflicts (MEmu emulator) | Copy SDK `adb.exe` over MEmu's; reboot if zombie process |
 | Autopass version mismatch | Both sides must use same major version; project uses `^3.4.1` |
 | `bareKit.terminate()` kills worklet abruptly | Lock never released — need `pass.suspend()` first |
+
+
