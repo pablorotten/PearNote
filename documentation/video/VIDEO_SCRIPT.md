@@ -25,10 +25,6 @@
 
 ## Internal architecture
 
-But how does it work?
-
-### The infrastructure
-
 We mentioned before that this is a zero-infrastructure app without server.
 
 > [!NOTE] Show again the transformation fro
@@ -51,24 +47,7 @@ Introducing Holepunch's Bare.
 
 Bare is the worklet. It's a minimal JavaScript thread running the backend code in the background. This worklet runs the backend logic that normally goes into a server instance. But in this case runs locally in our phone.
 
-> [!NOTE] Animation of the phien running 2 threads, one with he main app and the other witht the backend code `backend.msj`
-
-### Autopass
-
-In the backend, I'm mainly using **Autopass**. This is the *porcelain*. It's a library that makes it easy to create and manage P2P connections. 
-
-> [!NOTE] Autopass has no official icon. Create one yourself
-
-**Autopass** bundles Autobase, Hyperswarm, Corestore and BlindPairing.
-
-> [!NOTE] Show Autopass wrapping all those libraries (whitch doesn't have icon so I have to create a lot)
-
-With Autopass, I could write the whole backend of this app in a small script of 200 lines of code.
-
-
-> [!NOTE] Show Autopass github
-> 
-This is what happens behind the courtains: 
+> [!NOTE] Animation of the phone running 2 threads, one with he main app and the other with the backend code `backend.msj`
 
 ### Hyperstore + Corestore
 
@@ -80,10 +59,38 @@ We have just created a new note. But where is it stored?
 const storagePath = join(baseDir, 'pearnote', sessionId)
 const store = new Corestore(storagePath) 
 ```
-It creates a new folder and starts a new `Corestore` there.
+* Build a new folder 
+* Creates a new `Corestore` instance there.
 
+> [!NOTE] Show [Corestore](https://docs.pears.com/reference/helpers/corestore/) page
 
+> Corestore is a Hypercore factory that makes it easier to manage large collections of named Hypercores.
 
+* But, what is **Hypercore**?
+* Hypercore is a secure, distributed append-only log.
 
+So we have just created our DATABASE using a log-like format. Here we will store all our notes and keep track of the whole history.
+
+### Autopass
+
+```js
+pass = new Autopass(store)
+```
+
+**Autopass** is the *porcelain*. It's a facade library that makes it easy to create and manage P2P connections. 
+
+> [!NOTE] Autopass has no official icon. Create one yourself
+
+**Autopass** bundles Autobase, Hyperswarm, Corestore and BlindPairing.
+
+> [!NOTE] Show Autopass wrapping all those libraries (whitch doesn't have icon so I have to create a lot)
+
+With Autopass, I could write the whole backend of this app in a small script of 200 lines of code.
+
+> [!NOTE] Show Autopass github
+
+### Writting an entry in a note
+
+We have our backend (Bare) our database (Corestore + Hyperstore) and our facade (Autopass) to handle the P2P part
 
 
