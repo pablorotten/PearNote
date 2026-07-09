@@ -16,12 +16,13 @@
   * The app is fully decentralized
   > [!NOTE] Show an animation of the client-server architecture transforming into into a P2P architecture
 * Tools overview:
-  * Holepunch stack
+  * Bare
   * Autopass
   * Corestore
   * Hypercore
+  * Autobase
+  * 
   * Hyperswarm
-  * Bare
 
 ## Internal architecture
 
@@ -89,8 +90,20 @@ With Autopass, I could write the whole backend of this app in a small script of 
 
 > [!NOTE] Show Autopass github
 
-### Writting an entry in a note
+### Invite code
 
-We have our backend (Bare) our database (Corestore + Hyperstore) and our facade (Autopass) to handle the P2P part
+> [!NOTE] Show in the app the invite code and generated QR code
 
+First thing Autopass do is to generate an invite code
+
+```js
+const invite = await pass.createInvite()
+```
+
+Now I can share this note with any peer
+
+
+### Add an entry
+
+> [!NOTE] Add an entry in a note in the app
 
