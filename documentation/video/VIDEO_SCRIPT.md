@@ -21,7 +21,7 @@
   * Corestore
   * Hypercore
   * Autobase
-  * 
+  * BlindPairing
   * Hyperswarm
 
 ## Internal architecture
@@ -107,3 +107,26 @@ Now I can share this note with any peer
 
 > [!NOTE] Add an entry in a note in the app
 
+
+### Autobase
+
+[Autobase](https://docs.pears.com/reference/building-blocks/autobase/) it's the responsible of writing into the local Hypercores
+
+```js
+await pass.add(key, JSON.stringify(['item', title]))
+```
+* Autopass receives a `@autopass/put` request
+* Autopass calls Autobase to append new entry `base.append()`
+* Autobase appends the item in my local Hypercore (the log-like-DB)
+* Autobase emits an `update` event adn Autopass forward it
+```js
+pass.on('update', () => { notifyUI() })
+```
+* Backend cathes it and updates the frontend `notifyUI()`
+
+So far, `Autobase` job it's trivial. Only 1 peer writing and reading --> 1 single hypercore --> 1 single source of truth
+
+But what if I start sharing my note with other peers and they start adding and deleting items? How will the syncronization work? What if 3 peers edit the same note offline and then syncronize? Will the note look the same in all the peers phones?
+
+
+### 
