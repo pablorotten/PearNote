@@ -373,3 +373,15 @@ Hypercore is the most impressive to me. It's deceptively simple — an append-on
 - Replication protocol: two peers can figure out exactly which nodes the other is missing and sync only those.
 Everything else (Autobase, Autopass, Hyperbee) is built on top of this single primitive. It's the foundation that makes the entire stack work.
 Autobase is a close second — solving multi-writer CRDT merge deterministically is a genuinely hard problem, and Autobase's approach (logical clocks + append-only forks) is elegant.
+
+
+### Claude opinion:
+
+Autobase is solving a problem that has been an open research problem in distributed systems for decades: how do you get multiple independent writers to agree on a consistent order of events, with no central coordinator, including across offline periods?
+What makes it genuinely impressive:
+- It implements a causal DAG linearization algorithm that converges deterministically across all peers
+- The ordering can rewind and replay as new causal information arrives — existing entries get reordered on the fly without corrupting state
+- It uses a quorum-based checkpointing system so peers that are far behind can fast-forward without replaying the entire history
+- All of this happens with zero servers and zero coordination messages beyond the data itself
+Hypercore is the foundation. Autobase is the hard part. Autopass is just Autobase with a nice API on top.
+If you want a line for the video: "Hypercore stores the data. Autobase is the PhD dissertation that makes multi-peer sync actually work."
