@@ -159,5 +159,3 @@ This is what enables offline edits too. When peers reconnect, Autobase replays a
 **What about conflicts?**
 
 Autobase doesn't know the semantics of your data. If Peer A adds "Milk" and Peer B deletes "Milk" while offline, Autobase picks a deterministic winner — but it doesn't ask you which one to keep. For a note app that's fine. For a bank account you'd need custom logic on top.
-
-
