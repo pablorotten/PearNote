@@ -2,20 +2,24 @@
 
 ## App demo
 
-* Show the app in action with 2 and 3 phones:
-  * Creata note
-  * Share it
-  * Add/Remove items
-* Ask: Why is this so special? It's just a collaborative sticky note app? There're millions of them in the market
-  > [!NOTE] Show screenshots of other notes apps 
+> [!NOTE] Show the app in action with 2 and 3 phones:
+>  * Creata note
+>  * Share it
+>  * Add/Remove items
 
-## Client-server vs P2P
+* What if two phones could share a list in real-time, with no accounts, no cloud and no server? 
+* Just two phones, talking directly to each other. 
+* This is what PearNote is! a zero-infrastructure collaborative app!!
 
-* This is a zero-infrastructure collaborative app!!
-> [!NOTE] Show how a classic client-server architecture looks
-* There's no centralized and costly server or cloud service.
-> [!NOTE] Show a big fat expensive and exhausting server and then break the diagram and transform it into a P2P architecture
-* The app is fully decentralized
+## So... what makes it different?
+
+> [!NOTE] Show screencasts of other notes apps 
+
+* It's just another collaborative sticky note app right? There're millions of them in the market
+
+* And they all work the same. You create an account, a central server handles everything and keeps track of everything you and the people you share the note with do.
+
+* PearNote is different. There's no account. There's no server. The app is fully decentralized.
 > [!NOTE] Show an animation of the client-server architecture transforming into into a P2P architecture
 
 ## Introducing Holepunch
