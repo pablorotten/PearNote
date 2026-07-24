@@ -1,15 +1,49 @@
 # PearNote: P2P Note Sync with Holepunch
 
+## Intro
+
+Let's talk about Sticky notes apps.
+
+There're dozens of them: Apple notes, Google keep, One note, ... and many more
+
+But all of them share the same architecture
+
+> [!NOTE] cliente-server schema
+
+* So first everybody create an account. That's how the app knows who you are.
+* Then you make a note and it gets sent to a server somewhere.
+* When you share it with friends, the server makes copies for each of them.
+* Now if someone writes something, it goes back to the server first, and the server sends the update to everyone else.
+* This is the classic "CLIENT-SERVER" architecture
+
+> [!NOTE] facecam for disadvantages
+
+This model works fine, but there're many disadvantages
+
+* There're servers to mantain. They are expensive, hackable, and a legal headache if sensitive data leaks.
+* As more people join, costs go up
+* Your data belongs to them, not you. Most apps can read your notes, and they track what you do.
+* They need your account to identify you — that's personal info you're handing over just to write sticky notes.
+* And if the company shuts down? Your notes disappear with it.
+
 ## App demo
 
-> [!NOTE] Show the app in action with 2 and 3 phones:
->  * Creata note
->  * Share it
->  * Add/Remove items
+> [!NOTE] Myself talking witht he client=server schema small. Then makes it big and convert into p2p schema
+
+* So looks like mantaining a central server is a headache and bring a lot of concerns about privacy
+* Would it be possible to have a collaborative sticky notes app without user accounts and without server?
+* Just the users sharing their notes directly like in real life
+
+> [!NOTE] Facecam
+
+* Well... yes, is it possible. And I made it!!! 
+* It's called pearnote
+
 
 * What if two phones could share a list in real-time, with no accounts, no cloud and no server? 
 * Just two phones, talking directly to each other. 
-* This is what PearNote is! a zero-infrastructure collaborative app!!
+> [!NOTE] Show the app in action with 2 and 3 phones:
+* I built PearNote — a note app where you and your friends can edit a list together in real time
 
 ## So... what makes it different?
 
@@ -17,7 +51,6 @@
 
 * It's just another collaborative sticky note app right? There're millions of them in the market
 
-* And they all work the same. You create an account, a central server handles everything and keeps track of everything you and the people you share the note with do.
 
 * PearNote is different. There's no account. There's no server. The app is fully decentralized.
 > [!NOTE] Show an animation of the client-server architecture transforming into into a P2P architecture
