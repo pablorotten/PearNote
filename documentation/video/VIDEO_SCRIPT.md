@@ -28,15 +28,16 @@ This model works fine, but there're many disadvantages
 
 ## App demo
 
-> [!NOTE] Myself talking witht he client=server schema small. Then makes it big and convert into p2p schema
+> [!NOTE] Talking head: client-server schema is small on screen. Then it zooms big and morphs into the P2P schema
 
-* So looks like mantaining a central server is a headache and bring a lot of concerns about privacy
+* It looks like maintaining a central server is a headache and brings up a lot of privacy concerns
 * Would it be possible to have a collaborative sticky notes app without user accounts and without server?
-* Just the users sharing their notes directly like in real life
+* Just people sharing notes dir**e**ctly, no middleman
+* This architecture exists, and it's called Peer-to-Peer.
 
-> [!NOTE] Facecam
+> [!NOTE] Facecam showing the app in the phone
 
-* Well... yes, is it possible. And I made it!!! 
+* And guess what? I made it!!! 
 * It's called pearnote
 
 
