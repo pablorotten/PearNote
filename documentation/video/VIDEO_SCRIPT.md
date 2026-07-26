@@ -37,14 +37,17 @@ This model works fine, but there're many disadvantages
 
 > [!NOTE] Facecam showing the app in the phone
 
-* And guess what? I made it!!! 
-* It's called pearnote
+* And guess what? I built it!
+* It's called PearNote — a note app using P2P technology
 
+> [!NOTE] PearNote screencast
 
-* What if two phones could share a list in real-time, with no accounts, no cloud and no server? 
-* Just two phones, talking directly to each other. 
-> [!NOTE] Show the app in action with 2 and 3 phones:
-* I built PearNote — a note app where you and your friends can edit a list together in real time
+* It's really simple. You open PearNote, create a new note, and get a key and a QR code.
+* Then your friends scan the QR code with their phones
+* The note appears on their screen — now you're sharing it
+* Everyone can add and remove items together, in real time
+* All this without server and without account!!! 
+* I'll explain you how I did it!
 
 ## So... what makes it different?
 
