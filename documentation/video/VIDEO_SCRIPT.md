@@ -62,9 +62,20 @@ This model works fine, but there're many disadvantages
 
 https://github.com/holepunchto/bare
 
-Introducing Holepunch's Bare.
 
 > [!NOTE] Show Bare icon
+
+Introducing Bare.
+
+> [!NOTE] Show client-server architecture
+* Normally, apps code is divided in 2: frontend and backend
+* Frontend is the piece of code that runs on your device. The app you install, the webpage you open
+* Meanwhile backend code runs on a server. This logic syncronize your app, stores your data in the cloud, send you updates, etc
+> [!NOTE] Show p2p architecture
+* But we said there's no server! So... who runs the Backend code?
+* That's right, in our p2p architecture there's no server
+* Thanks to Bare we can have in our device 2 processes: the normal one running the frontend and Bare process running the backend code.
+* All the logic that used to run in a server, now runs locally in our device
 
 We mentioned before that this is a zero-infrastructure app without server.
 
