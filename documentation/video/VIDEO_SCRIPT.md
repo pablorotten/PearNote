@@ -49,20 +49,14 @@ This model works fine, but there're many disadvantages
 * All this without server and without account!!! 
 * I'll explain you how I did it!
 
-## So... what makes it different?
-
-> [!NOTE] Show screencasts of other notes apps 
-
-* It's just another collaborative sticky note app right? There're millions of them in the market
-
-
-* PearNote is different. There's no account. There's no server. The app is fully decentralized.
-> [!NOTE] Show an animation of the client-server architecture transforming into into a P2P architecture
-
 ## Introducing Holepunch
 
 > [!NOTE] Show logo and web
 
+* This is all thanks to Holepunch — a company that builds tools for creating apps with no servers
+* They provide a toolbox of JavaScript modules that handle the hard parts: st**o**rage, n**e**tworking, synchronisation 
+* So I didn't have to build P2P from scratch — I just glued their pieces together
+* I'll explain you the most interesting ones
 
 ## The backend: Bare
 
