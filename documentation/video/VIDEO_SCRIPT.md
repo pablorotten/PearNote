@@ -105,7 +105,35 @@ Introducing Bare.
 * It's not really a database at all
 * It's more like a log — think of it as Git for your data
 
+> [!NOTE] Split screen: Hypercore log (left) | PearNote (right) alternated with facecam
 
+* Left side is a Hypercore log. Right side is PearNote.
+* They start empty — no blocks, and an blank note.
+
+* I add 🍎 Apples to the note 
+* And a new block labeled "add: 🍎 Apples" appears on the log.
+* That's one ev**e**nt. One block appended to the log.
+
+* I add 🍌 Bananas
+* a new block "add: 🍌 Bananas" connected below the first.
+* Second event. Two blocks in the log now, one after the other.
+
+* I don't want bananas. So I remove 🍌 Bananas from the note
+* a third block "rmv: 🍌 Bananas" is appended to the log.
+
+> [!NOTE] facecam
+* This is very interesting!
+* The note only shows 🍎 Apples now. 
+* But the log still has all three entries
+* In hypercore, nothing is erased.
+
+* Finally I add 🥑 Avocado
+* And we have our 4th block "add: 🥑 Avocado"
+
+* So in the end my note has 2 items: 🍎 Apples and 🥑 Avocado.
+* But the log has 4 entries. Every action is preserved — nothing gets deleted, only appended.
+* That's Hypercore. It's an append-only log, just like Git.
+* To know the current state, you replay every entry from start to finish.
 
 ## The Network: Hyperswarm
 
