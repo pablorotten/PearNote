@@ -134,12 +134,15 @@ Introducing Bare.
 * But the log has 4 entries. Every action is preserved — nothing gets deleted, only appended.
 * That's Hypercore. It's an append-only log, just like Git.
 * To know the current state, you replay every entry from start to finish.
+* 
+* We have our backend and our storage
+* We can create notes locally
+* But how do we share them with other people and collaborate?
+* In other words — how do Hypercore blocks sync between peers in a P2P network?
 
 ## The Network: Hyperswarm
 
-* We have our backend and our storage
-* We can create notes locally
-* But how can we share them with other users and collaborate?
+
 
 **The DHT — a global phonebook**
 
