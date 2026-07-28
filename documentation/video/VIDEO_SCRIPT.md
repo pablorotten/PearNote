@@ -79,51 +79,33 @@ Introducing Bare.
 * That's right — no server here. This is where Bare comes into play
 * With Bare, our device runs two processes: the normal frontend, and a Bare process running the backend
 * All the logic that used to run on a server now runs locally on your phone
-* That's how with Bare, the connected devices — the peers — replace a central server
-
-We mentioned before that this is a zero-infrastructure app without server.
-
-> [!NOTE] Show again the transformation from client-server to P2P
-
-But then, who stores the data? Who receives all the frontend requests? How does data sync between users? Does it mean there's no backend?
-
-> [!NOTE] Question marks with icons appearing
-
-No! it means that the backend is not centralized.
-
-Each peer has a backend running their phones
-
-Bare is the worklet. It's a minimal JavaScript thread running the backend code in the background. This worklet runs the backend logic that normally goes into a server instance. But in this case runs locally in our phone.
-
-> [!NOTE] Animation of the phone running 2 threads, one with the main app and the other with the backend code `backend.msj`
+* That's how with Bare, the connected devices — the peers — replace a central server 
 
 ## The Storage: Hypercore
 
 > [!NOTE] Open the app and create a new note
 
-We have just created a new note. But where is it stored? 
+* We keep adding items to a note. But where are they stored? 
 
-Another component that normally goes in the Server is the database. And you guessed well... this is also moved to each peer smartphone.
+* Back to our old friend, the client-server **a**rchitecture
 
-But how can a server-centralized database become distributed?
+* Another comp**o**nent that normally lives on the server is the database. 
 
-Thanks to Hypercore
+* But without server... where does the data live?
 
-```js
-const storagePath = join(baseDir, 'pearnote', sessionId)
-const store = new Corestore(storagePath) 
-```
-* Build a new folder 
-* Creates a new `Corestore` instance there.
+* You guessed it — this also moves to each peer's phone.
 
-> [!NOTE] Show [Corestore](https://docs.pears.com/reference/helpers/corestore/) page
+* That's what Hypercore does
 
-> Corestore is a Hypercore factory that makes it easier to manage large collections of named Hypercores.
+* It turns a centralized database into a distributed one
 
-* But, what is **Hypercore**?
-* Hypercore is a secure, distributed append-only log.
+> [!NOTE] what is hypercore
 
-So we have just created our DATABASE using a log-like format. Here we will store all our notes and keep track of the whole history.
+* Hypercore isn't a relational database
+* It's not really a database at all
+* It's more like a log — think of it as Git for your data
+
+
 
 ## The Network: Hyperswarm
 
