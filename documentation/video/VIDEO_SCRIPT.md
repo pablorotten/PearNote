@@ -142,33 +142,28 @@ Introducing Bare.
 
 ## The Network: Hyperswarm
 
+* Hyperswarm is the library that makes P2P networking possible
+* Thanks to it we can find and connect to other peers
+* For that there's a global phonebook called the **DHT**
+
+> [!NOTE] facecam
+
+* **Distributed Hash Table**
+* The DHT is a huge table with two columns: **Topic → IP Address**
+> [!NOTE] show the phone with the opened app
+* The IP address identifies a peer — like a phone number
+* A **topic** is what a peer is interested in, it's the reason they're in the DHT 
+* The DHT isn't stored in one place. It's spread across the whole network. Every peer has a piece of it.
+
+> [!NOTE] creating a note in pearnote
+* In PearNote, when I create a note, a code is generated
+* This code contains the **topic**
+* And my phone address is the IP
+* my phone tells the network: "Hey, I'm `203.0.113.1` and I'm interested in the topic `Shopping List`"
+* Other peers add that entry to their piece of the DHT: `Shopping List → 203.0.113.1`
 
 
-**The DHT — a global phonebook**
-
-There's a thing called a **DHT** (Distributed Hash Table). Think of it as a giant phonebook that's spread across thousands of computers on the internet. It only has one type of entry: **Topic → IP Address**.
-
-```
-├───────────────────────────────────────┤
-│  topic: a3f... → 203.0.113.42:54231  │
-│  topic: b7c... → 198.51.100.77:32901 │
-│  topic: a3f... → 192.0.2.15:12048    │
-├───────────────────────────────────────┤
-```
-
-A **topic** is just a hash — an identifier. Each app decides what a topic means:
-
-- **Keet** (Holepunch's chat app): each chat room is a topic
-- **File sharing app**: each shared folder is a topic
-- **PearNote**: each note is a topic
-
-All apps share the **same DHT**. Topics from different apps are all mixed in the same table — it doesn't matter, because only the people who know the topic hash can query it.
-
-**No one owns the DHT.** It's distributed across all peers connected to the Hyperswarm network. Every phone running a Hyperswarm app stores a small piece of it.
-
-**Bootstrap nodes** are special peers hardcoded into the Hyperswarm library. They've been online for a long time, so they know a lot of peers and have a big piece of the DHT table. They're the **first person you ask for directions when you arrive in a new city** — they point you in the right direction, then you're on your own.
-
-> [!NOTE] Bootstrap nodes don't store any business data. They're just matchmakers, like a DNS server but for P2P.
+* **No one owns the DHT.** It's distributed across all peers connected to the Hyperswarm network. Every phone running a Hyperswarm app stores a small piece of it.
 
 **The Swarm — how peers connect**
 
