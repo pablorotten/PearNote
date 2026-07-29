@@ -155,40 +155,36 @@ Introducing Bare.
 * A **topic** is what a peer is interested in, it's the reason they're in the DHT 
 * The DHT isn't stored in one place. It's spread across the whole network. Every peer has a piece of it.
 
-> [!NOTE] creating a note in pearnote
+> [!NOTE] creating a note in pearnote, showing the invite code on screen
+
 * In PearNote, when I create a note, a code is generated
-* This code contains the **topic**
-* And my phone address is the IP
-* my phone tells the network: "Hey, I'm `203.0.113.1` and I'm interested in the topic `Shopping List`"
-* Other peers add that entry to their piece of the DHT: `Shopping List → 203.0.113.1`
-
-
-* **No one owns the DHT.** It's distributed across all peers connected to the Hyperswarm network. Every phone running a Hyperswarm app stores a small piece of it.
+* Inside that code is the **topic** — a unique ID for my note
+* Looks like this (`3f1b7c29d8e4f6a1b2c3`), is a 32-byte hash.
+* My phone is a peer, and every peer is a node in this P2P network
+* And every node holds a small piece of the DHT table
+* My phone, as a peer, writes a new entry into its piece of the DHT
+* The topic is the hash that represetns my note
+* The IP: my phone's address, `203.0.113.1`
+* My phone tells the network: "Hey, I'm `203.0.113.1` and I'm interested in the topic `Groceries List`"
+* Other peers replicate that same entry in their piece of the DHT: `3f1b7c29d8e4f6a1b2c3 → 203.0.113.1`
+* That way, everyone in the network will know that I'm interested in `Groceries List` topic
 
 **The Swarm — how peers connect**
 
-When you create a note, your phone tells the DHT: *"I'm interested in topic X"* (the note's hash). Your IP is now discoverable by anyone querying that topic.
+> [!NOTE] Swarm of bees video or animation
+So when someone scans that QR code, this is what happens behind the scenes
 
-When a second user scans your QR code, they extract the topic hash, query the DHT, and get your IP back.
 
-Now both phones know each other's address. Hyperswarm opens a **direct P2P connection** between them. This uses **UDP hole-punching**, the same technique Skype and WebRTC use to connect two devices that are both behind routers:
-
-```
-Phone A ←→ DHT ←→ Phone B  (just the introduction)
-Phone A ←──────────────── Phone B  (direct P2P connection)
-```
-
-Once the direct connection is established, the DHT is no longer involved.
-
-So what do they send to each other? **Hypercore blocks.**
-
-Every time you add or remove an item, **Autobase** appends a new block to your local Hypercore (the log). It then streams that block over the P2P connection to every connected peer. The receiving peer writes it to their local copy of your Hypercore, replays it, and updates the note.
-
-This is why the architecture works for offline edits too. When a peer goes offline and edits, those changes are just new blocks at the end of their local Hypercore. When they reconnect, the P2P connection reopens, and **all the missed blocks sync automatically** — like Git pushing commits.
-
-This group of directly connected peers sharing the same topic is called the **swarm**. More peers can join the same way — scan the QR, find the host via the DHT, connect directly. Everyone in the swarm receives updates from everyone else.
-
-> [!NOTE] Animation: Phone A creates note → joins DHT topic. Phone B scans QR → finds A via DHT → direct connection established. Then both add items and changes flow directly between them, DHT fades out.
+* We have our phone, the one that created the note
+* It has a Topic and an IP
+* We generate a QR code to share the note
+* Guest scans QR → extracts topic `3f1b7c29d8e4f6a1b2c3`
+* Guest announces in DHT: "Topic 3f1b7c29d8e4f6a1b2c3 → guest.ip"
+* Guest queries DHT: "Who's interested in topic X?"
+* DHT returns: both host and guest are interested
+* Guest hole-punches host → direct P2P connection
+Now both phones know each other's address. Hyperswarm opens a **direct P2P connection** between them. This uses **UDP hole-punching**, the same technique Skype and WebRTC use to connect two devices that are both behind routers.
+7. Both peers start exanging **Hypercore blocks** to sync the note status
 
 ## The Synchronization: Autobase
 
