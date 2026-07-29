@@ -175,16 +175,24 @@ Introducing Bare.
 So when someone scans that QR code, this is what happens behind the scenes
 
 
-* We have our phone, the one that created the note
+* We have our phone, the one that created the note, let's call it the HOST
 * It has a Topic and an IP
 * We generate a QR code to share the note
-* Guest scans QR → extracts topic `3f1b7c29d8e4f6a1b2c3`
-* Guest announces in DHT: "Topic 3f1b7c29d8e4f6a1b2c3 → guest.ip"
-* Guest queries DHT: "Who's interested in topic X?"
-* DHT returns: both host and guest are interested
-* Guest hole-punches host → direct P2P connection
-Now both phones know each other's address. Hyperswarm opens a **direct P2P connection** between them. This uses **UDP hole-punching**, the same technique Skype and WebRTC use to connect two devices that are both behind routers.
-7. Both peers start exanging **Hypercore blocks** to sync the note status
+* This is the guest phone, it has a different IP
+* Our friend scans the QR code and extracts the topic `3f1b7c29d8e4f6a1b2c3`
+* Guest announces in his peer node DHT: "This is my IP and I'm also interested on this topic"
+* Note that in Guest DHT there's already the host IP with same topic
+* This is spread across the whole network, so all the peers now know that both guest and host are interested on same topic
+* That's how the updated DHT looks — both phones are registered under the same topic
+* Now guest and host have each other's IP and can establish a direct connection
+* The DHT's job is done — the two peers talk directly from here on
+* They start exchanging **Hypercore blocks** to sync note status
+
+> [!NOTE] Two connected phones forming a swarm, then more joining
+
+* All the peers connected to the same topic form a swarm
+* In our example, the swarm is just two — host and guest
+* If we share the note with more people, the swarm grows
 
 ## The Synchronization: Autobase
 
