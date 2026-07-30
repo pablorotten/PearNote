@@ -199,10 +199,11 @@ So when someone scans that QR code, this is what happens behind the scenes
 * The last library I want to talk about is Autobase
 * We've seen that peers exchange Hypercore blocks over the P2P connection
 * But now each phone has multiple Hypercores — one from every peer — each with their own sequence of adds and deletes
-* This difference of sequence between different hypercores is caused because there isn't a central server orchestrating the syncronization.
-* Maybe, The blue peer might wonder, where's the apple I saw before? It was deleted by the green peer but he adds it again. 
-* So when the 3 peers sync, will they see an apple or note
-* And the 3 peers add avocados more or less at the same time, will it means that when the peers sync, 3 avocados will appear in the note?
-* How do we turn that mess into one consistent note that looks the same on every phone?
-* That's what **Autobase** does
-* It takes all those Hypercores, puts them in a single deterministic order, and produces one source of truth
+* So how do they agree on the final result?
+* Green adds an apple and remove it, but Blue adds it again — is the apple there or not?
+* If three peers add an avocado around the same time, will the note end up with three avocados?
+
+* That's where **Autobase** comes in
+* It takes all those Hypercores and linearizes them into a single order
+* Every peer runs the same logic independently and arrives at the same result.No central server decides. Quite impressive if you think about it
+* Thanks to Autobase, all the peers will see the same note in their screen
