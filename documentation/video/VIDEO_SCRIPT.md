@@ -196,28 +196,13 @@ So when someone scans that QR code, this is what happens behind the scenes
 
 ## The Synchronization: Autobase
 
-We've seen that peers exchange **Hypercore blocks** over the Hyperswarm connection. But that means each phone now has multiple Hypercores — one from each peer — all with their own sequence of adds and deletes.
-
-How do we turn that mess into one single consistent note that looks the same on every phone?
-
-That's what **Autobase** does. Autobase takes all those Hypercores from all peers, linearizes them into a single deterministic order, and produces one source of truth.
-
-```
-Peer A Hypercore: [PUT milk] [PUT bread]
-Peer B Hypercore: [PUT eggs] [DEL bread]
-Peer C Hypercore: [PUT butter]
-         ↓
-    Autobase
-         ↓
-    Result: { milk, butter, eggs }  ← same on every phone
-```
-
-> [!NOTE] Animation: three Hypercore logs merging into one combined view
-
-The key property is **deterministic**: every peer runs the same algorithm on the same logs and arrives at the same result. No server decides the truth.
-
-This is what enables offline edits too. When peers reconnect, Autobase replays all the blocks that were accumulated while offline and converges to the same state.
-
-**What about conflicts?**
-
-Autobase doesn't know the semantics of your data. If Peer A adds "Milk" and Peer B deletes "Milk" while offline, Autobase picks a deterministic winner — but it doesn't ask you which one to keep. For a note app that's fine. For a bank account you'd need custom logic on top.
+* The last library I want to talk about is Autobase
+* We've seen that peers exchange Hypercore blocks over the P2P connection
+* But now each phone has multiple Hypercores — one from every peer — each with their own sequence of adds and deletes
+* This difference of sequence between different hypercores is caused because there isn't a central server orchestrating the syncronization.
+* Maybe, The blue peer might wonder, where's the apple I saw before? It was deleted by the green peer but he adds it again. 
+* So when the 3 peers sync, will they see an apple or note
+* And the 3 peers add avocados more or less at the same time, will it means that when the peers sync, 3 avocados will appear in the note?
+* How do we turn that mess into one consistent note that looks the same on every phone?
+* That's what **Autobase** does
+* It takes all those Hypercores, puts them in a single deterministic order, and produces one source of truth
