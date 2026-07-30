@@ -207,3 +207,22 @@ So when someone scans that QR code, this is what happens behind the scenes
 * It takes all those Hypercores and linearizes them into a single order
 * Every peer runs the same logic independently and arrives at the same result.No central server decides. Quite impressive if you think about it
 * Thanks to Autobase, all the peers will see the same note in their screen
+
+## Conclusion
+
+* And that's it. That's all you need to build a decentralized P2P app without servers.
+
+### Recap
+
+* **Bare** — your backend
+* **Hypercore** — your storage
+* **Hyperswarm** — your network, with the DHT
+* **Autobase** — your sync
+
+### Outro
+
+* Thanks for watching!
+* I encourage you to check out the Holepunch libraries
+* And give their new platform, Pear, a try
+* I'll leave links to the app and the GitHub repository below
+* See you!
