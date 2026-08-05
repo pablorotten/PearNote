@@ -162,3 +162,354 @@ Bread is gone (A deleted it). Eggs are gone (B deleted it). Butter is there (B a
 
 Autobase doesn't have semantic conflict resolution. If Peer B deletes bread without knowing Peer A just added it, the algorithm picks a deterministic winner — but it won't ask "hey, A added this and B deleted it, what do you want to do?" It just converges. For a note app that's fine. For a bank account it wouldn't be.
 
+---
+
+# Topics NOT covered in the video script
+
+Everything below is material that came up during development and research but didn't make it into the video.
+
+---
+
+## Bare: why it exists
+
+The video mentions Bare but doesn't answer the obvious question a developer asks: "Why not use Node.js?"
+
+| Option | Problem |
+|---|---|
+| **Node.js** | Can't run on Android/iOS natively |
+| **Node.js Mobile** | Abandoned project; shipped a 50MB+ binary |
+| **React Native's JS thread** | Tied to UI lifecycle — blocks rendering if you run persistent networking on it |
+| **Hermes** (React Native's engine) | Optimized for rendering speed, not I/O or native addons |
+| **JavaScriptCore / V8 standalone** | Just engines — no OS integration (no filesystem, sockets, threads) |
+
+Bare was purpose-built for exactly what the Holepunch stack needs:
+1. Run C++ native addons (Hypercore, Corestore, Hyperswarm are all native C++)
+2. Raw sockets and threading for P2P networking (DHT, TCP, UDP)
+3. Embeddable inside another app (React Native) via `react-native-bare-kit`
+4. First-class Worklet support — isolated thread with built-in IPC (`bare-rpc`)
+5. Small footprint — only the I/O primitives the Holepunch stack needs
+
+Without Bare, PearNote couldn't run on a phone at all.
+
+### The thread architecture (what the video skips)
+
+The video says "Bare runs the backend on your phone" but doesn't show HOW. Inside the app process there are three threads:
+
+```
+┌─────────────────────────────────────────┐
+│              App Process                │
+│                                         │
+│  ┌─ UI Thread ────────────────────┐     │
+│  │  Native Android/iOS rendering  │     │
+│  └────────────────────────────────┘     │
+│                                         │
+│  ┌─ React Native JS Thread ───────┐     │
+│  │  React UI (Hermes engine)      │     │
+│  └────────────────────────────────┘     │
+│                                         │
+│  ┌─ Bare Worklet Thread ──────────┐     │
+│  │  backend.mjs                   │     │
+│  │  Corestore (local DB)          │     │
+│  │  Autopass (sync layer)         │     │
+│  │  Hyperswarm (networking)       │     │
+│  └────────────────────────────────┘     │
+└─────────────────────────────────────────┘
+```
+
+The React Native thread and the Bare thread communicate via `bare-rpc` IPC — the same concept as HTTP, but in-process. Instead of `fetch('https://api.example.com/notes/add')`, you call `rpc.request(RPC_ADD).send(...)`.
+
+**The "server on your phone" reframe:**
+
+In client-server:
+```
+Phone (UI) ──network──► Server (logic + storage)
+```
+
+In PearNote:
+```
+React Native thread (UI) ←──IPC──► Bare thread (logic + storage)
+```
+
+The Bare worklet is the server. It just runs on the same device instead of a data center. This is the real meaning of "no server" — the server logic moved to each peer's phone.
+
+---
+
+## BlindPairing: how the invite code actually works
+
+The video shows the QR code but doesn't explain what's inside it or how two strangers find each other.
+
+**The invite code is NOT the public key.** It's a BlindPairing token — a z32-encoded string that packages:
+- A **topic** (discovery key) to find the host via DHT
+- **Cryptographic material** for a secure handshake (so only the holder of the token can join)
+
+"Blind" means the token doesn't reveal the Autobase key or any note content to eavesdroppers — even to DHT nodes that route the handshake.
+
+### The conversation in plain terms
+
+```
+Joiner: "I have invite code abc123. I want to join."
+         → sends invite hash through the DHT
+
+Host:   "Let me check... that invite exists in my local store."
+         → reads joiner's identity from the handshake
+         → adds joiner as an authorized writer
+         → sends back: the Autobase key + the encryption key
+
+Joiner: "Got it. Now I can open the note."
+         → creates Autopass with the real keys
+         → Hypercore replication starts automatically
+```
+
+After this one-time handshake, no invite code is needed again. Both phones store the Autobase key locally (in Corestore/RocksDB) and reconnect autonomously via Hyperswarm on future sessions.
+
+### Security model (three layers)
+
+```
+Find the phone    → need topic (discovery key)
+Open a connection → need IP (from DHT)
+Read the data     → need encryption key (from BlindPairing invite)
+```
+
+An attacker can see DHT traffic and even connect to your phone — but they receive end-to-end encrypted data they can't read. Same model as HTTPS: address is visible, content is not.
+
+### Why pairing fails on cellular (4G/5G)
+
+The initial BlindPairing handshake requires both phones to be **reachable via the DHT**. On 4G, phones are behind carrier-grade NAT (CGNAT) — they can make outbound connections but the DHT cannot route inbound handshake messages back to them.
+
+| Scenario | Result |
+|---|---|
+| Both on WiFi | Works |
+| Creator on WiFi, joiner on 4G (1st time) | Fails (pair timeout) |
+| Both on 4G (1st time) | Fails |
+| Any combination (rejoin) | Works |
+
+After the initial pairing, the base key is stored locally. Reconnecting works on cellular because it only requires outbound TCP — no DHT handshake needed.
+
+Fix: configure a relay server via `relayThrough` option in Autopass.
+
+---
+
+## Hyperswarm networking: hole-punching and relays
+
+The video explains the DHT (phonebook) but not what happens *after* two peers find each other. Getting a direct connection between two phones behind NAT is non-trivial.
+
+### UDP hole-punching (the clever trick)
+
+NAT routers block unexpected inbound packets but allow outbound-initiated traffic. The trick: both phones initiate outbound connections to each other simultaneously.
+
+1. A sends a UDP packet to B's IP:port (NAT creates a "hole" in A's table)
+2. B sends a UDP packet to A's IP:port (NAT creates a "hole" in B's table)
+3. Both holes are open at the same moment → the packets slide through
+
+Works ~80% of the time. The remaining ~20% (symmetric NATs, carrier-grade NAT) need a relay.
+
+### Relay fallback
+
+When hole-punching fails, Hyperswarm falls back to a relay (a server with a public IP both phones can reach as clients):
+
+```
+A → Relay ← B
+```
+
+A connects to the relay as a client. B connects to the relay as a client. The relay forwards encrypted bytes between them. The data is end-to-end encrypted (Noise protocol), so the relay is just a pipe — it can't read anything.
+
+This is the one case where a server is involved — but it's a dumb byte-forwarding relay, not a database or business logic server. And the data is encrypted end-to-end so the relay operator learns nothing.
+
+### IPv6 eliminates NAT entirely
+
+With IPv6, every device has a globally unique public address. No NAT, no hole-punching needed. Direct P2P works cleanly. As IPv6 adoption grows, Hyperswarm's networking becomes simpler.
+
+---
+
+## DHT: nodes vs peers, and the shared global phonebook
+
+The video explains the DHT as a "phonebook" but conflates two concepts developers ask about.
+
+### Nodes vs Peers
+
+| | Node | Peer |
+|---|---|---|
+| What | Any device participating in the DHT mesh | Anyone sharing the same note |
+| Role | Stores a piece of the routing table, routes queries | Exchanges Hypercore blocks for a specific topic |
+| Scope | Global (app-agnostic) | Note-scoped |
+
+Your phone is both: a **node** that holds routing table entries for many topics, and a **peer** for the specific notes you've joined.
+
+**Bootstrap nodes** are always-on devices with hardcoded addresses in the Hyperswarm library. Their only job: welcome new phones and introduce them to nearby DHT nodes. After that, your phone is self-sufficient.
+
+### Every Holepunch app shares the same DHT
+
+Keet (Holepunch's video call app), PearNote, and any app built on Hyperswarm all share the **same global DHT**. Topics from different apps are mixed in the same distributed table. But only peers who know a topic hash can find each other, so apps are isolated in practice.
+
+### Topic vs identity keypair (commonly confused)
+
+| | Identity | Topic |
+|---|---|---|
+| What | Your phone's keypair (stored in Corestore) | A note's discovery key |
+| Purpose | Who you are on the DHT | What note you're interested in |
+| Scope | Persistent per device | Tied to one specific note |
+| Analogy | Your passport | A hashtag like `#Groceries` |
+
+One phone can be interested in multiple topics (one per note), but has only one identity keypair.
+
+---
+
+## Hypercore vs Blockchain: the comparison people will make
+
+Hypercore uses two concepts from blockchain — append-only logs and Merkle trees — but is fundamentally different.
+
+| | Hypercore | Blockchain |
+|---|---|---|
+| Writers | One (private key owner) | Many (unknown parties) |
+| Trust model | Cryptographic signature | Consensus algorithm (PoW/PoS) |
+| Consensus | Not needed | Required (Byzantine fault tolerance) |
+| Use case | Personal or shared log (trusted writers) | Permissionless ledger (untrusted writers) |
+
+Hypercore docs describe it as "like a lightweight blockchain without the consensus algorithm." That's accurate — it's the same data structure but missing the one thing that makes blockchain expensive: agreeing between untrusted strangers.
+
+**You cannot build a cryptocurrency with Hypercore.** There's no mechanism to prevent double-spending. The Byzantine Generals Problem doesn't apply because access is invite-only — participation is permissioned, writers are trusted at pairing time.
+
+**Quote for the video**: "Hypercore is like a blockchain that trusts you — because you invited everyone who can write to it."
+
+### Comparison with similar P2P tools
+
+| Tool | How it differs from Hypercore |
+|---|---|
+| **Secure Scuttlebutt (SSB)** | Same append-only log concept but NO sparse replication — you must download the full log. Hypercore can sync just the blocks you need, like BitTorrent. |
+| **OrbitDB** | Append-only log built on IPFS instead of Hypercore's protocol |
+| **Gun.js** | Real-time P2P sync graph database |
+
+---
+
+## Corestore and RocksDB: the actual storage layer
+
+The video doesn't mention Corestore at all. It's the bridge between Hypercore's logical model and bytes on disk.
+
+```
+pass.add(key, value)    ← Autopass (what you call)
+  → base.append(...)    ← Autobase (event log)
+    → hypercore.append() ← Hypercore (logical log)
+      → corestore.write() ← Corestore (bridge API)
+        → rocksdb.put()   ← RocksDB (actual bytes)
+```
+
+**Corestore** is like a DataSource/connection pool: configure it once with a folder path, and it manages all the Hypercores for that note. RocksDB is its current storage engine — it could be swapped for SQLite or LevelDB without changing anything above it.
+
+**The important framing**: you store data in Hypercore/Autobase conceptually. The bytes happen to land in RocksDB. Never say "I store in RocksDB" — that's like saying "I store in the hard drive sectors." The abstraction layer matters.
+
+### What's actually on disk (from a real device extraction)
+
+```
+pearnote/mqs4hqur/          ← session folder (Date.now().toString(36))
+├── CORESTORE               ← metadata: platform=android, inode, created timestamp
+└── db/                     ← RocksDB data
+    ├── 000014.sst           ← Sorted String Table: actual key-value data (21KB)
+    ├── 000009.blob          ← Blob file: large values stored separately (24KB)
+    ├── 000010.log           ← Write-Ahead Log: recent uncompacted writes (28KB)
+    ├── MANIFEST-000011      ← LSM tree metadata: which SST files exist
+    ├── IDENTITY             ← Unique RocksDB instance UUID (36B)
+    └── LOCK                 ← Prevents two processes opening the same store (0B)
+```
+
+Each note session gets its own folder with a base-36 timestamp as the name. The public key lives inside RocksDB — not in the folder name.
+
+**The LOCK file problem**: when a worklet is killed abruptly (user leaves the note), the LOCK file stays on disk. Next rejoin, Corestore sees the stale lock and may refuse to open. Proper shutdown requires `await pass.suspend()` before `worklet.terminate()`.
+
+---
+
+## Autopass: the full picture (porcelain analogy)
+
+The video mentions Autopass briefly in the conclusion but doesn't explain what it actually is.
+
+Git has **plumbing** (`git hash-object`, `git update-ref`) and **porcelain** (`git commit`, `git merge`). Autopass is the **porcelain** of the Holepunch stack.
+
+Two lines of code silently start:
+1. A local database (Autobase + HyperDB view + Corestore + RocksDB)
+2. A DHT swarm (Hyperswarm + topic announcement)
+3. A cryptographic pairing server (BlindPairing listener)
+4. A replication protocol (Hypercore block exchange)
+
+```js
+const store = new Corestore(storagePath)  // configure storage
+const pass = new Autopass(store)          // everything else starts here
+await pass.ready()                        // wait for swarm + DB to be ready
+```
+
+After `pass.ready()`, `pass.add()`, `pass.remove()`, and `pass.list()` replace what in a server-side app would be REST API calls to a backend + database + pub/sub notification system.
+
+### The Hyperbee view: derived data, not source of truth
+
+Autopass maintains a Hyperbee (key-value index on top of Hypercore) as a **materialized view** of the merged state. It's a performance cache — if you deleted it, Autobase could replay all Hypercore logs from scratch and reconstruct the identical state.
+
+The Hypercores (one per writer) are the actual source of truth. The view is disposable.
+
+**Analogy**: Hypercore is the database WAL (write-ahead log). The Hyperbee view is the indexed table state Postgres builds by replaying the WAL.
+
+### Official Holepunch taxonomy
+
+```
+Hyperswarm = P2P Networking
+Hypercore  = P2P Data Streams
+Hyperdrive = P2P File System
+Hyperbee   = P2P Database
+Autobase   = P2P Collaboration
+Autopass   = P2P Porcelain (wraps all of the above)
+```
+
+---
+
+## Pear: the bigger picture
+
+The video outro mentions "give Pear a try" but doesn't explain what it is or how it relates to what was just shown.
+
+**Pear is to Holepunch what Electron is to Node.js.**
+
+- Electron takes Node.js (backend) + Chromium (frontend) and packages them into a desktop app runtime.
+- Pear takes the Holepunch stack (backend) + a web renderer (frontend) and packages them into a P2P app runtime.
+
+PearNote **does not use Pear**. It uses the raw Holepunch stack directly via `react-native-bare-kit`. Pear is a desktop-only platform — it cannot run on Android or iOS.
+
+The mobile path is: `Expo/React Native` (UI) + `react-native-bare-kit` (Bare worklet) + `autopass`/`corestore`/`hyperswarm` — which is exactly what PearNote does.
+
+**DevRel note**: discovering that Pear is desktop-only only after starting to build a mobile app is a real friction point. The Holepunch website and docs don't surface this distinction clearly upfront. A better first page might say: "Building for desktop? Use Pear. Building for mobile? Use the stack directly with react-native-bare-kit."
+
+---
+
+## Development war stories (real bugs from building this)
+
+These didn't make the video but are gold for a devrel blog post or a "building with Holepunch" talk.
+
+### The guest misses the connection event
+
+The guest phone showed "SWARM connection event FIRED" in logs but never "Connection established." One-way sync: host saw the guest, guest didn't see the host.
+
+Root cause: the `swarm.on('connection')` handler was registered **after** `await discovery.flushed()`. On the guest, Hyperswarm discovers the host during DHT lookup and the `connection` event fires **before** `flushed()` resolves — before the handler was registered. Event already gone.
+
+Fix: register the handler **before** calling `swarm.join()`.
+
+### `swarm.peers` is a Map, not an array
+
+`swarm.peers.length` returns `undefined`. Accessing `.length` on a Map silently fails — no error, just a missing peer in the tracking Set and broadcast to 0 peers. Fix: use `peers.size` with your own Set.
+
+### `process is not defined` — Bare runtime crash
+
+After a dependency update, the backend worklet crashed on startup: `Uncaught ReferenceError: process is not defined`. Bare does not provide a `process` global like Node.js. A transitive dependency (somewhere in the Corestore chain) references `process` at the top level without a `typeof` guard.
+
+Fix: add `import process from 'bare-process'` + `globalThis.process = process` at the very top of `backend.mjs`, before all other imports.
+
+### `pair.finished()` hangs forever
+
+If the host leaves before the joiner finishes pairing, `pair.finished()` never resolves — no timeout, no error, just silence. Fix: wrap in `Promise.race()` with a 30-second timeout.
+
+### `pass.add()` value must be a string
+
+Passing `['item', title]` (an array) crashed with `uint must be positive` — an error from the binary encoding layer, not a helpful type error. Fix: `JSON.stringify()` on write, `JSON.parse()` on read.
+
+### `process.exit()` crashes the app
+
+Calling `process.exit(0)` in the Bare worklet kills the entire React Native process — not just the worklet thread. Fix: call `pass.suspend()` and let the UI call `worklet.terminate()`.
+
+### Each session creates a new folder (accumulating disk usage)
+
+Every `create` or `join` generates a new `Date.now().toString(36)` folder. If the user opens and closes many notes over months, they accumulate forever. There's no cleanup mechanism. Fine for a demo app; a production app would need a pruning strategy.
+
