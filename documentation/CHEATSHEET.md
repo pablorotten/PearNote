@@ -7,18 +7,16 @@
 
 ## Setup
 
+Define where the Android SDK is installed (Windows):
+```sh
+Set-Content -Path android/local.properties -Value "sdk.dir=C:/Users/pablo/AppData/Local/Android/Sdk"
+```
+
+Build:
 ```sh
 npm install
 npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
 ```
-
-> [!WARNING]
-> `npx expo prebuild --clean` wipes the `android/` folder, including `local.properties` (SDK path).
-> If Gradle fails with `SDK location not found... set the sdk.dir path in local.properties`, recreate it:
-> ```sh
-> Set-Content -Path android/local.properties -Value "sdk.dir=C:/Users/pablo/AppData/Local/Android/Sdk"
-> ```
-> 
 
 ## Development
 
@@ -74,7 +72,15 @@ adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity
 After changing icons, splash, or `app.json`:
 
 ```sh
-npx expo prebuild && npm run android
+npx expo prebuild
+npm run android
+```
+
+Full clean
+
+```sh
+npx expo prebuild --clean
+Set-Content -Path android/local.properties -Value "sdk.dir=C:/Users/pablo/AppData/Local/Android/Sdk"
 ```
 
 ## Uninstall

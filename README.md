@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="design/splash.png" width="350" alt="PearNote">
+  <img src="design/icon.png" width="350" alt="PearNote">
 </p>
 
 <h1 align="center">PearNote</h1>
