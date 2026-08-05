@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   ScrollView,
   Alert,
   StyleSheet,
-  Image
+  Image,
+  Modal,
 } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import Constants from 'expo-constants'
