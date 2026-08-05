@@ -41,11 +41,9 @@ export const styles = StyleSheet.create({
     marginBottom: 25
   },
   version: {
-    fontSize: 12,
-    color: '#90B8C8',
-    textAlign: 'center',
-    marginTop: -18,
-    marginBottom: 18
+    fontSize: 11,
+    color: '#B0D944',
+    marginTop: 4
   },
   menuContent: {
     flex: 1

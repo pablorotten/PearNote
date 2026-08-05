@@ -38,10 +38,10 @@ export function MenuScreen() {
         <Text style={styles.heading}>
           <Text style={{ color: '#B0D944' }}>Pear</Text>
           <Text style={{ color: '#faf59a' }}>Note</Text>
+          <Text style={styles.version}> v{(Constants.expoConfig?.version ?? '').replace(/\.0$/, '')}</Text>
         </Text>
       </View>
       <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
-      <Text style={styles.version}>v{Constants.expoConfig?.version}</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
         {showCreateForm ? (
