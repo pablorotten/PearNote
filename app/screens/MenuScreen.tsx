@@ -10,6 +10,7 @@ import {
   Image
 } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import Constants from 'expo-constants'
 import { Camera, CameraView } from 'expo-camera'
 import { useNote } from '../hooks/NoteContext'
 import { styles } from '../styles'
@@ -40,6 +41,7 @@ export function MenuScreen() {
         </Text>
       </View>
       <Text style={styles.subtitle}>Synced. Private. P2P.</Text>
+      <Text style={styles.version}>v{Constants.expoConfig?.version}</Text>
 
       <ScrollView style={styles.menuContent} contentContainerStyle={styles.menuContentInner}>
         {showCreateForm ? (
