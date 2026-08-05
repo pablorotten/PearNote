@@ -1,0 +1,18 @@
+diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
+index 1ff8116..0ac96a2 100644
+--- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
++++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
+@@ -133,6 +133,13 @@ class ExpoCameraView(
+ 
+   private var previewView = PreviewView(context).apply {
+     elevation = 0f
++    // Use TextureView instead of the default SurfaceView (PERFORMANCE mode).
++    // A SurfaceView is a separate hardware surface punched into the window;
++    // when the view is bound before Fabric lays it out at full size (which is
++    // the case on release builds), that surface is created too small and the
++    // preview shows a black band that only clears after a window relayout.
++    // TextureView renders in the normal view hierarchy and auto-resizes.
++    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+   }
+   private val scope = CoroutineScope(Dispatchers.Main)
+   private var shouldCreateCamera = false

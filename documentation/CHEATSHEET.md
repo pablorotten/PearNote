@@ -65,6 +65,7 @@ Generate, install and launch a standalone APK (no Metro needed):
 npx expo run:android --variant release
 adb -s e017a252 install -r android/app/build/outputs/apk/release/app-release.apk
 adb -s e017a252 shell am start -n com.pearnote.app/.MainActivity
+adb -s 6ae4c054c2b8 install -r android/app/build/outputs/apk/release/app-release.apk
 adb -s 6ae4c054c2b8 shell am start -n com.pearnote.app/.MainActivity
 ```
 

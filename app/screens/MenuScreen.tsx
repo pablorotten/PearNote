@@ -31,6 +31,22 @@ export function MenuScreen() {
     removeFromHistory
   } = useNote()
 
+  const [scanSession, setScanSession] = useState(0)
+  const [cameraReady, setCameraReady] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
+
+  const closeScanner = () => {
+    if (!scanningRef.current) return
+    scanningRef.current = false
+    clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => {
+      setScanning(false)
+      setCameraReady(false)
+    }, 300)
+  }
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -117,6 +133,8 @@ export function MenuScreen() {
             onPress={async () => {
               const { granted } = await Camera.requestCameraPermissionsAsync()
               if (granted) {
+                setScanSession((s) => s + 1)
+                setCameraReady(false)
                 setScanning(true)
                 scanningRef.current = true
               } else
@@ -180,30 +198,38 @@ export function MenuScreen() {
         )}
       </ScrollView>
 
-      {scanning && (
+      <Modal
+        visible={scanning}
+        animationType="none"
+        transparent={false}
+        onRequestClose={closeScanner}
+        statusBarTranslucent
+        onShow={() => {
+          // Defer CameraView mount by one frame so the Modal's native
+          // surface is fully committed before CameraX binds its preview.
+          // This prevents the black-band bug on Fabric / release builds.
+          requestAnimationFrame(() => setCameraReady(true))
+        }}
+      >
         <View style={StyleSheet.absoluteFillObject}>
-          <CameraView
-            style={StyleSheet.absoluteFillObject}
-            onBarcodeScanned={({ data }) => {
-              if (!data || !scanningRef.current) return
-              scanningRef.current = false
-              setScanning(false)
-              startWorklet('join', data)
-            }}
-          />
-          <View style={styles.scannerOverlay}>
-            <TouchableOpacity
-              style={styles.scannerCloseBtn}
-              onPress={() => {
-                scanningRef.current = false
-                setScanning(false)
+          {cameraReady && (
+            <CameraView
+              key={scanSession}
+              style={StyleSheet.absoluteFillObject}
+              onBarcodeScanned={({ data }) => {
+                if (!data || !scanningRef.current) return
+                closeScanner()
+                startWorklet('join', data)
               }}
-            >
+            />
+          )}
+          <View style={styles.scannerOverlay}>
+            <TouchableOpacity style={styles.scannerCloseBtn} onPress={closeScanner}>
               <Text style={styles.scannerCloseBtnText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </Modal>
     </View>
   )
 }

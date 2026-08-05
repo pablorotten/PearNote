@@ -113,6 +113,8 @@ export function useNoteLogic() {
     setNoteCode('')
     setLoading(false)
     setCurrentNoteName('')
+    scanningRef.current = false
+    setScanning(false)
   }
 
   useEffect(() => {
