@@ -164,7 +164,8 @@ Introducing Bare.
 * And every node holds a small piece of the DHT table
 * My phone, as a peer, writes a new entry into its piece of the DHT
 * The topic is the hash that represetns my note
-* The IP: my phone's address, `203.0.113.1`
+* Remember we said the DHT is like a phone book
+* So I write in the phonebook the topic I'm interested in, the groceries list, and my number, my smartphone IP
 * My phone tells the network: "Hey, I'm `203.0.113.1` and I'm interested in the topic `Groceries List`"
 * Other peers replicate that same entry in their piece of the DHT: `3f1b7c29d8e4f6a1b2c3 → 203.0.113.1`
 * That way, everyone in the network will know that I'm interested in `Groceries List` topic
