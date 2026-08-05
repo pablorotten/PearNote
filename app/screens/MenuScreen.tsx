@@ -35,7 +35,7 @@ export function MenuScreen() {
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
         <Image source={require('../../assets/images/icon.png')} style={{ width: 80, height: 80 }} />
-        <Text style={styles.heading}>
+        <Text style={styles.logoHeading}>
           <Text style={{ color: '#B0D944' }}>Pear</Text>
           <Text style={{ color: '#faf59a' }}>Note</Text>
           <Text style={styles.version}> v{(Constants.expoConfig?.version ?? '').replace(/\.0$/, '')}</Text>
