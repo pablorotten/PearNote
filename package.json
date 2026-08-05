@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/holepunchto/bare-expo#readme",
   "dependencies": {
+    "@expo-google-fonts/press-start-2p": "^0.4.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "autopass": "^3.4.1",
     "b4a": "^1.8.1",

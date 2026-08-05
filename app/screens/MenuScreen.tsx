@@ -35,7 +35,8 @@ export function MenuScreen() {
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
         <Image source={require('../../assets/images/icon.png')} style={{ width: 80, height: 80 }} />
         <Text style={styles.heading}>
-          <Text style={{ color: '#B0D944' }}>Pear</Text>Note
+          <Text style={{ color: '#B0D944' }}>Pear</Text>
+          <Text style={{ color: '#faf59a' }}>Note</Text>
         </Text>
       </View>
       <Text style={styles.subtitle}>Synced. Private. P2P.</Text>

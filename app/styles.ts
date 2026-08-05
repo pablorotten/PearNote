@@ -16,8 +16,8 @@ export const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'android' ? 60 : 20
   },
   heading: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontFamily: 'PressStart2P_400Regular',
     color: TEXT,
     textAlign: 'center',
     marginTop: 5
