@@ -12,6 +12,14 @@ npm install
 npx bare-pack --host android --linked --out app/app.bundle.mjs backend/backend.mjs
 ```
 
+> [!WARNING]
+> `npx expo prebuild --clean` wipes the `android/` folder, including `local.properties` (SDK path).
+> If Gradle fails with `SDK location not found... set the sdk.dir path in local.properties`, recreate it:
+> ```sh
+> Set-Content -Path android/local.properties -Value "sdk.dir=C:/Users/pablo/AppData/Local/Android/Sdk"
+> ```
+> 
+
 ## Development
 
 ```sh
