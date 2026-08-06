@@ -316,3 +316,42 @@ Instagram: https://www.instagram.com/pablodevrel/
 TikTok: https://www.tiktok.com/@pablodevrel
 Twitter/X: https://x.com/PabloDevRel
 Option A is best if your primary audience is developers who might search for "Holepunch" or "P2P React Native." Option B works better if you want broader reach and plan to share it on social. Option C is good as a base if you want to tweak it yourself.
+
+# Short (LinkedIn / TikTok / Instagram / X)
+
+YouTube video: https://youtu.be/B8783WSrCjI
+
+## Title
+
+I built a collaborative app with no server, no cloud, no accounts
+
+## Description
+
+Two phones. One shared note. Zero servers.
+
+I built PearNote using the Holepunch P2P stack — no backend,
+no database, no user accounts. Just devices talking directly.
+
+Full breakdown in the video 👇
+
+*(YouTube Shorts and TikTok — paste the YouTube link directly here)*
+
+---
+
+For LinkedIn, Instagram and X — replace last line with:
+
+Full breakdown in the comments 👇
+
+## First comment (with link)
+
+Full video here: https://youtu.be/B8783WSrCjI
+
+## Where to use each approach
+
+| Platform | Links in description | Technique |
+|---|---|---|
+| LinkedIn | Penalized in reach | Link in first comment |
+| Instagram | Links not clickable | Link in first comment |
+| X (Twitter) | Allowed but limits reach | Link in first comment (or last) |
+| TikTok | Allowed for some accounts | Link in description if available, otherwise bio |
+| YouTube Shorts | Fine | Link directly in description |
