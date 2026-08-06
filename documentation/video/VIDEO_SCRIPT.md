@@ -227,3 +227,92 @@ So when someone scans that QR code, this is what happens behind the scenes
 * And give their new platform, Pear, a try
 * I'll leave links to the app and the GitHub repository below
 * See you!
+
+# YouTube Video
+
+## Titles
+
+Straightforward / searchable:
+- "Building a P2P App with No Server — Holepunch Stack Explained"
+- "How I Built a Real-Time Sync App Without a Backend"
+- "P2P Sync on Mobile: Holepunch, Bare, and Hypercore Explained"
+Hook-first (problem → solution):
+- "Your Notes App is Spying on You. I Built an Alternative."
+- "I Removed the Server From a Real-Time App. Here's What Replaced It."
+- "What If Your App Had No Server, No Database, No Accounts?"
+Curiosity-driven:
+- "Two Phones, One Note, Zero Servers — How Does It Work?"
+- "The App That Syncs Without the Internet Knowing"
+- "No Backend. No Cloud. No Accounts. How?"
+Positioning / personal:W
+- "I Built a Serverless P2P App in React Native — Here's the Stack"
+- "How Holepunch Lets You Build Apps Without Infrastructure"
+
+Final title: **I Removed the Server From a Real-Time App - Holepunch Stack Explained**
+
+## Description
+
+### Option A — Technical, direct
+Most note apps send your data to a server you don't control. PearNote doesn't.
+
+I built a real-time collaborative sticky notes app with no server, no database, 
+and no user accounts — just two phones syncing directly, peer-to-peer.
+
+In this video I explain the Holepunch stack that makes it possible:
+➡️ Bare — a JavaScript runtime that runs your backend logic on-device
+➡️ Hypercore — an append-only log that replaces a centralized database
+➡️ Hyperswarm — a DHT-based network layer that connects peers directly
+➡️ Autobase — the sync engine that resolves conflicts across multiple writers
+
+Source code: https://github.com/pablorotten/PearNote
+Holepunch: https://holepunch.to/
+Pears (new platform): https://pears.com/
+
+─────────────────────────
+Find me here:
+Website: https://pablorotten.github.io/cv/
+LinkedIn: https://www.linkedin.com/in/pablo-antonio-rodriguez-rubio/
+Instagram: https://www.instagram.com/pablodevrel/
+TikTok: https://www.tiktok.com/@pablodevrel
+Twitter/X: https://x.com/PabloDevRel
+
+### Option B — Story-first, broader audience
+What if your app had no server, no cloud, and no accounts — and still synced 
+in real time between devices?
+
+I built PearNote to find out. It's a collaborative sticky notes app where two 
+phones share a live list directly, peer-to-peer, with no middleman.
+
+The secret is the Holepunch stack — a set of JavaScript libraries that handle 
+storage, networking, and sync without any infrastructure. I'll walk you through 
+how each piece works and show you the app running live.
+
+Source code: https://github.com/pablorotten/PearNote
+Holepunch: https://holepunch.to/
+Pears (new platform): https://pears.com/
+
+─────────────────────────
+Find me here:
+Website: https://pablorotten.github.io/cv/
+LinkedIn: https://www.linkedin.com/in/pablo-antonio-rodriguez-rubio/
+Instagram: https://www.instagram.com/pablodevrel/
+TikTok: https://www.tiktok.com/@pablodevrel
+Twitter/X: https://x.com/PabloDevRel
+
+### Option C — Short and punchy
+No server. No database. No accounts. Just two phones sharing a live note directly.
+
+I built PearNote using the Holepunch stack (Bare, Hypercore, Hyperswarm, Autobase) 
+and this video explains how it works — and why P2P apps are worth paying attention to.
+
+Source code: https://github.com/pablorotten/PearNote
+Holepunch: https://holepunch.to/
+Pears (new platform): https://pears.com/
+
+─────────────────────────
+Website: https://pablorotten.github.io/cv/
+LinkedIn: https://www.linkedin.com/in/pablo-antonio-rodriguez-rubio/
+Instagram: https://www.instagram.com/pablodevrel/
+TikTok: https://www.tiktok.com/@pablodevrel
+Twitter/X: https://x.com/PabloDevRel
+Option A is best if your primary audience is developers who might search for "Holepunch" or "P2P React Native." Option B works better if you want broader reach and plan to share it on social. Option C is good as a base if you want to tweak it yourself.
