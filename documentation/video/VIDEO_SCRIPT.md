@@ -329,8 +329,7 @@ I built a collaborative app with no server, no cloud, no accounts
 
 Two phones. One shared note. Zero servers.
 
-I built PearNote using the Holepunch P2P stack — no backend,
-no database, no user accounts. Just devices talking directly.
+I built PearNote using the Holepunch P2P stack — no backend, no database, no user accounts. Just devices talking directly.
 
 Full breakdown in the video 👇
 
