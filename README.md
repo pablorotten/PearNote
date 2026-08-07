@@ -11,6 +11,13 @@
 
 ---
 
+## Watch the video
+
+[![PearNote — P2P Note Sync with Holepunch](https://img.youtube.com/vi/B8783WSrCjI/0.jpg)](https://youtu.be/B8783WSrCjI)
+
+---
+
+
 ## What is it?
 
 PearNote lets two phones share a note in real-time over a peer-to-peer connection. One phone creates a note and gets an invite code. The other phone joins with that code. From that moment, both phones see the same list — items added on one appear on the other instantly.
